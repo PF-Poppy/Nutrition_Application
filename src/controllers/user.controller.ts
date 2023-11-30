@@ -1,0 +1,25 @@
+//TODO แก้
+import { Request, Response } from "express";
+import userRespository from "../repositories/user.respository";
+import logging from "../config/logging";
+
+const NAMESPACE = "User Controller";
+
+export default class AnimalController {
+    async getUserByID(req: Request, res: Response) {
+        const id:string = req.params.id;
+        try {
+            const result = await userRespository.retrieveByID(id);
+            if (result) res.status(200).send(result);
+            else
+                res.status(404).send({
+                message: `Cannot find User with id=${id}.`
+            });
+        } catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            res.status(500).send({
+            message: `Error retrieving User with id=${id}.`
+            });
+        }
+    }  
+}
