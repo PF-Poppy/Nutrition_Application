@@ -1,7 +1,10 @@
+# Logs
+*.logs
+package-lock.json*
+
 .idea/
 .vscode/
 node_modules/
 build/
 tmp/
 temp/
-package-lock.json/
