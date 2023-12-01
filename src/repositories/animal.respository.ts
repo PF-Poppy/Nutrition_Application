@@ -6,9 +6,9 @@ const NAMESPACE = "Animal Repository";
 
 interface IAnimalRepository {
     save(animal:AnimalType): Promise<AnimalType>;
-    update(animal:AnimalType,username:string,userid:string): Promise<AnimalType>;
+    update(animal:AnimalType): Promise<AnimalType>;
     retrieveAll(): Promise<AnimalType[]>;
-    retrieveById(typeid: number): Promise<AnimalType | undefined>;
+    retrieveByID(typeid: number): Promise<AnimalType | undefined>;
     retrieveByName(typename: string): Promise<AnimalType | undefined>;
     deleteByID(typeid: number): Promise<number>;
     deleteAll(): Promise<number>;
@@ -27,7 +27,7 @@ class AnimalRepository implements IAnimalRepository {
             const result = await AppDataSource.getRepository(AnimalType).save(animal);
             logging.info(NAMESPACE, "Save animal type successfully.");
             try {
-                const res = await this.retrieveById(result.type_id);
+                const res = await this.retrieveByID(result.type_id);
                 return res;
             }catch(err){
                 logging.error(NAMESPACE, 'Error call retrieveByID from insert animal type');
@@ -39,7 +39,7 @@ class AnimalRepository implements IAnimalRepository {
         }
     }
 
-    async update(animal:AnimalType,username:string,userid:string): Promise<AnimalType> {
+    async update(animal:AnimalType): Promise<AnimalType> {
         try {
             const connect = AppDataSource.getRepository(AnimalType)
             const type = await connect.findOne(
@@ -66,7 +66,9 @@ class AnimalRepository implements IAnimalRepository {
 
     async retrieveAll(): Promise<AnimalType[]>{
         try {
-            const result = await AppDataSource.getRepository(AnimalType).find();
+            const result = await AppDataSource.getRepository(AnimalType).find({
+                select: ["type_id","type_name"]
+            });
             logging.info(NAMESPACE, "Get all animal type successfully.");
             return result;
         } catch (err) {
@@ -75,7 +77,7 @@ class AnimalRepository implements IAnimalRepository {
         }
     }
 
-    async retrieveById(typeid: number): Promise<AnimalType>{
+    async retrieveByID(typeid: number): Promise<AnimalType>{
         try {
             const result = await AppDataSource.getRepository(AnimalType).findOne({
                 where: { type_id : typeid },

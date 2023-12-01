@@ -42,6 +42,7 @@ export default class AuthController {
                 user.is_active = 1;
                 user.update_date = new Date();
                 user.generateUserId();
+                
                 const signup = await authRepository.save(user);
                 
                 const role = await roleRepository.retrieveByName("User");
@@ -52,16 +53,13 @@ export default class AuthController {
                     });
                     return;
                 }
-                try {
-                    const userrole = new UserRole();
-                    userrole.user_user_id = signup.user_id;
-                    userrole.role_role_id = role.role_id!;
-                    userrole.update_date = new Date();
-                    const result = await userRoleRepository.save(userrole);
-                }catch (err) {
-                    logging.error(NAMESPACE, (err as Error).message, err);
-                    throw err;
-                }
+
+                const userrole = new UserRole();
+                userrole.user_user_id = signup.user_id;
+                userrole.role_role_id = role.role_id!;
+                userrole.update_date = new Date();
+                const result = await userRoleRepository.save(userrole);
+
                 logging.info(NAMESPACE, "User registered successfully!");
                 res.status(200).send({
                     message: "User registered successfully!"
@@ -73,7 +71,6 @@ export default class AuthController {
                 });
             }
         });
-
     }
 
     async signin(req: Request, res: Response) {

@@ -8,8 +8,8 @@ interface INutritionRepository {
     //save(animal:AnimalType,username:string,userid:string): Promise<AnimalType>;
     //pdate(animal:AnimalType,username:string,userid:string): Promise<AnimalType>;
     //retrieveAll(): Promise<AnimalType[]>;
-    //retrieveById(typeid: number): Promise<AnimalType | null>;
-    retrieveByName(name: string): Promise<Nutrition | undefined>;
+    retrieveByID(nutrientid: number): Promise<Nutrition | undefined>;
+    retrieveByName(nutrientname: string): Promise<Nutrition | undefined>;
     //deleteByID(typeid: number): Promise<number>;
     //deleteAll(): Promise<number>;
 }
@@ -68,31 +68,34 @@ class NutritionRepository implements INutritionRepository {
             throw err;
         }
     }
-
-    async retrieveById(typeid: number): Promise<AnimalType | null>{
+    */
+    async retrieveByID(nutrientid: number): Promise<Nutrition>{
         try {
-            const result = await AppDataSource.getRepository(AnimalType).findOne({
-                where: { type_id : typeid },
-                select: ["type_id","type_name"]
+            const result = await AppDataSource.getRepository(Nutrition).findOne({
+                where: { nutrition_id : nutrientid },
+                select: ["nutrition_id","nutrient_name"]
             });
+            if (!result) {
+                logging.error(NAMESPACE, "Not found animal type with id: " + nutrientid);
+                throw new Error("Not found animal type with id: " + nutrientid);
+            }
             logging.info(NAMESPACE, "Get animal type by id successfully.");
-            return result || null;
+            return result;
         } catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             throw err;
         }
     }
-    */
-
-    async retrieveByName(name: string): Promise<Nutrition>{
+    
+    async retrieveByName(nutrientname: string): Promise<Nutrition>{
         try {
             const result = await AppDataSource.getRepository(Nutrition).findOne({
-                where: { nutrient_name : name },
+                where: { nutrient_name : nutrientname },
                 select: ["nutrition_id","nutrient_name"]
             });
             if (!result) {
-                logging.error(NAMESPACE, "Not found nutrition with name: " + name);
-                throw new Error("Not found nutrition with name: " + name);
+                logging.error(NAMESPACE, "Not found nutrition with name: " + nutrientname);
+                throw new Error("Not found nutrition with name: " + nutrientname);
             }
             logging.info(NAMESPACE, "Get nutrition by name successfully.");
             return result;
