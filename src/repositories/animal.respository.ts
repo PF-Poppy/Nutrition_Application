@@ -116,14 +116,11 @@ class AnimalRepository implements IAnimalRepository {
     async deleteByID(typeid: number): Promise<number>{
         try {
             const connect = AppDataSource.getRepository(AnimalType)
-            const type = await connect.findOne(
-                {where: { type_id : typeid }}
-            );
-            if (!type) {
+            const result = await connect.delete({ type_id : typeid });
+            if (result.affected === 0) {
                 logging.error(NAMESPACE, "Not found animal type with id: " + typeid);
                 throw new Error("Not found animal type with id: " + typeid);
             }
-            const result = await connect.delete(typeid);
             logging.info(NAMESPACE, "Delete animal type by id successfully.");
             return result.affected!;
         } catch (err) {

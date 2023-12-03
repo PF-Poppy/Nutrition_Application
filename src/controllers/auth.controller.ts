@@ -58,8 +58,16 @@ export default class AuthController {
                 userrole.user_user_id = signup.user_id;
                 userrole.role_role_id = role.role_id!;
                 userrole.update_date = new Date();
-                const result = await userRoleRepository.save(userrole);
-
+                try {
+                    const result = await userRoleRepository.save(userrole);
+                }catch (err) {
+                    await userRepository.deleteByID(signup.user_id);
+                    res.status(500).send({
+                        message: err
+                    });
+                    return;
+                }
+                
                 logging.info(NAMESPACE, "User registered successfully!");
                 res.status(200).send({
                     message: "User registered successfully!"

@@ -7,6 +7,7 @@ const NAMESPACE = "User Repository";
 
 interface IUserRepository {
     retrieveByID(userid:string): Promise<User | undefined>;
+    deleteByID(userid:string): Promise<number>;
 }
 
 class UserRepository implements IUserRepository {
@@ -32,6 +33,19 @@ class UserRepository implements IUserRepository {
             });
             logging.info(NAMESPACE, "Get user by id successfully.");
             return result!;
+        } catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async deleteByID(userid:string) : Promise<number>{
+        try {
+            const result = await AppDataSource.getRepository(User).delete({
+                user_id : userid
+            });
+            logging.info(NAMESPACE, "Delete user by id successfully.");
+            return result.affected!;
         } catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             throw err;

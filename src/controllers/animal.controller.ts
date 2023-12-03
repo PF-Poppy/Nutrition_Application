@@ -80,25 +80,34 @@ export default class AnimalController {
                 chronicDisease.create_by = `${userid}_${username}`;
                 chronicDisease.update_by = `${userid}_${username}`;
                 chronicDisease.update_date = new Date();
-                const addnewhealthdetail = await healthdetailRepository.save(chronicDisease);
-
-                chronicDisease.healthnutrition = await Promise.all(diseaseData.NutrientLimitInfo.map(async (nutrientInfoData: any) => {
-                    const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
-                    if  (nutrient === null || nutrient === undefined) {
-                        throw new Error("Not found nutrient with name: " + nutrientInfoData.nutrientName);
-                    }
-                    const nutrientInfo = new Healthnutrition();
-                    nutrientInfo.healthdetail_health_id = addnewhealthdetail.health_id;
-                    nutrientInfo.nutrition_nutrition_id = nutrient!.nutrition_id;
-                    nutrientInfo.value_min = nutrientInfoData.min;
-                    nutrientInfo.value_max = nutrientInfoData.max;
-                    nutrientInfo.create_by = `${userid}_${username}`;
-                    nutrientInfo.update_by = `${userid}_${username}`;
-                    nutrientInfo.update_date = new Date();
-                    const addnewhealthnutrition = await healthnutritionRepository.save(nutrientInfo);
-                    return;
-                }));
-
+                try {
+                    const addnewhealthdetail = await healthdetailRepository.save(chronicDisease);
+                    chronicDisease.healthnutrition = await Promise.all(diseaseData.NutrientLimitInfo.map(async (nutrientInfoData: any) => {
+                        const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
+                        if  (nutrient === null || nutrient === undefined) {
+                            await healthdetailRepository.deleteByID(addnewhealthdetail.health_id);
+                            throw new Error("Not found nutrient with name: " + nutrientInfoData.nutrientName);
+                        }
+                        const nutrientInfo = new Healthnutrition();
+                        nutrientInfo.healthdetail_health_id = addnewhealthdetail.health_id;
+                        nutrientInfo.nutrition_nutrition_id = nutrient!.nutrition_id;
+                        nutrientInfo.value_min = nutrientInfoData.min;
+                        nutrientInfo.value_max = nutrientInfoData.max;
+                        nutrientInfo.create_by = `${userid}_${username}`;
+                        nutrientInfo.update_by = `${userid}_${username}`;
+                        nutrientInfo.update_date = new Date();
+                        try {
+                            const addnewhealthnutrition = await healthnutritionRepository.save(nutrientInfo);
+                            return;
+                        }catch(err){
+                            await healthdetailRepository.deleteByID(addnewhealthdetail.health_id);
+                            throw err;
+                        }
+                    }));
+                }catch(err){
+                    await animalRepository.deleteByID(addanimaltype.type_id);
+                    throw err;
+                }
             return;
             }));
             logging.info(NAMESPACE, "Create animal type successfully.");
@@ -112,5 +121,4 @@ export default class AnimalController {
             });
         }
     }
-
 }

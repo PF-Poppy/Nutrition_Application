@@ -8,6 +8,8 @@ interface IHealthnutritionRepository {
     save(healthnutrition:Healthnutrition): Promise<Healthnutrition>;
     retrieveById(healthnutritionid: number): Promise<Healthnutrition | undefined>;
     retrieveByHealthID(healthid: number): Promise<Healthnutrition[]>;
+    deleteByID(healthnutritionid: number): Promise<number>;
+    deleteAll(): Promise<number>;
 }
 
 class HealthnutritionRepository implements IHealthnutritionRepository {
@@ -54,6 +56,33 @@ class HealthnutritionRepository implements IHealthnutritionRepository {
             });
             logging.info(NAMESPACE, "Retrieve healthdetail by animal type id successfully.");
             return result;
+        } catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async deleteByID(healthnutritionid: number): Promise<number> {
+        try {
+            const connect = AppDataSource.getRepository(Healthnutrition);
+            const result = await connect.delete({ healthnutrition_id: healthnutritionid });
+            if (result.affected === 0) {
+                logging.error(NAMESPACE, "Not found healthnutrition with id: " + healthnutritionid);
+                throw new Error("Not found healthnutrition with id: " + healthnutritionid);
+            }
+            logging.info(NAMESPACE, `Delete healthnutrition by id: ${healthnutritionid} successfully.`);
+            return result.affected!;
+        } catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async deleteAll(): Promise<number>{
+        try {
+            const result = await AppDataSource.getRepository(Healthnutrition).delete({});
+            logging.info(NAMESPACE, "Delete all animal type successfully.");
+            return result.affected!;
         } catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             throw err;
