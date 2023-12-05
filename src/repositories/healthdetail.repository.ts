@@ -56,7 +56,8 @@ class HealthdetailRepository implements IHealthdetailRepository {
                 }
             }else{
                 try {
-                    const result = await connect.update({ health_id : healthdetail.health_id }, healthdetail);    
+                    const result = await connect.update({ health_id : healthdetailinfo.health_id }, healthdetail);    
+                    console.log(result.affected);
                     logging.info(NAMESPACE, "Update healthdetail successfully.");
                     try {
                         const res = await this.retrieveByID(healthdetailinfo.health_id);
