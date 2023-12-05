@@ -1,7 +1,7 @@
 import { Healthnutrition } from "../entity/healthnutrition.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
-import { tr } from "date-fns/locale";
+
 
 const NAMESPACE = "Healthnutrition Repository";
 
@@ -26,7 +26,7 @@ class HealthnutritionRepository implements IHealthnutritionRepository {
                 logging.error(NAMESPACE, "Duplicate healthnutrition.");
                 throw 'Duplicate healthnutrition.';
             } 
-            
+
             const result = await connect.save(healthnutrition);
             logging.info(NAMESPACE, "Save healthnutrition successfully.");
             try {
