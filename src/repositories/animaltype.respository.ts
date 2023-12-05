@@ -2,7 +2,7 @@ import { AnimalType } from "../entity/animaltype.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
 
-const NAMESPACE = "Animal Repository";
+const NAMESPACE = "AnimalType Repositor";
 
 interface IAnimalRepository {
     save(animal:AnimalType): Promise<AnimalType>;
@@ -42,20 +42,17 @@ class AnimalRepository implements IAnimalRepository {
     async update(animal:AnimalType): Promise<AnimalType> {
         try {
             const connect = AppDataSource.getRepository(AnimalType)
-            const type = await connect.findOne(
-                {where: { type_id : animal.type_id }}
-            );
-            if (!type) {
+            const result = await connect.update({ type_id : animal.type_id}, animal);
+            if (result.affected === 0) {
                 logging.error(NAMESPACE, "Not found animal type with id: " + animal.type_id);
                 throw new Error("Not found animal type with id: " + animal.type_id);
             }
-            type.type_name = animal.type_name;
+            logging.info(NAMESPACE, "Update animal type successfully.");
             try {
-                const result = await connect.save(type);
-                logging.info(NAMESPACE, "Update animal type successfully.");
-                return result;
-            } catch (err) {
-                logging.error(NAMESPACE, (err as Error).message, err);
+                const res = await this.retrieveByID(animal.type_id);
+                return res;
+            }catch(err){
+                logging.error(NAMESPACE, 'Error call retrieveByID from update animal type');
                 throw err;
             }
         } catch (err) {

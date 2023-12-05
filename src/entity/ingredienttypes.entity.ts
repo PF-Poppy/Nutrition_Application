@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany} from 'typeorm';
-import { Ingredients } from "./ingredients.entity";
+//import { Ingredients } from "./ingredients.entity";
 
 @Entity({ name: "ingredienttypes" })
 export class Ingredienttypes {
@@ -8,7 +8,7 @@ export class Ingredienttypes {
   ingredienttypes_id!: number
 
   @Column({type: "varchar", length: 255})
-  nutritiontype_name!: string
+  ingredienttypes_name!: string
 
   @CreateDateColumn()
   create_date?: Date;
@@ -22,6 +22,6 @@ export class Ingredienttypes {
   @Column({type: "varchar", length: 255, nullable: true})
   update_by?: string
 
-  @OneToMany(() => Ingredients, ingredients => ingredients.ingredienttypes_ingredienttypes_id,{ onDelete: 'CASCADE' ,cascade: true })
-  ingredients?: Ingredients[];
+  //@OneToMany(() => Ingredients, ingredients => ingredients.ingredienttypes_ingredienttypes_id,{ onDelete: 'CASCADE' ,cascade: true })
+  //ingredients?: Ingredients[];
 }

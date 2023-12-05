@@ -12,7 +12,6 @@ class AuthenRoutes {
     }
 
     initializeRoutes() {
-        this.router.get('/test', authJwt.validateToken); //TODO ลบ
         this.router.post('/register', this.controller.signup);
         this.router.post('/login', this.controller.signin);
     }

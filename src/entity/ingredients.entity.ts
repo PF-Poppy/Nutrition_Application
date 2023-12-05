@@ -2,8 +2,8 @@ import "reflect-metadata";
 import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn, BeforeInsert, Not, IsNull} from 'typeorm';
 import { AppDataSource } from "../db/data-source";
 import { Ingredientnutrition } from './ingredientnutrition.entity';
-import { Ingredienttypes } from './ingredienttypes.entity';
 import { Recipeingredients } from "./recipeingredients.entity";
+//import { Ingredienttypes } from './ingredienttypes.entity';
 
 @Entity({ name: "ingredients" })
 export class Ingredients {
@@ -13,8 +13,9 @@ export class Ingredients {
   @Column({type: "varchar", length: 255})
   ingredients_name!: string
 
-  @Column()
-  ingredienttypes_ingredienttypes_id!: number
+  //มีตารางแต่ตอนนี้ยังไม่ใช้
+  //@Column()
+  //ingredienttypes_ingredienttypes_id!: number
 
   @CreateDateColumn()
   create_date?: Date;
@@ -34,9 +35,9 @@ export class Ingredients {
   @OneToMany(() => Recipeingredients, recipeingredients => recipeingredients.ingredients_ingredient_id,{ onDelete: 'CASCADE' ,cascade: true })
   recipeingredients?: Recipeingredients[];
 
-  @ManyToOne(() => Ingredienttypes, ingredienttypes => ingredienttypes.ingredienttypes_id,{ onDelete: 'CASCADE' ,cascade: true })
-  @JoinColumn({ name: "ingredienttypes_ingredienttypes_id" })
-  ingredienttypes!: Ingredienttypes;
+  //@ManyToOne(() => Ingredienttypes, ingredienttypes => ingredienttypes.ingredienttypes_id,{ onDelete: 'CASCADE' ,cascade: true })
+  //@JoinColumn({ name: "ingredienttypes_ingredienttypes_id" })
+  //ingredienttypes!: Ingredienttypes;
 
   @BeforeInsert()
   async generateRecipeIngredientId() {
