@@ -12,9 +12,9 @@ export class Ingredientnutrition {
   nutrition_nutrition_id!: number
 
   @Column()
-  ingredients_ingredient_id!: number
+  ingredients_ingredient_id!: string
 
-  @Column({type: "double"})
+  @Column({type: "double",default: 0.0})
   nutrient_value! : number
 
   @CreateDateColumn()

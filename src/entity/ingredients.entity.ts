@@ -11,7 +11,7 @@ export class Ingredients {
   ingredient_id!: string
 
   @Column({type: "varchar", length: 255})
-  ingredients_name!: string
+  ingredient_name!: string
 
   //มีตารางแต่ตอนนี้ยังไม่ใช้
   //@Column()
