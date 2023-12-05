@@ -18,7 +18,15 @@ interface IHealthnutritionRepository {
 class HealthnutritionRepository implements IHealthnutritionRepository {
     async save(healthnutrition:Healthnutrition): Promise<Healthnutrition> {
         try {
-            const result = await AppDataSource.getRepository(Healthnutrition).save(healthnutrition);
+            const connect = AppDataSource.getRepository(Healthnutrition)
+            const info = await connect.find(
+                { where: { healthdetail_health_id: healthnutrition.healthdetail_health_id, nutrition_nutrition_id: healthnutrition.nutrition_nutrition_id } }
+            );
+            if (info.length > 0) {
+                logging.error(NAMESPACE, "Duplicate healthnutrition.");
+                throw 'Duplicate healthnutrition.';
+            } 
+            const result = await connect.save(healthnutrition);
             logging.info(NAMESPACE, "Save healthnutrition successfully.");
             try {
                 const res = await this.retrieveByID(result.healthnutrition_id);

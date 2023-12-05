@@ -17,14 +17,15 @@ interface IAnimalRepository {
 class AnimalRepository implements IAnimalRepository {
     async save(animal:AnimalType): Promise<AnimalType> {
         try {
-            const type = await AppDataSource.getRepository(AnimalType).find(
+            const connect = AppDataSource.getRepository(AnimalType)
+            const type = await connect.find(
                 { where: { type_name: animal.type_name } }
             );
             if (type.length > 0) {
                 logging.error(NAMESPACE, "Duplicate animal type name.");
                 throw 'Duplicate animal type name.';
             } 
-            const result = await AppDataSource.getRepository(AnimalType).save(animal);
+            const result = await connect.save(animal);
             logging.info(NAMESPACE, "Save animal type successfully.");
             try {
                 const res = await this.retrieveByID(result.type_id);

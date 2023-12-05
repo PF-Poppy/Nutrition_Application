@@ -17,7 +17,15 @@ interface IHealthdetailRepository {
 class HealthdetailRepository implements IHealthdetailRepository {
     async save(healthdetail:Healthdetail): Promise<Healthdetail> {
         try {
-            const result = await AppDataSource.getRepository(Healthdetail).save(healthdetail);
+            const connect = AppDataSource.getRepository(Healthdetail)
+            const healthinfo = await connect.find(
+                { where: { health_name: healthdetail.health_name, animaltype_type_id: healthdetail.animaltype_type_id } }
+            );
+            if (healthinfo.length > 0) {
+                logging.error(NAMESPACE, "Duplicate healthdetail.");
+                throw 'Duplicate healthdetail.';
+            } 
+            const result = await connect.save(healthdetail);
             logging.info(NAMESPACE, "Save healthdetail successfully.");
             try {
                 const res = await this.retrieveByID(result.health_id);
