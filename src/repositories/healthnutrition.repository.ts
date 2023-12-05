@@ -26,6 +26,7 @@ class HealthnutritionRepository implements IHealthnutritionRepository {
                 logging.error(NAMESPACE, "Duplicate healthnutrition.");
                 throw 'Duplicate healthnutrition.';
             } 
+            
             const result = await connect.save(healthnutrition);
             logging.info(NAMESPACE, "Save healthnutrition successfully.");
             try {

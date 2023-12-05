@@ -21,6 +21,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
                 logging.error(NAMESPACE, "Duplicate ingredientnutrition.");
                 throw 'Duplicate ingredientnutrition.';
             }
+            
             const result = await connect.save(ingredientnutrition);
             logging.info(NAMESPACE, "Save ingredientnutrition successfully.");
             try {

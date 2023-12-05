@@ -25,6 +25,7 @@ class HealthdetailRepository implements IHealthdetailRepository {
                 logging.error(NAMESPACE, "Duplicate healthdetail.");
                 throw 'Duplicate healthdetail.';
             } 
+            
             const result = await connect.save(healthdetail);
             logging.info(NAMESPACE, "Save healthdetail successfully.");
             try {

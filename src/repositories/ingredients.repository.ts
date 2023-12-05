@@ -22,6 +22,7 @@ class IngredientsRepository implements IIngredientsRepository {
                 logging.error(NAMESPACE, "Duplicate ingredients name.");
                 throw 'Duplicate ingredients name.';
             }
+            
             const result =  await connect.save(ingredient);
             logging.info(NAMESPACE, "Save ingredients successfully.");
             try {
@@ -47,6 +48,7 @@ class IngredientsRepository implements IIngredientsRepository {
                 logging.error(NAMESPACE, "Duplicate ingredients name.");
                 throw 'Duplicate ingredients name.';
             }
+
             const result = await connect.update({ ingredient_id : ingredient.ingredient_id}, ingredient);
             if (result.affected === 0) {
                 logging.error(NAMESPACE, "Not found ingredients with id: " + ingredient.ingredient_id);
