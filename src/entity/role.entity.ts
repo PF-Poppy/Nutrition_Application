@@ -16,6 +16,6 @@ export class Role {
   @UpdateDateColumn()
   update_date?: Date;
 
-  @OneToMany(() => UserRole, userRole => userRole.role_role_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @OneToMany(() => UserRole, userRole => userRole.role_role_id)
   userRole?: UserRole[];
 }

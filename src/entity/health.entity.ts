@@ -17,11 +17,11 @@ export class Health {
   @CreateDateColumn()
   create_date?: Date;
 
-  @ManyToOne(() => Pet, pet => pet.pet_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @ManyToOne(() => Pet, pet => pet.pet_id)
   @JoinColumn({ name: 'pet_pet_id' })
   pet!: Pet;
 
-  @ManyToOne(() => Healthdetail, healthdetail => healthdetail.health_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @ManyToOne(() => Healthdetail, healthdetail => healthdetail.health_id)
   @JoinColumn({ name: 'healthdetail_health_id' })
   healthdetail!: Healthdetail;
 }

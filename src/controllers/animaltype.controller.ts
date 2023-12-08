@@ -45,6 +45,7 @@ export default class AnimalController {
                     petChronicDisease: chronicDisease
                 };
             }));
+            logging.info(NAMESPACE, "Get all animal type successfully.");
             res.status(200).send(result);
         } catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
@@ -191,23 +192,31 @@ export default class AnimalController {
 
     async deleteAnimalType(req: Request, res: Response) {
         logging.info(NAMESPACE, 'Delete animal type');
+        if (req.params.petTypeInfoID === ":petTypeInfoID" || !req.params.petTypeInfoID) {
+            res.status(400).send({
+                message: "Pet type id can not be empty!"
+            });
+            return;
+        }
         const typeid:number = parseInt(req.params.petTypeInfoID);
+
         try {
             const animaltype = await animalRepository.retrieveByID(typeid);
-            const healthdetail = await healthdetailRepository.retrieveByAnimalTypeID(typeid);
             if (!animaltype) {
                 res.status(404).send({
                     message: `Not found animal type with id=${typeid}.`
                 });
                 return;
             }
+            const healthdetail = await healthdetailRepository.retrieveByAnimalTypeID(typeid);
             try {
-                await animalRepository.deleteByID(typeid);
-                await healthdetailRepository.deleteByAnimalTypeID(typeid);
                 const healthnutrition = await Promise.all(healthdetail.map(async (healthdetailData: any) => {
                     await healthnutritionRepository.deleteByHealthID(healthdetailData.health_id);
                     return;
                 }));
+                await healthdetailRepository.deleteByAnimalTypeID(typeid);
+                await animalRepository.deleteByID(typeid);
+                //TODO ต้องลบสัตว์เลี้ยงที่มีอยู่ในประเภทนี้ด้วย
             }catch(err){
                 logging.error(NAMESPACE, 'Error call deleteByID from delete animal type');
                 throw err;

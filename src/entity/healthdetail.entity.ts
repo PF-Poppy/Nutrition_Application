@@ -28,13 +28,13 @@ export class Healthdetail {
   @Column({type: "varchar", length: 255, nullable: true})
   update_by?: string
 
-  @OneToMany(() => Health, health => health.healthdetail_health_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @OneToMany(() => Health, health => health.healthdetail_health_id)
   health!: Health[];
 
-  @OneToMany(() => Healthnutrition, healthnutrition => healthnutrition.healthdetail_health_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @OneToMany(() => Healthnutrition, healthnutrition => healthnutrition.healthdetail_health_id)
   healthnutrition?: Healthnutrition[];
 
-  @ManyToOne(() => AnimalType, animaltype => animaltype.type_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @ManyToOne(() => AnimalType, animaltype => animaltype.type_id)
   @JoinColumn({ name: 'animaltype_type_id' })
   animaltype!: AnimalType;
 }

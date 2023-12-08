@@ -19,6 +19,6 @@ export class Notification {
   @DeleteDateColumn()
   expire_date?: Date
 
-  @OneToMany(() => Usernotification, usernotification => usernotification.notification_notification_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @OneToMany(() => Usernotification, usernotification => usernotification.notification_notification_id)
   usernotification?: Usernotification[];
 }

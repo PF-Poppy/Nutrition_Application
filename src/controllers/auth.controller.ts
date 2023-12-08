@@ -134,7 +134,7 @@ export default class AuthController {
                 });
             }catch (err) {
                 logging.error(NAMESPACE, (err as Error).message, err);
-                res.status(400).send({
+                res.status(403).send({
                     accessToken: null,
                     message: "Token can't be created"
                 });

@@ -6,8 +6,11 @@ const NAMESPACE = "Ingredientnutrition Repository";
 
 interface IIngredientnutritionRepository {
     save(ingredientnutrition:Ingredientnutrition): Promise<Ingredientnutrition>;
-    update(ingredientnutrition:Ingredientnutrition): Promise<Ingredientnutrition>;  
+    update(ingredientnutrition:Ingredientnutrition): Promise<Ingredientnutrition>; 
     retrieveByID(ingredientnutritionid: number): Promise<Ingredientnutrition | undefined>;
+    retrieveByIngredientID(ingredientid: string): Promise<Ingredientnutrition[]>;
+    deleteByIngredientID(ingredientid: string): Promise<number>
+    deleteAll(): Promise<number>
 }
 
 class IngredientnutritionRepository implements IIngredientnutritionRepository {
@@ -94,6 +97,48 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
             logging.info(NAMESPACE, "Get ingredientnutrition by id successfully.");
             return result;
         }catch(err){   
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async retrieveByIngredientID(ingredientid: string): Promise<Ingredientnutrition[]> {
+        try {
+            const result = await AppDataSource.getRepository(Ingredientnutrition).find({
+                where: { ingredients_ingredient_id : ingredientid },
+                select: ["ingredient_nutrition_id","nutrition_nutrition_id","ingredients_ingredient_id","nutrient_value"]
+            })
+            logging.info(NAMESPACE, "Get ingredientnutrition by ingredient id successfully.");
+            return result;
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async deleteByIngredientID(ingredientid: string): Promise<number> {
+        try {
+            const connect = AppDataSource.getRepository(Ingredientnutrition)
+            const result = await connect.delete({ ingredients_ingredient_id : ingredientid});
+            if (result.affected === 0){
+                logging.info(NAMESPACE, "Not found ingredientnutrition with ingredient id: " + ingredientid);
+                return 0;
+            }
+            logging.info(NAMESPACE, "Delete ingredientnutrition by ingredient id successfully.");
+            return result.affected!;
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+
+    async deleteAll(): Promise<number>{
+        try {
+            const result = await AppDataSource.getRepository(Ingredientnutrition).delete({});
+            logging.info(NAMESPACE, "Delete all ingredientnutrition successfully.");
+            return result.affected!;
+        } catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             throw err;
         }

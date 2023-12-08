@@ -48,11 +48,11 @@ export class Pet {
   @OneToMany(() => Health, health => health.pet_pet_id)
   health!: Health[];
 
-  @ManyToOne(() => AnimalType, animaltype => animaltype.type_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @ManyToOne(() => AnimalType, animaltype => animaltype.type_id)
   @JoinColumn({ name: "animaltype_type_id" })
   animaltype!: AnimalType;
 
-  @ManyToOne(() => User, user => user.user_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @ManyToOne(() => User, user => user.user_id)
   @JoinColumn({ name: "user_user_id" })
   user!: User;
 }

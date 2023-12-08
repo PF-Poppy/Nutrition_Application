@@ -48,8 +48,12 @@ class AnimalRepository implements IAnimalRepository {
                 { where: { type_name: animal.type_name } }
             );
             if (type.length > 0) {
-                logging.error(NAMESPACE, "Duplicate animal type name.");
-                throw 'Duplicate animal type name.';
+                for (let i = 0; i < type.length; i++) {
+                    if (type[i].type_id !== animal.type_id) {
+                        logging.error(NAMESPACE, "Duplicate animal type name.");
+                        throw 'Duplicate animal type name.';
+                    }
+                }
             } 
             const result = await connect.update({ type_id : animal.type_id}, animal);
             if (result.affected === 0) {

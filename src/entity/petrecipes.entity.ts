@@ -27,10 +27,10 @@ export class Petrecipes {
   @Column({type: "varchar", length: 255, nullable: true})
   update_by?: string
   
-  @OneToMany(() => Favorite, favorite => favorite.petrecipes_recipes_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @OneToMany(() => Favorite, favorite => favorite.petrecipes_recipes_id)
   favorites?: Favorite[];
 
-  @OneToMany(() => Recipeingredients, recipeingredients => recipeingredients.petrecipes_recipes_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @OneToMany(() => Recipeingredients, recipeingredients => recipeingredients.petrecipes_recipes_id)
   recipeingredients?: Recipeingredients[];
 
   @BeforeInsert()

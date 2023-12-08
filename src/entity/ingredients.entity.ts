@@ -29,18 +29,18 @@ export class Ingredients {
   @Column({type: "varchar", length: 255, nullable: true})
   update_by?: string
 
-  @OneToMany(() => Ingredientnutrition, ingredientnutrition => ingredientnutrition.ingredients_ingredient_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @OneToMany(() => Ingredientnutrition, ingredientnutrition => ingredientnutrition.ingredients_ingredient_id)
   ingredientnutrition?: Ingredientnutrition[];
 
-  @OneToMany(() => Recipeingredients, recipeingredients => recipeingredients.ingredients_ingredient_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @OneToMany(() => Recipeingredients, recipeingredients => recipeingredients.ingredients_ingredient_id)
   recipeingredients?: Recipeingredients[];
 
-  //@ManyToOne(() => Ingredienttypes, ingredienttypes => ingredienttypes.ingredienttypes_id,{ onDelete: 'CASCADE' ,cascade: true })
+  //@ManyToOne(() => Ingredienttypes, ingredienttypes => ingredienttypes.ingredienttypes_id)
   //@JoinColumn({ name: "ingredienttypes_ingredienttypes_id" })
   //ingredienttypes!: Ingredienttypes;
 
   @BeforeInsert()
-  async generateRecipeIngredientId() {
+  async generateIngredientId() {
     const lastEntity = await AppDataSource.getRepository(Ingredients).findOne({ 
       where: { ingredient_id: Not(IsNull()) },
       order: { ingredient_id : 'DESC' } 
@@ -49,7 +49,7 @@ export class Ingredients {
     let newId = 'INGRED0001';
     if (lastEntity) {
       const lastId = lastEntity.ingredient_id;
-      const lastNumber = parseInt(lastId.slice(4), 10);
+      const lastNumber = parseInt(lastId.slice(6), 10);
       const numberOfDigits = lastId.length - 'INGRED'.length;
       const nextNumber = lastNumber + 1;
       newId = `INGRED${nextNumber.toString().padStart(numberOfDigits, '0')}`;

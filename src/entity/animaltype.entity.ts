@@ -23,9 +23,9 @@ export class AnimalType {
   @Column({type: "varchar", length: 255, nullable: true})
   update_by?: string
 
-  @OneToMany(() => Pet, pet => pet.animaltype_type_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @OneToMany(() => Pet, pet => pet.animaltype_type_id)
   pets?: Pet[];
 
-  @OneToMany(() => Healthdetail, healthdetail => healthdetail.animaltype_type_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @OneToMany(() => Healthdetail, healthdetail => healthdetail.animaltype_type_id)
   healthdetail?: Healthdetail[];
 }

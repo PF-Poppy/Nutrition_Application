@@ -22,6 +22,6 @@ export class Ingredienttypes {
   @Column({type: "varchar", length: 255, nullable: true})
   update_by?: string
 
-  //@OneToMany(() => Ingredients, ingredients => ingredients.ingredienttypes_ingredienttypes_id,{ onDelete: 'CASCADE' ,cascade: true })
+  //@OneToMany(() => Ingredients, ingredients => ingredients.ingredienttypes_ingredienttypes_id)
   //ingredients?: Ingredients[];
 }

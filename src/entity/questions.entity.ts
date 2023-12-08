@@ -22,6 +22,6 @@ export class Questions {
   @Column({type: "varchar", length: 255, nullable: true})
   update_by?: string
 
-  @OneToMany(() => Choices, choices => choices.questions_question_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @OneToMany(() => Choices, choices => choices.questions_question_id)
   choices?: Choices[];
 }

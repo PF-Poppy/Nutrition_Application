@@ -35,16 +35,16 @@ export class User {
   @UpdateDateColumn()
   update_date?: Date;
 
-  @OneToMany(() => UserRole, userRole => userRole.user_user_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @OneToMany(() => UserRole, userRole => userRole.user_user_id)
   userRoles?: UserRole[];
 
-  @OneToMany(() => Favorite, favorite => favorite.user_user_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @OneToMany(() => Favorite, favorite => favorite.user_user_id)
   favorites?: Favorite[];
 
-  @OneToMany(() => Pet, pet => pet.user_user_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @OneToMany(() => Pet, pet => pet.user_user_id)
   pets?: Pet[];
 
-  @OneToMany(() => Usernotification, usernotification => usernotification.user_user_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @OneToMany(() => Usernotification, usernotification => usernotification.user_user_id)
   usernotifications?: Usernotification[];
 
   @BeforeInsert()

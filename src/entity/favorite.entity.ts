@@ -20,11 +20,11 @@ export class Favorite {
   @UpdateDateColumn()
   update_date?: Date;
 
-  @ManyToOne(() => User, user => user.user_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @ManyToOne(() => User, user => user.user_id)
   @JoinColumn({ name: 'user_user_id' })
   user!: User;
 
-  @ManyToOne(() => Petrecipes, petrecipes => petrecipes.recipes_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @ManyToOne(() => Petrecipes, petrecipes => petrecipes.recipes_id)
   @JoinColumn({ name: 'petrecipes_recipes_id' })
   petrecipes!: Petrecipes;
 }

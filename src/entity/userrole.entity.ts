@@ -20,11 +20,11 @@ export class UserRole {
   @UpdateDateColumn()
   update_date?: Date;
 
-  @ManyToOne(() => User, user => user.user_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @ManyToOne(() => User, user => user.user_id)
   @JoinColumn({ name: 'user_user_id' })
   user?: User;
 
-  @ManyToOne(() => Role, role => role.role_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @ManyToOne(() => Role, role => role.role_id)
   @JoinColumn({ name: 'role_role_id' })
   role?: Role;
 }

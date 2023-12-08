@@ -7,8 +7,10 @@ const NAMESPACE = "Ingredients Repository";
 interface IIngredientsRepository {
     save(ingredient:Ingredients): Promise<Ingredients>;
     update(ingredient:Ingredients): Promise<Ingredients>;
+    retrieveAll(): Promise<Ingredients[]>;
     retrieveByID(ingredientid: string): Promise<Ingredients | undefined>;
     deleteByID(ingredientid: string): Promise<number>;
+    deleteAll(): Promise<number>
 }
 
 class IngredientsRepository implements IIngredientsRepository {
@@ -44,9 +46,13 @@ class IngredientsRepository implements IIngredientsRepository {
             const info = await connect.find(
                 { where: { ingredient_name: ingredient.ingredient_name } }
             );
-            if (info.length > 0 ){
-                logging.error(NAMESPACE, "Duplicate ingredients name.");
-                throw 'Duplicate ingredients name.';
+            if (info.length > 0){
+                for (let i = 0; i < info.length; i++) {
+                    if (info[i].ingredient_id !== ingredient.ingredient_id) {
+                        logging.error(NAMESPACE, "Duplicate ingredients name.");
+                        throw 'Duplicate ingredients name.';
+                    }
+                }
             }
 
             const result = await connect.update({ ingredient_id : ingredient.ingredient_id}, ingredient);
@@ -62,6 +68,19 @@ class IngredientsRepository implements IIngredientsRepository {
                 logging.error(NAMESPACE, 'Error call retrieveByID from update ingredients');
                 throw err;
             }
+        }catch(err){
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async retrieveAll(): Promise<Ingredients[]>{
+        try {
+            const result = await AppDataSource.getRepository(Ingredients).find({
+                select: ["ingredient_id","ingredient_name"]
+            });
+            logging.info(NAMESPACE, "Get all ingredients successfully.");
+            return result;
         }catch(err){
             logging.error(NAMESPACE, (err as Error).message, err);
             throw err;
@@ -97,6 +116,17 @@ class IngredientsRepository implements IIngredientsRepository {
             logging.error(NAMESPACE, "Delete ingredients by id successfully.");
             return result.affected!;
         }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async deleteAll(): Promise<number>{
+        try {
+            const result = await AppDataSource.getRepository(Ingredients).delete({});
+            logging.info(NAMESPACE, "Delete all ingredients successfully.");
+            return result.affected!;
+        } catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             throw err;
         }

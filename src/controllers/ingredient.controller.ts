@@ -1,4 +1,4 @@
-//TODO get delete
+//TODO delete
 import { Request, Response } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import { Ingredients } from '../entity/ingredients.entity';
@@ -27,6 +27,7 @@ export default class IngredientController {
             ingredient.create_by = `${userid}_${username}`;
             ingredient.update_date = new Date();
             ingredient.update_by = `${userid}_${username}`;
+            ingredient.generateIngredientId();
             const addingredient = await ingredientsRepository.save(ingredient);
             
             ingredient.ingredientnutrition = await Promise.all(nutrient.map(async (nutrientInfoData: any) => {
@@ -114,5 +115,78 @@ export default class IngredientController {
                 message: 'Error while updating ingredientnutrition'
             });
         }
+    }
+
+    async getAllIngredient(req: Request, res: Response){
+        logging.info(NAMESPACE, 'Get all ingredientnutrition');
+        try {
+            const ingredient = await ingredientsRepository.retrieveAll();
+
+            const result = await Promise.all(ingredient.map(async (ingredientInfo: any) => {
+                const ingredientnutrition = await ingredientnutritionRepository.retrieveByIngredientID(ingredientInfo.ingredient_id);
+
+                const nutrientlimitinfo = await Promise.all(ingredientnutrition.map(async (ingredientnutritionInfo: any) => {
+                    const nutrient = await nutritionRepository.retrieveByID(ingredientnutritionInfo.nutrition_nutrition_id);
+                    return {
+                        nutrientName: nutrient!.nutrient_name,
+                        amount: ingredientnutritionInfo.nutrient_value
+                    }
+                }));
+                return {
+                    ingredientID: ingredientInfo.ingredient_id,
+                    ingredientName: ingredientInfo.ingredient_name,
+                    nutrient: nutrientlimitinfo
+                };
+            }));
+            logging.info(NAMESPACE, 'Get all ingredientnutrition successfully');
+            res.status(200).send(result);
+        }catch(err){
+            logging.error(NAMESPACE, (err as Error).message, err);
+            return res.status(500).send({
+                message: 'Error while getting all ingredientnutrition'
+            });
+        }
+    }
+
+    async deleleIngredient(req: Request, res: Response) {
+        logging.info(NAMESPACE, 'Delete ingredientnutrition');
+        console.log(req.params.ingredientID)
+        if (req.params.ingredientID == ":ingredientID" || !req.params.ingredientID) {
+            res.status(400).send({
+                message: 'Ingredient ID can not be empty!'
+            });
+            return;
+        }
+        const ingredientid: string = req.params.ingredientID;
+
+        try {
+            const ingredient = await ingredientsRepository.retrieveByID(ingredientid);
+            if (!ingredient) {
+                res.status(404).send( {
+                    message: `Not found ingredient with id=${ingredient}.`
+                });
+                return;
+            }
+
+            try {
+                await ingredientnutritionRepository.deleteByIngredientID(ingredientid);
+                await ingredientsRepository.deleteByID(ingredientid);
+            }catch (err) {
+                logging.error(NAMESPACE, (err as Error).message, err);
+                return res.status(500).send({
+                    message: 'Error while deleting ingredientnutrition'
+                });
+            }
+            logging.info(NAMESPACE, 'Delete ingredientnutrition successfully');
+            return res.status(200).send({
+                message: 'Delete ingredientnutrition successfully'
+            });
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            return res.status(500).send({
+                message: 'Error while deleting ingredientnutrition'
+            });
+        }
+        
     }
 }

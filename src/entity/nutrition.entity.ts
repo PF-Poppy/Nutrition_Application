@@ -23,9 +23,9 @@ export class Nutrition {
   @Column({type: "varchar", length: 255, nullable: true})
   update_by?: string
 
-  @OneToMany(() => Healthnutrition, healthnutrition => healthnutrition.nutrition_nutrition_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @OneToMany(() => Healthnutrition, healthnutrition => healthnutrition.nutrition_nutrition_id)
   healthnutrition!: Healthnutrition[];
 
-  @OneToMany(() => Ingredientnutrition, ingredientnutrition => ingredientnutrition.nutrition_nutrition_id,{ onDelete: 'CASCADE' ,cascade: true })
+  @OneToMany(() => Ingredientnutrition, ingredientnutrition => ingredientnutrition.nutrition_nutrition_id)
   ingredientnutrition!: Ingredientnutrition[];
 }
