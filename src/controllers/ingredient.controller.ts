@@ -1,4 +1,3 @@
-//TODO delete
 import { Request, Response } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import { Ingredients } from '../entity/ingredients.entity';
