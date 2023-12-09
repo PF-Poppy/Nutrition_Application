@@ -22,11 +22,10 @@ export default class AnimalController {
 
                 const chronicDisease = await Promise.all(healthdetail.map(async (healthdetailData: any) => {
                     const healthnutrition = await healthnutritionRepository.retrieveByHealthID(healthdetailData.health_id);
-                    
+
                     const nutrientlimitinfo = await Promise.all(healthnutrition.map(async (healthnutritionData: any) => {
-                        const nutrition = await nutritionRepository.retrieveByID(healthnutritionData.nutrition_nutrition_id);
                         return {
-                            nutrientName: nutrition!.nutrient_name,
+                            nutrientName: healthnutritionData.nutrient_name,
                             min: healthnutritionData.value_min,
                             max: healthnutritionData.value_max
                         };
@@ -216,7 +215,7 @@ export default class AnimalController {
                 }));
                 await healthdetailRepository.deleteByAnimalTypeID(typeid);
                 await animalRepository.deleteByID(typeid);
-                //TODO ต้องลบสัตว์เลี้ยงที่มีอยู่ในประเภทนี้ด้วย
+                //TODO ต้องลบสัตว์เลี้ยงที่มีอยู่ในประเภทนี้ด้วย ลบเมนูอาหารด้วย
             }catch(err){
                 logging.error(NAMESPACE, 'Error call deleteByID from delete animal type');
                 throw err;

@@ -13,8 +13,14 @@ export class Role {
   @CreateDateColumn()
   create_date?: Date;
 
+  @Column({type: "varchar", length: 255, nullable: true})
+  create_by?: string
+
   @UpdateDateColumn()
   update_date?: Date;
+
+  @Column({type: "varchar", length: 255, nullable: true})
+  update_by?: string
 
   @OneToMany(() => UserRole, userRole => userRole.role_role_id)
   userRole?: UserRole[];

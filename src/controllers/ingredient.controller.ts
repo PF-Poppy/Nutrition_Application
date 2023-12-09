@@ -125,9 +125,8 @@ export default class IngredientController {
                 const ingredientnutrition = await ingredientnutritionRepository.retrieveByIngredientID(ingredientInfo.ingredient_id);
 
                 const nutrientlimitinfo = await Promise.all(ingredientnutrition.map(async (ingredientnutritionInfo: any) => {
-                    const nutrient = await nutritionRepository.retrieveByID(ingredientnutritionInfo.nutrition_nutrition_id);
                     return {
-                        nutrientName: nutrient!.nutrient_name,
+                        nutrientName: ingredientnutritionInfo.nutrient_name,
                         amount: ingredientnutritionInfo.nutrient_value
                     }
                 }));

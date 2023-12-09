@@ -1,4 +1,3 @@
-//TODO แก้
 import { UserRole } from "../entity/userrole.entity";
 import { Role } from "../entity/role.entity";
 import { AppDataSource } from "../db/data-source";
@@ -9,6 +8,7 @@ const NAMESPACE = "UserRole Repository";
 interface IUserRoleRepository {
     retrieveByID(userid:string): Promise<any[]>;
     save(userrole:UserRole): Promise<UserRole[]>
+    deleteByRoleID(roleid:number): Promise<number>;
 }
 
 class UserRoleRepository implements IUserRoleRepository {
@@ -42,6 +42,22 @@ class UserRoleRepository implements IUserRoleRepository {
                 throw err;
             }
         } catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async deleteByRoleID(roleid:number): Promise<number> {
+        try {
+            const connect = AppDataSource.getRepository(UserRole);
+            const result = await connect.delete({role_role_id: roleid});
+            if (result.affected === 0) {
+                logging.info(NAMESPACE, "Not found userrole with role id: " + roleid);
+                return 0;
+            }
+            logging.info(NAMESPACE, "Delete userrole by role id successfully.");
+            return result.affected!;
+        }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             throw err;
         }

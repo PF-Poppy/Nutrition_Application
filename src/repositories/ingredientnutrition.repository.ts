@@ -1,4 +1,5 @@
 import { Ingredientnutrition } from "../entity/ingredientnutrition.entity";
+import { Nutrition } from "../entity/nutrition.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
 
@@ -8,8 +9,9 @@ interface IIngredientnutritionRepository {
     save(ingredientnutrition:Ingredientnutrition): Promise<Ingredientnutrition>;
     update(ingredientnutrition:Ingredientnutrition): Promise<Ingredientnutrition>; 
     retrieveByID(ingredientnutritionid: number): Promise<Ingredientnutrition | undefined>;
-    retrieveByIngredientID(ingredientid: string): Promise<Ingredientnutrition[]>;
+    retrieveByIngredientID(ingredientid: string): Promise<any[]>;
     deleteByIngredientID(ingredientid: string): Promise<number>
+    deleteByNutritionID(nutritionid: number): Promise<number>
     deleteAll(): Promise<number>
 }
 
@@ -102,15 +104,23 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
         }
     }
 
-    async retrieveByIngredientID(ingredientid: string): Promise<Ingredientnutrition[]> {
+    async retrieveByIngredientID(ingredientid: string): Promise<any[]> {
         try {
-            const result = await AppDataSource.getRepository(Ingredientnutrition).find({
-                where: { ingredients_ingredient_id : ingredientid },
-                select: ["ingredient_nutrition_id","nutrition_nutrition_id","ingredients_ingredient_id","nutrient_value"]
-            })
+            const result = await AppDataSource.getRepository(Ingredientnutrition)
+            .createQueryBuilder("ingredientnutrition")
+            .innerJoinAndSelect(Nutrition, "nutrition", "nutrition.nutrition_id = ingredientnutrition.nutrition_nutrition_id")
+            .select([
+                "ingredientnutrition.ingredient_nutrition_id AS ingredient_nutrition_id",
+                "ingredientnutrition.nutrition_nutrition_id AS nutrition_id",
+                "ingredientnutrition.ingredients_ingredient_id AS ingredient_id",
+                "nutrition.nutrient_name AS nutrient_name",
+                "ingredientnutrition.nutrient_value AS nutrient_value"
+            ])
+            .where("ingredientnutrition.ingredients_ingredient_id = :ingredientid", { ingredientid: ingredientid })
+            .getRawMany();
             logging.info(NAMESPACE, "Get ingredientnutrition by ingredient id successfully.");
             return result;
-        }catch (err) {
+        }catch(err){
             logging.error(NAMESPACE, (err as Error).message, err);
             throw err;
         }
@@ -132,6 +142,21 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
         }
     }
 
+    async deleteByNutritionID(nutritionid: number): Promise<number> {
+        try {
+            const connect = AppDataSource.getRepository(Ingredientnutrition);
+            const result = await connect.delete({ nutrition_nutrition_id: nutritionid });
+            if (result.affected === 0) {
+                logging.info(NAMESPACE, `No ingredientnutrition found with nutritionid: ${nutritionid}. Nothing to delete.`);
+                return 0;
+            }
+            logging.info(NAMESPACE, `Delete ingredientnutrition by nutritionid: ${nutritionid} successfully.`);
+            return result.affected!;
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
 
     async deleteAll(): Promise<number>{
         try {

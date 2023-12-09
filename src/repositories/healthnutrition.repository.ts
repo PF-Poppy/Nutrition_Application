@@ -1,4 +1,5 @@
 import { Healthnutrition } from "../entity/healthnutrition.entity";
+import { Nutrition } from "../entity/nutrition.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
 
@@ -9,8 +10,9 @@ interface IHealthnutritionRepository {
     save(healthnutrition:Healthnutrition): Promise<Healthnutrition>;
     update(healthnutrition:Healthnutrition): Promise<Healthnutrition>;
     retrieveByID(healthnutritionid: number): Promise<Healthnutrition | undefined>;
-    retrieveByHealthID(healthid: number): Promise<Healthnutrition[]>;
+    retrieveByHealthID(healthid: number): Promise<any[]>;
     deleteByID(healthnutritionid: number): Promise<number>;
+    deleteByNutritionID(nutritionid: number): Promise<number>;
     deleteByHealthID(healthid: number): Promise<number>
     deleteAll(): Promise<number>;
 }
@@ -104,13 +106,22 @@ class HealthnutritionRepository implements IHealthnutritionRepository {
         }
     }
 
-    async retrieveByHealthID(healthid: number): Promise<Healthnutrition[]> {
+    async retrieveByHealthID(healthid: number): Promise<any[]> {
         try {
-            const result = await AppDataSource.getRepository(Healthnutrition).find({
-                where: { healthdetail_health_id : healthid }, 
-                select: ["healthnutrition_id","healthdetail_health_id","nutrition_nutrition_id","value_max","value_min"]
-            });
-            logging.info(NAMESPACE, "Retrieve healthdetail by animal type id successfully.");
+            const result = await AppDataSource.getRepository(Healthnutrition)
+            .createQueryBuilder("healthnutrition")
+            .innerJoinAndSelect(Nutrition, "nutrition", "nutrition.nutrition_id = healthnutrition.nutrition_nutrition_id")
+            .select([
+                "healthnutrition.healthnutrition_id AS healthnutrition_id",
+                "healthnutrition.healthdetail_health_id AS healthdetail_health_id",
+                "nutrition.nutrition_id AS nutrition_id",
+                "nutrition.nutrient_name AS nutrient_name",
+                "healthnutrition.value_max AS value_max",
+                "healthnutrition.value_min AS value_min"
+            ])
+            .where("healthnutrition.healthdetail_health_id = :healthid", { healthid: healthid })
+            .getRawMany();
+            logging.info(NAMESPACE, "Retrieve healthnutrition by healthid successfully.");
             return result;
         } catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
@@ -145,6 +156,22 @@ class HealthnutritionRepository implements IHealthnutritionRepository {
             logging.info(NAMESPACE, `Delete healthnutrition by healthid: ${healthid} successfully.`);
             return result.affected!;
         } catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async deleteByNutritionID(nutritionid: number): Promise<number> {
+        try {
+            const connect = AppDataSource.getRepository(Healthnutrition);
+            const result = await connect.delete({ nutrition_nutrition_id: nutritionid });
+            if (result.affected === 0) {
+                logging.info(NAMESPACE, `No healthnutrition found with nutritionid: ${nutritionid}. Nothing to delete.`);
+                return 0;
+            }
+            logging.info(NAMESPACE, `Delete healthnutrition by nutritionid: ${nutritionid} successfully.`);
+            return result.affected!;
+        }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             throw err;
         }

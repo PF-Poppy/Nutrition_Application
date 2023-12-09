@@ -1,13 +1,17 @@
 import "reflect-metadata";
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, BeforeInsert, Not, IsNull} from 'typeorm';
+import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, BeforeInsert, Not, IsNull, ManyToOne, JoinColumn} from 'typeorm';
 import { AppDataSource } from "../db/data-source";
 import { Favorite } from "./favorite.entity";
+import { AnimalType } from "./animaltype.entity";
 import { Recipeingredients } from "./recipeingredients.entity";
 
 @Entity({ name: "petrecipes" })
 export class Petrecipes {
   @PrimaryColumn()
   recipes_id!: string
+
+  @Column()
+  animaltype_type_id!: number
 
   @Column({type: "varchar", length: 255})
   recipes_name!: string
@@ -33,6 +37,10 @@ export class Petrecipes {
   @OneToMany(() => Recipeingredients, recipeingredients => recipeingredients.petrecipes_recipes_id)
   recipeingredients?: Recipeingredients[];
 
+  @ManyToOne(() => AnimalType, animaltype => animaltype.type_id)
+  @JoinColumn({ name: 'animaltype_type_id' })
+  animaltype!: AnimalType;
+
   @BeforeInsert()
   async generateRecipeIngredientId() {
     const lastEntity = await AppDataSource.getRepository(Petrecipes).findOne({
@@ -43,7 +51,7 @@ export class Petrecipes {
     let newId = 'RECIEPES0001';
     if (lastEntity) {
       const lastId = lastEntity.recipes_id;
-      const lastNumber = parseInt(lastId.slice(4), 10);
+      const lastNumber = parseInt(lastId.slice(8), 10);
       const numberOfDigits = lastId.length - 'RECIEPES'.length;
       const nextNumber = lastNumber + 1;
       newId = `RECIEPES${nextNumber.toString().padStart(numberOfDigits, '0')}`;
