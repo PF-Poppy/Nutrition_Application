@@ -103,9 +103,9 @@ export default class NutritionController {
         const nutritionID:number = parseInt(req.params.nutritionID);
 
         try {
-            await nutritionRepository.deleteByID(nutritionID);
             await healthnutritionRepository.deleteByNutritionID(nutritionID);
             await ingredientnutritionRepository.deleteByNutritionID(nutritionID);
+            await nutritionRepository.deleteByID(nutritionID);
             logging.info(NAMESPACE, "Delete nutrition successfully.");
             res.status(200).send({
                 message: "Delete nutrition successfully.",

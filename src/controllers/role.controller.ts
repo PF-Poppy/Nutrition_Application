@@ -13,7 +13,7 @@ export default class RoleController {
             const role = await roleRespository.retrieveAll();
             const result = await Promise.all(role.map(async (roleData: any) => {
                 return {
-                    roleTD: roleData.role_id,
+                    roleID: roleData.role_id,
                     roleName: roleData.role_name
                 }
             }));
@@ -98,8 +98,8 @@ export default class RoleController {
         }
         const roleID:number = parseInt(req.params.roleID);
         try {
-            await roleRespository.deleteByID(roleID);
             await userroleRepository.deleteByRoleID(roleID);
+            await roleRespository.deleteByID(roleID);
             logging.info(NAMESPACE, "Delete role successfully.");
             res.status(200).send({
                 message: "Delete role successfully."
