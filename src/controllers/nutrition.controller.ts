@@ -15,7 +15,7 @@ export default class NutritionController {
             const nutrient = await nutritionRepository.retrieveAll();
             const result = await Promise.all(nutrient.map(async (nutrientData: any) => {
                 return {
-                    nutritionID: nutrientData.nutrition_id,
+                    nutritionID: nutrientData.nutrition_id.toString(),
                     nutrientName: nutrientData.nutrient_name
                 };
             }));

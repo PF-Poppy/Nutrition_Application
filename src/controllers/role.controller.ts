@@ -13,7 +13,7 @@ export default class RoleController {
             const role = await roleRespository.retrieveAll();
             const result = await Promise.all(role.map(async (roleData: any) => {
                 return {
-                    roleID: roleData.role_id,
+                    roleID: roleData.role_id.toString(),
                     roleName: roleData.role_name
                 }
             }));

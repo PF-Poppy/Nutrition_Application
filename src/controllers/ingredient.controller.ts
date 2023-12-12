@@ -131,7 +131,7 @@ export default class IngredientController {
                     }
                 }));
                 return {
-                    ingredientID: ingredientInfo.ingredient_id,
+                    ingredientID: (ingredientInfo.ingredient_id).toString(),
                     ingredientName: ingredientInfo.ingredient_name,
                     nutrient: nutrientlimitinfo
                 };
@@ -168,6 +168,7 @@ export default class IngredientController {
 
             try {
                 await ingredientnutritionRepository.deleteByIngredientID(ingredientid);
+                //TODO ลบrecipeingredients ด้วย
                 await ingredientsRepository.deleteByID(ingredientid);
             }catch (err) {
                 logging.error(NAMESPACE, (err as Error).message, err);

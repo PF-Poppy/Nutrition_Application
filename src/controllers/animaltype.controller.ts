@@ -32,14 +32,14 @@ export default class AnimalController {
                     }));
                     
                     return {
-                        petChronicDiseaseID: healthdetailData.health_id,
+                        petChronicDiseaseID: (healthdetailData.health_id).toString(),
                         petChronicDiseaseName: healthdetailData.health_name,
                         NutrientLimitInfo: nutrientlimitinfo
                     };
                 }));
                 
                 return {
-                    petTypeID: animaltypeData.type_id,
+                    petTypeID: (animaltypeData.type_id).toString(),
                     petTypeName: animaltypeData.type_name,
                     petChronicDisease: chronicDisease
                 };
@@ -200,6 +200,7 @@ export default class AnimalController {
         const typeid:number = parseInt(req.params.petTypeInfoID);
 
         try {
+            
             const animaltype = await animalRepository.retrieveByID(typeid);
             if (!animaltype) {
                 res.status(404).send({
@@ -211,11 +212,12 @@ export default class AnimalController {
             try {
                 const healthnutrition = await Promise.all(healthdetail.map(async (healthdetailData: any) => {
                     await healthnutritionRepository.deleteByHealthID(healthdetailData.health_id);
+                    //TODO กรณีที่มีการลบโรคของงสัตว์เลี้ยงต้องลบตาราง health ด้วย ที่เชื่อมสัตว์เลี้ยงกับโรค
                     return;
                 }));
                 await healthdetailRepository.deleteByAnimalTypeID(typeid);
-                await animalRepository.deleteByID(typeid);
                 //TODO ต้องลบสัตว์เลี้ยงที่มีอยู่ในประเภทนี้ด้วย ลบเมนูอาหารด้วย
+                await animalRepository.deleteByID(typeid);
             }catch(err){
                 logging.error(NAMESPACE, 'Error call deleteByID from delete animal type');
                 throw err;
