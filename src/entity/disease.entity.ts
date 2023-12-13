@@ -1,10 +1,10 @@
 import "reflect-metadata";
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, UpdateDateColumn} from 'typeorm';
 import { Pet } from "./pet.entity";
-import { Healthdetail } from "./healthdetail.entity";
+import { Diseasedetail } from "./diseasedetail.entity";
 
-@Entity({ name: "health" })
-export class Health {
+@Entity({ name: "disease" })
+export class Disease {
   @PrimaryGeneratedColumn()
   id!: number
 
@@ -12,7 +12,7 @@ export class Health {
   pet_pet_id!: number
 
   @Column()
-  healthdetail_health_id!: number
+  diseasedetail_disease_id!: number
 
   @CreateDateColumn()
   create_date?: Date;
@@ -24,7 +24,7 @@ export class Health {
   @JoinColumn({ name: 'pet_pet_id' })
   pet!: Pet;
 
-  @ManyToOne(() => Healthdetail, healthdetail => healthdetail.health_id)
-  @JoinColumn({ name: 'healthdetail_health_id' })
-  healthdetail!: Healthdetail;
+  @ManyToOne(() => Diseasedetail, diseasedetail => diseasedetail.disease_id)
+  @JoinColumn({ name: 'diseasedetail_disease_id' })
+  diseasedetail!: Diseasedetail;
 }

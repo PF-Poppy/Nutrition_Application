@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn} from 'typeorm';
-import { Health } from "./health.entity";
+import { Disease } from "./disease.entity";
 import { AnimalType } from "./animaltype.entity";
 import { User } from "./user.entity";
 
@@ -45,8 +45,8 @@ export class Pet {
   @UpdateDateColumn()
   update_date?: Date;
 
-  @OneToMany(() => Health, health => health.pet_pet_id)
-  health!: Health[];
+  @OneToMany(() => Disease, disease => disease.pet_pet_id)
+  disease!: Disease[];
 
   @ManyToOne(() => AnimalType, animaltype => animaltype.type_id)
   @JoinColumn({ name: "animaltype_type_id" })

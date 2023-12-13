@@ -1,15 +1,15 @@
 import "reflect-metadata";
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn} from 'typeorm';
-import { Healthdetail } from "./healthdetail.entity";
+import { Diseasedetail } from "./diseasedetail.entity";
 import { Nutrition } from "./nutrition.entity";
 
-@Entity({ name: "healthnutrition" })
-export class Healthnutrition {
+@Entity({ name: "diseasenutrition" })
+export class Diseasenutrition {
   @PrimaryGeneratedColumn()
-  healthnutrition_id!: number
+  diseasenutrition_id!: number
 
   @Column()
-  healthdetail_health_id!: number
+  diseasedetail_disease_id!: number
 
   @Column()
   nutrition_nutrition_id!: number
@@ -32,9 +32,9 @@ export class Healthnutrition {
   @Column({type: "varchar", length: 255, nullable: true})
   update_by?: string
 
-  @ManyToOne(() => Healthdetail, healthdetail => healthdetail.health_id)
-  @JoinColumn({ name: 'healthdetail_health_id' })
-  healthdetail!: Healthdetail;
+  @ManyToOne(() => Diseasedetail, diseasedetail => diseasedetail.disease_id)
+  @JoinColumn({ name: 'diseasedetail_disease_id' })
+  diseasedetail!: Diseasedetail;
 
   @ManyToOne(() => Nutrition, nutrition => nutrition.nutrition_id)
   @JoinColumn({ name: 'nutrition_nutrition_id' })

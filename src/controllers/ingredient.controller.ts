@@ -131,7 +131,7 @@ export default class IngredientController {
                     }
                 }));
                 return {
-                    ingredientID: (ingredientInfo.ingredient_id).toString(),
+                    ingredientID: ingredientInfo.ingredient_id,
                     ingredientName: ingredientInfo.ingredient_name,
                     nutrient: nutrientlimitinfo
                 };

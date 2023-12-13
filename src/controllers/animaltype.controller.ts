@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
 import { JwtPayload } from 'jsonwebtoken';
 import { AnimalType } from "../entity/animaltype.entity";
-import { Healthdetail } from "../entity/healthdetail.entity";
-import { Healthnutrition } from "../entity/healthnutrition.entity";
+import { Diseasedetail } from "../entity/diseasedetail.entity";
+import { Diseasenutrition } from "../entity/diseasenutrition.entity";
 import nutritionRepository from "../repositories/nutrition.repository";
 import animalRepository from "../repositories/animaltype.respository";
-import healthdetailRepository from "../repositories/healthdetail.repository";
-import healthnutritionRepository from "../repositories/healthnutrition.repository";
+import diseasedetailRepository from "../repositories/diseasedetail.repository";
+import diseasenutritionRepository from "../repositories/diseasenutrition.repository";
 import logging from "../config/logging";
 
 const NAMESPACE = "AnimalType Controller";
@@ -18,22 +18,22 @@ export default class AnimalController {
             const animaltype = await animalRepository.retrieveAll();
 
             const result = await Promise.all(animaltype.map(async (animaltypeData: any) => {
-                const healthdetail = await healthdetailRepository.retrieveByAnimalTypeID(animaltypeData.type_id);
+                const diseasedetail = await diseasedetailRepository.retrieveByAnimalTypeID(animaltypeData.type_id);
 
-                const chronicDisease = await Promise.all(healthdetail.map(async (healthdetailData: any) => {
-                    const healthnutrition = await healthnutritionRepository.retrieveByHealthID(healthdetailData.health_id);
+                const chronicDisease = await Promise.all(diseasedetail.map(async (diseasedetailData: any) => {
+                    const diseasenutrition = await diseasenutritionRepository.retrieveByDiseaseID(diseasedetailData.disease_id);
 
-                    const nutrientlimitinfo = await Promise.all(healthnutrition.map(async (healthnutritionData: any) => {
+                    const nutrientlimitinfo = await Promise.all(diseasenutrition.map(async (diseasenutritionData: any) => {
                         return {
-                            nutrientName: healthnutritionData.nutrient_name,
-                            min: healthnutritionData.value_min,
-                            max: healthnutritionData.value_max
+                            nutrientName: diseasenutritionData.nutrient_name,
+                            min: diseasenutritionData.value_min,
+                            max: diseasenutritionData.value_max
                         };
                     }));
                     
                     return {
-                        petChronicDiseaseID: (healthdetailData.health_id).toString(),
-                        petChronicDiseaseName: healthdetailData.health_name,
+                        petChronicDiseaseID: (diseasedetailData.disease_id).toString(),
+                        petChronicDiseaseName: diseasedetailData.disease_name,
                         NutrientLimitInfo: nutrientlimitinfo
                     };
                 }));
@@ -72,23 +72,23 @@ export default class AnimalController {
             animaltype.update_by = `${userid}_${username}`;
             const addanimaltype = await animalRepository.save(animaltype);
 
-            animaltype.healthdetail = await Promise.all(petChronicDisease.map(async (diseaseData: any) => {
-                const chronicDisease = new Healthdetail();
-                chronicDisease.health_name = diseaseData.petChronicDiseaseName;
+            animaltype.diseasedetail = await Promise.all(petChronicDisease.map(async (diseaseData: any) => {
+                const chronicDisease = new Diseasedetail();
+                chronicDisease.disease_name = diseaseData.petChronicDiseaseName;
                 chronicDisease.animaltype_type_id = addanimaltype.type_id;
                 chronicDisease.create_by = `${userid}_${username}`;
                 chronicDisease.update_by = `${userid}_${username}`;
                 chronicDisease.update_date = new Date();
                 try {
-                    const addnewhealthdetail = await healthdetailRepository.save(chronicDisease);
-                    chronicDisease.healthnutrition = await Promise.all(diseaseData.NutrientLimitInfo.map(async (nutrientInfoData: any) => {
+                    const addnewdiseasedetail = await diseasedetailRepository.save(chronicDisease);
+                    chronicDisease.diseasenutrition = await Promise.all(diseaseData.NutrientLimitInfo.map(async (nutrientInfoData: any) => {
                         const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
                         if  (nutrient === null || nutrient === undefined) {
-                            await healthdetailRepository.deleteByID(addnewhealthdetail.health_id);
+                            await diseasedetailRepository.deleteByID(addnewdiseasedetail.disease_id);
                             throw new Error("Not found nutrient with name: " + nutrientInfoData.nutrientName);
                         }
-                        const nutrientInfo = new Healthnutrition();
-                        nutrientInfo.healthdetail_health_id = addnewhealthdetail.health_id;
+                        const nutrientInfo = new Diseasenutrition();
+                        nutrientInfo.diseasedetail_disease_id = addnewdiseasedetail.disease_id;
                         nutrientInfo.nutrition_nutrition_id = nutrient!.nutrition_id;
                         nutrientInfo.value_min = nutrientInfoData.min;
                         nutrientInfo.value_max = nutrientInfoData.max;
@@ -96,10 +96,10 @@ export default class AnimalController {
                         nutrientInfo.update_by = `${userid}_${username}`;
                         nutrientInfo.update_date = new Date();
                         try {
-                            const addnewhealthnutrition = await healthnutritionRepository.save(nutrientInfo);
+                            const addnewdiseasenutrition = await diseasenutritionRepository.save(nutrientInfo);
                             return;
                         }catch(err){
-                            await healthdetailRepository.deleteByID(addnewhealthdetail.health_id);
+                            await diseasedetailRepository.deleteByID(addnewdiseasedetail.disease_id);
                             throw err;
                         }
                     }));
@@ -145,28 +145,28 @@ export default class AnimalController {
             animaltype.update_by = `${userid}_${username}`;
             const updateanimaltype = await animalRepository.update(animaltype);
 
-            animaltype.healthdetail = await Promise.all(petChronicDisease.map(async (diseaseData: any) => {
-                const chronicDisease = new Healthdetail();
-                chronicDisease.health_name = diseaseData.petChronicDiseaseName;
+            animaltype.diseasedetail = await Promise.all(petChronicDisease.map(async (diseaseData: any) => {
+                const chronicDisease = new Diseasedetail();
+                chronicDisease.disease_name = diseaseData.petChronicDiseaseName;
                 chronicDisease.animaltype_type_id = parseInt(petTypeID);
                 chronicDisease.update_by = `${userid}_${username}`;
                 chronicDisease.update_date = new Date();
                 try {
-                    const updatehealthdetail = await healthdetailRepository.update(chronicDisease);
-                    chronicDisease.healthnutrition = await Promise.all(diseaseData.NutrientLimitInfo.map(async (nutrientInfoData: any) => {
+                    const updatediseasedetail = await diseasedetailRepository.update(chronicDisease);
+                    chronicDisease.diseasenutrition = await Promise.all(diseaseData.NutrientLimitInfo.map(async (nutrientInfoData: any) => {
                         const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
                         if  (nutrient === null || nutrient === undefined) {
                             throw new Error("Not found nutrient with name: " + nutrientInfoData.nutrientName);
                         }
-                        const nutrientInfo = new Healthnutrition();
-                        nutrientInfo.healthdetail_health_id = updatehealthdetail.health_id;
+                        const nutrientInfo = new Diseasenutrition();
+                        nutrientInfo.diseasedetail_disease_id = updatediseasedetail.disease_id;
                         nutrientInfo.nutrition_nutrition_id = nutrient!.nutrition_id;
                         nutrientInfo.value_min = nutrientInfoData.min;
                         nutrientInfo.value_max = nutrientInfoData.max;
                         nutrientInfo.update_by = `${userid}_${username}`;
                         nutrientInfo.update_date = new Date();
                         try {
-                            const updatehealthnutrition = await healthnutritionRepository.update(nutrientInfo);
+                            const updatediseasenutrition = await diseasenutritionRepository.update(nutrientInfo);
                             return;
                         }catch(err){
                             throw err;
@@ -208,14 +208,14 @@ export default class AnimalController {
                 });
                 return;
             }
-            const healthdetail = await healthdetailRepository.retrieveByAnimalTypeID(typeid);
+            const diseasedetail = await diseasedetailRepository.retrieveByAnimalTypeID(typeid);
             try {
-                const healthnutrition = await Promise.all(healthdetail.map(async (healthdetailData: any) => {
-                    await healthnutritionRepository.deleteByHealthID(healthdetailData.health_id);
-                    //TODO กรณีที่มีการลบโรคของงสัตว์เลี้ยงต้องลบตาราง health ด้วย ที่เชื่อมสัตว์เลี้ยงกับโรค
+                const diseasenutrition = await Promise.all(diseasedetail.map(async (diseasedetailData: any) => {
+                    await diseasenutritionRepository.deleteByDiseaseID(diseasedetailData.disease_id);
+                    //TODO กรณีที่มีการลบโรคของงสัตว์เลี้ยงต้องลบตาราง disease ด้วย ที่เชื่อมสัตว์เลี้ยงกับโรค
                     return;
                 }));
-                await healthdetailRepository.deleteByAnimalTypeID(typeid);
+                await diseasedetailRepository.deleteByAnimalTypeID(typeid);
                 //TODO ต้องลบสัตว์เลี้ยงที่มีอยู่ในประเภทนี้ด้วย ลบเมนูอาหารด้วย
                 await animalRepository.deleteByID(typeid);
             }catch(err){

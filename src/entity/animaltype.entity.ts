@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany} from 'typeorm';
 import { Pet } from "./pet.entity";
 import { Petrecipes } from "./petrecipes.entity";
-import { Healthdetail } from "./healthdetail.entity";
+import { Diseasedetail } from "./diseasedetail.entity";
 
 @Entity({ name: "animaltype" })
 export class AnimalType {
@@ -27,8 +27,8 @@ export class AnimalType {
   @OneToMany(() => Pet, pet => pet.animaltype_type_id)
   pets?: Pet[];
 
-  @OneToMany(() => Healthdetail, healthdetail => healthdetail.animaltype_type_id)
-  healthdetail?: Healthdetail[];
+  @OneToMany(() => Diseasedetail, diseasedetail => diseasedetail.animaltype_type_id)
+  diseasedetail?: Diseasedetail[];
   
   @OneToMany(() => Petrecipes, petrecipes => petrecipes.animaltype_type_id)
   petrecipes?: Petrecipes[];

@@ -76,7 +76,9 @@ class ROleRepository implements IROleRepository {
 
     async retrieveAll():Promise<Role[]>{
         try {
-            const result = await AppDataSource.getRepository(Role).find();
+            const result = await AppDataSource.getRepository(Role).find({
+                select: ["role_id","role_name"]
+            });
             logging.info(NAMESPACE, "Get role by name successfully.");
             return result;
         } catch (err) {

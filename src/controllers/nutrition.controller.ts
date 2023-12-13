@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { JwtPayload } from "jsonwebtoken";
 import { Nutrition } from "../entity/nutrition.entity";
 import nutritionRepository from "../repositories/nutrition.repository";
-import healthnutritionRepository from "../repositories/healthnutrition.repository";
+import diseasenutritionRepository from "../repositories/diseasenutrition.repository";
 import ingredientnutritionRepository from "../repositories/ingredientnutrition.repository";
 import logging from "../config/logging";
 
@@ -103,7 +103,7 @@ export default class NutritionController {
         const nutritionID:number = parseInt(req.params.nutritionID);
 
         try {
-            await healthnutritionRepository.deleteByNutritionID(nutritionID);
+            await diseasenutritionRepository.deleteByNutritionID(nutritionID);
             await ingredientnutritionRepository.deleteByNutritionID(nutritionID);
             await nutritionRepository.deleteByID(nutritionID);
             logging.info(NAMESPACE, "Delete nutrition successfully.");
