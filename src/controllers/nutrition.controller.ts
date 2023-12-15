@@ -13,7 +13,7 @@ export default class NutritionController {
         logging.info(NAMESPACE, "Get all nutrition");
         try {
             const nutrient = await nutritionRepository.retrieveAll();
-            const result = await Promise.all(nutrient.map(async (nutrientData: any) => {
+            const result = await Promise.all(nutrient.map(async (nutrientData: Nutrition) => {
                 return {
                     nutritionID: nutrientData.nutrition_id.toString(),
                     nutrientName: nutrientData.nutrient_name

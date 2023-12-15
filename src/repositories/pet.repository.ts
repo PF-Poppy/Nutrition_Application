@@ -8,9 +8,11 @@ interface IPetRepository {
     save(pet: Pet): Promise<Pet>;
     update(pet: Pet): Promise<Pet>;
     retrieveAll(): Promise<Pet[]>;
+    retrieveByUserID(userid: string): Promise<Pet[]>;
     retrieveByName(petname:string, userid:string): Promise<Pet | undefined>;
     retrieveByID(petid: number): Promise<Pet | undefined>;
     deleteByID(petid: number): Promise<number>;
+    deleteByAnimalTypeID(animaltypeid: number): Promise<number>;
     deleteAll(): Promise<number>;
 }
 
@@ -68,6 +70,24 @@ class PetRepository implements IPetRepository {
         }
     }
 
+    async retrieveByUserID(userid: string): Promise<Pet[]> {
+        try {
+            const result = await AppDataSource.getRepository(Pet).find({
+                where: { user_user_id: userid},
+                select: ["pet_id","animaltype_type_id","pet_name","weight","neutering_status","age","activitie","factor_type","factor_number","physiology_status","update_date"]
+            });
+            if (!result) {
+                logging.error(NAMESPACE, "Not found pet with user id: " + userid);
+                throw 'Not found pet with user id: ' + userid;
+            }
+            logging.info(NAMESPACE, "Retrieve pet successfully.");
+            return result;
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
     async retrieveByName(petname:string, userid:string): Promise<Pet> {
         try {
             const result = await AppDataSource.getRepository(Pet).findOne({
@@ -111,6 +131,22 @@ class PetRepository implements IPetRepository {
             if (result.affected === 0) {
                 logging.error(NAMESPACE, "Not found pet with id: " + petid);
                 throw 'Not found pet with id: ' + petid;
+            }
+            logging.info(NAMESPACE, "Delete pet successfully.");
+            return result.affected!;
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async deleteByAnimalTypeID(animaltypeid: number): Promise<number> {
+        try {
+            const connect = AppDataSource.getRepository(Pet)
+            const result = await connect.delete({ animaltype_type_id: animaltypeid});
+            if (result.affected === 0) {
+                logging.info(NAMESPACE, `No pet found with animal type id: ${animaltypeid}. Nothing to delete.`);
+                return 0;
             }
             logging.info(NAMESPACE, "Delete pet successfully.");
             return result.affected!;

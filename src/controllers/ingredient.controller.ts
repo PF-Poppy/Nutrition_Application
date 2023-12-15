@@ -121,7 +121,7 @@ export default class IngredientController {
         try {
             const ingredient = await ingredientsRepository.retrieveAll();
 
-            const result = await Promise.all(ingredient.map(async (ingredientInfo: any) => {
+            const result = await Promise.all(ingredient.map(async (ingredientInfo: Ingredients) => {
                 const ingredientnutrition = await ingredientnutritionRepository.retrieveByIngredientID(ingredientInfo.ingredient_id);
 
                 const nutrientlimitinfo = await Promise.all(ingredientnutrition.map(async (ingredientnutritionInfo: any) => {

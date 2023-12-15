@@ -3,8 +3,10 @@ import { JwtPayload } from 'jsonwebtoken';
 import { AnimalType } from "../entity/animaltype.entity";
 import { Diseasedetail } from "../entity/diseasedetail.entity";
 import { Diseasenutrition } from "../entity/diseasenutrition.entity";
+import petRepository from "../repositories/pet.repository";
 import nutritionRepository from "../repositories/nutrition.repository";
 import animalRepository from "../repositories/animaltype.respository";
+import diseaseRepository from "../repositories/disease.repository";
 import diseasedetailRepository from "../repositories/diseasedetail.repository";
 import diseasenutritionRepository from "../repositories/diseasenutrition.repository";
 import logging from "../config/logging";
@@ -17,10 +19,10 @@ export default class AnimalController {
         try {
             const animaltype = await animalRepository.retrieveAll();
 
-            const result = await Promise.all(animaltype.map(async (animaltypeData: any) => {
+            const result = await Promise.all(animaltype.map(async (animaltypeData: AnimalType) => {
                 const diseasedetail = await diseasedetailRepository.retrieveByAnimalTypeID(animaltypeData.type_id);
 
-                const chronicDisease = await Promise.all(diseasedetail.map(async (diseasedetailData: any) => {
+                const chronicDisease = await Promise.all(diseasedetail.map(async (diseasedetailData: Diseasedetail) => {
                     const diseasenutrition = await diseasenutritionRepository.retrieveByDiseaseID(diseasedetailData.disease_id);
 
                     const nutrientlimitinfo = await Promise.all(diseasenutrition.map(async (diseasenutritionData: any) => {
@@ -47,6 +49,36 @@ export default class AnimalController {
             logging.info(NAMESPACE, "Get all animal type successfully.");
             res.status(200).send(result);
         } catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            res.status(500).send({
+                message: "Some error occurred while retrieving animal."
+            });
+        }
+    }
+    
+    async getAllAnimalTypeForNormalUser(req: Request, res: Response) {
+        logging.info(NAMESPACE, 'Get all animal type for normal user');
+        try {
+            const animaltype = await animalRepository.retrieveAll();
+            
+            const result = await Promise.all(animaltype.map(async (animaltypeData: AnimalType) => {
+                const diseasedetail = await diseasedetailRepository.retrieveByAnimalTypeID(animaltypeData.type_id);
+                
+                const chronicDisease = await Promise.all(diseasedetail.map(async (diseasedetailData: Diseasedetail) => {
+                    return {
+                        petChronicDiseaseId: (diseasedetailData.disease_id).toString(),
+                        petChronicDiseaseName: diseasedetailData.disease_name
+                    }
+                }));
+                return {
+                    petTypeId: (animaltypeData.type_id).toString(),
+                    petTypeName: animaltypeData.type_name,
+                    petChronicDiseaseForUser: chronicDisease
+                }
+            }));
+            logging.info(NAMESPACE, "Get all animal type for normal user successfully.");
+            res.status(200).send(result);
+        }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             res.status(500).send({
                 message: "Some error occurred while retrieving animal."
@@ -100,6 +132,7 @@ export default class AnimalController {
                             return;
                         }catch(err){
                             await diseasedetailRepository.deleteByID(addnewdiseasedetail.disease_id);
+                            await diseasenutritionRepository.deleteByDiseaseID(addnewdiseasedetail.disease_id);
                             throw err;
                         }
                     }));
@@ -107,7 +140,7 @@ export default class AnimalController {
                     await animalRepository.deleteByID(addanimaltype.type_id);
                     throw err;
                 }
-            return;
+                return;
             }));
             logging.info(NAMESPACE, "Create animal type successfully.");
             res.status(200).send({
@@ -210,13 +243,13 @@ export default class AnimalController {
             }
             const diseasedetail = await diseasedetailRepository.retrieveByAnimalTypeID(typeid);
             try {
-                const diseasenutrition = await Promise.all(diseasedetail.map(async (diseasedetailData: any) => {
+                const diseasenutrition = await Promise.all(diseasedetail.map(async (diseasedetailData: Diseasedetail) => {
                     await diseasenutritionRepository.deleteByDiseaseID(diseasedetailData.disease_id);
-                    //TODO กรณีที่มีการลบโรคของงสัตว์เลี้ยงต้องลบตาราง disease ด้วย ที่เชื่อมสัตว์เลี้ยงกับโรค
+                    await diseaseRepository.deleteByDiseaseID(diseasedetailData.disease_id);
                     return;
                 }));
                 await diseasedetailRepository.deleteByAnimalTypeID(typeid);
-                //TODO ต้องลบสัตว์เลี้ยงที่มีอยู่ในประเภทนี้ด้วย ลบเมนูอาหารด้วย
+                await petRepository.deleteByAnimalTypeID(typeid);
                 await animalRepository.deleteByID(typeid);
             }catch(err){
                 logging.error(NAMESPACE, 'Error call deleteByID from delete animal type');
