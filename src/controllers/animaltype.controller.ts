@@ -179,13 +179,20 @@ export default class AnimalController {
             const updateanimaltype = await animalRepository.update(animaltype);
 
             animaltype.diseasedetail = await Promise.all(petChronicDisease.map(async (diseaseData: any) => {
+
                 const chronicDisease = new Diseasedetail();
                 chronicDisease.disease_name = diseaseData.petChronicDiseaseName;
                 chronicDisease.animaltype_type_id = parseInt(petTypeID);
                 chronicDisease.update_by = `${userid}_${username}`;
                 chronicDisease.update_date = new Date();
                 try {
-                    const updatediseasedetail = await diseasedetailRepository.update(chronicDisease);
+                    let updatediseasedetail: Diseasedetail;
+                    if (diseaseData.petChronicDiseaseID === "") {
+                        updatediseasedetail = await diseasedetailRepository.save(chronicDisease);
+                    }else{
+                        chronicDisease.disease_id = parseInt(diseaseData.petChronicDiseaseID);
+                        updatediseasedetail = await diseasedetailRepository.update(chronicDisease);
+                    }
                     chronicDisease.diseasenutrition = await Promise.all(diseaseData.NutrientLimitInfo.map(async (nutrientInfoData: any) => {
                         const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
                         if  (nutrient === null || nutrient === undefined) {

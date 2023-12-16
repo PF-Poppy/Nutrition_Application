@@ -44,40 +44,30 @@ class DiseasedetailRepository implements IDiseasedetailRepository {
     async update(diseasedetail:Diseasedetail): Promise<Diseasedetail> {
         try {
             const connect = AppDataSource.getRepository(Diseasedetail)
-            const diseasedetailinfo = await connect.findOne({
-                where: { disease_id: diseasedetail.disease_id , animaltype_type_id: diseasedetail.animaltype_type_id}, 
+            const diseasedetailinfo = await connect.find({
+                where: { disease_name: diseasedetail.disease_name , animaltype_type_id: diseasedetail.animaltype_type_id}, 
             });
-            if (!diseasedetailinfo) {
-                diseasedetail.create_by = `${diseasedetail.update_by}`;
-                try {
-                    const result = await connect.save(diseasedetail);
-                    logging.info(NAMESPACE, "Update diseasedetail successfully.");
-                    try {
-                        const res = await this.retrieveByID(result.disease_id);
-                        return res;
-                    }catch(err){
-                        logging.error(NAMESPACE, 'Error call retrieveByID from insert diseasedetail');
-                        throw err;
+            if (diseasedetailinfo.length > 0) {
+                for (let i = 0; i < diseasedetailinfo.length; i++) {
+                    if (diseasedetailinfo[i].disease_id !== diseasedetail.disease_id) {
+                        logging.error(NAMESPACE, "Duplicate diseasedetail name.");
+                        throw 'Duplicate diseasedetail name.';
                     }
+                }
+            } 
+            try {
+                const result = await connect.update({ disease_id : diseasedetail.disease_id }, diseasedetail);    
+                logging.info(NAMESPACE, "Update diseasedetail successfully.");
+                try {
+                    const res = await this.retrieveByID(diseasedetail.disease_id);
+                    return res;
                 }catch(err){
-                    logging.error(NAMESPACE, (err as Error).message, err);
+                    logging.error(NAMESPACE, 'Error call retrieveByID from insert diseasenutrition');
                     throw err;
                 }
-            }else{
-                try {
-                    const result = await connect.update({ disease_id : diseasedetailinfo.disease_id }, diseasedetail);    
-                    logging.info(NAMESPACE, "Update diseasedetail successfully.");
-                    try {
-                        const res = await this.retrieveByID(diseasedetailinfo.disease_id);
-                        return res;
-                    }catch(err){
-                        logging.error(NAMESPACE, 'Error call retrieveByID from insert diseasenutrition');
-                        throw err;
-                    }
-                }catch(err){
-                    logging.error(NAMESPACE, (err as Error).message, err);
-                    throw err;
-                }
+            }catch(err){
+                logging.error(NAMESPACE, (err as Error).message, err);
+                throw err;
             }
         }catch(err){
             logging.error(NAMESPACE, (err as Error).message, err);
