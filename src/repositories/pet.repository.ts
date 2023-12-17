@@ -1,4 +1,5 @@
 import { Pet } from "../entity/pet.entity";
+import { AnimalType } from "../entity/animaltype.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
 
@@ -8,7 +9,7 @@ interface IPetRepository {
     save(pet: Pet): Promise<Pet>;
     update(pet: Pet): Promise<Pet>;
     retrieveAll(): Promise<Pet[]>;
-    retrieveByUserID(userid: string): Promise<Pet[]>;
+    retrieveByUserID(userid: string): Promise<any[]>;
     retrieveByName(petname:string, userid:string): Promise<Pet | undefined>;
     retrieveByID(petid: number): Promise<Pet | undefined>;
     deleteByID(petid: number): Promise<number>;
@@ -70,16 +71,27 @@ class PetRepository implements IPetRepository {
         }
     }
 
-    async retrieveByUserID(userid: string): Promise<Pet[]> {
+    async retrieveByUserID(userid: string): Promise<any[]> {
         try {
-            const result = await AppDataSource.getRepository(Pet).find({
-                where: { user_user_id: userid},
-                select: ["pet_id","animaltype_type_id","pet_name","weight","neutering_status","age","activitie","factor_type","factor_number","physiology_status","update_date"]
-            });
-            if (!result) {
-                logging.error(NAMESPACE, "Not found pet with user id: " + userid);
-                throw 'Not found pet with user id: ' + userid;
-            }
+            const result = await AppDataSource.getRepository(Pet)
+            .createQueryBuilder("pet")
+            .innerJoinAndSelect(AnimalType, "animaltype", "animaltype.type_id = pet.animaltype_type_id")
+            .select([
+                "pet.pet_id AS petid",
+                "animaltype.type_id AS animaltypeid",
+                "animaltype.type_name AS animaltypename",
+                "pet.pet_name AS petname",
+                "pet.weight AS weight",
+                "pet.neutering_status AS neutering_status",
+                "pet.age AS age",
+                "pet.activitie AS activitie",
+                "pet.factor_type AS factortype",
+                "pet.factor_number AS factornumber",
+                "pet.physiology_status AS physiology_status",
+                "pet.update_date AS updatedate"
+            ])
+            .where("pet.user_user_id = :userid", { userid: userid })
+            .getRawMany();
             logging.info(NAMESPACE, "Retrieve pet successfully.");
             return result;
         }catch (err) {
@@ -145,7 +157,7 @@ class PetRepository implements IPetRepository {
             const connect = AppDataSource.getRepository(Pet)
             const result = await connect.delete({ animaltype_type_id: animaltypeid});
             if (result.affected === 0) {
-                logging.info(NAMESPACE, `No pet found with animal type id: ${animaltypeid}. Nothing to delete.`);
+                logging.error(NAMESPACE, `No pet found with animal type id: ${animaltypeid}. Nothing to delete.`);
                 return 0;
             }
             logging.info(NAMESPACE, "Delete pet successfully.");

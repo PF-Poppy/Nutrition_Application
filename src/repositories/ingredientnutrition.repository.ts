@@ -131,7 +131,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
             const connect = AppDataSource.getRepository(Ingredientnutrition)
             const result = await connect.delete({ ingredients_ingredient_id : ingredientid});
             if (result.affected === 0){
-                logging.info(NAMESPACE, "Not found ingredientnutrition with ingredient id: " + ingredientid);
+                logging.error(NAMESPACE, "Not found ingredientnutrition with ingredient id: " + ingredientid);
                 return 0;
             }
             logging.info(NAMESPACE, "Delete ingredientnutrition by ingredient id successfully.");
@@ -147,7 +147,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
             const connect = AppDataSource.getRepository(Ingredientnutrition);
             const result = await connect.delete({ nutrition_nutrition_id: nutritionid });
             if (result.affected === 0) {
-                logging.info(NAMESPACE, `No ingredientnutrition found with nutritionid: ${nutritionid}. Nothing to delete.`);
+                logging.error(NAMESPACE, `No ingredientnutrition found with nutritionid: ${nutritionid}. Nothing to delete.`);
                 return 0;
             }
             logging.info(NAMESPACE, `Delete ingredientnutrition by nutritionid: ${nutritionid} successfully.`);

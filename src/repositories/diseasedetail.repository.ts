@@ -112,7 +112,7 @@ class DiseasedetailRepository implements IDiseasedetailRepository {
             const connect = AppDataSource.getRepository(Diseasedetail);
             const result = await connect.delete({ disease_id: diseaseid });
             if (result.affected === 0) {
-                logging.info(NAMESPACE, `No diseasedetail found with id: ${diseaseid}. Nothing to delete.`);
+                logging.error(NAMESPACE, `No diseasedetail found with id: ${diseaseid}. Nothing to delete.`);
                 return 0;
             }
             logging.info(NAMESPACE, `Deleted diseasedetail with id ${diseaseid} successfully.`);
@@ -128,7 +128,7 @@ class DiseasedetailRepository implements IDiseasedetailRepository {
             const connect = AppDataSource.getRepository(Diseasedetail);
             const result = await connect.delete({ animaltype_type_id: typeid });
             if (result.affected === 0) {
-                logging.info(NAMESPACE, `No diseasedetail found with animaltype id: ${typeid}. Nothing to delete.`);
+                logging.error(NAMESPACE, `No diseasedetail found with animaltype id: ${typeid}. Nothing to delete.`);
                 return 0;  
             }
             logging.info(NAMESPACE, `Delete diseasedetail by animaltype id: ${typeid} successfully.`);

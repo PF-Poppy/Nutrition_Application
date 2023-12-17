@@ -1,12 +1,11 @@
 import { Request, Response } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
+import { differenceInDays } from 'date-fns';
 import { Pet } from '../entity/pet.entity';
 import { Disease } from '../entity/disease.entity';
 import petRepository from '../repositories/pet.repository';
-import animaltypeRespository from '../repositories/animaltype.respository';
 import diseaseRepository from '../repositories/disease.repository';
 import logging from '../config/logging';
-import { differenceInDays } from 'date-fns';
 
 const NAMESPACE = 'Pet Controller';
 
@@ -18,9 +17,8 @@ export default class PetController {
         try {
             const pet = await petRepository.retrieveByUserID(userid);
 
-            const petInfo = await Promise.all(pet.map(async (petData: Pet) => {
-                const disease = await diseaseRepository.retrieveByPetID(petData.pet_id);
-                const animaltype = await animaltypeRespository.retrieveByID(petData.animaltype_type_id);
+            const petInfo = await Promise.all(pet.map(async (petData: any) => {
+                const disease = await diseaseRepository.retrieveByPetID(petData.petid);
 
                 const chronicDisease = await Promise.all(disease.map(async (diseaseData: any) => {
                     return {
@@ -29,18 +27,19 @@ export default class PetController {
                     }
                 }));
                 return {
-                    petID: (petData.pet_id).toString(),
-                    petName: petData.pet_name,
-                    petType: animaltype.type_name,
-                    factorType: petData.factor_type,
-                    petFactorNumber: petData.factor_number,
+                    petID: (petData.petid).toString(),
+                    petName: petData.petname,
+                    petType: petData.animaltypename,
+                    petTypeId: (petData.animaltypeid).toString(),
+                    factorType: petData.factortype,
+                    petFactorNumber: petData.factornumber,
                     petWeight: petData.weight,
                     petNeuteringStatus: petData.neutering_status,
                     petAgeType: petData.age,
                     petPhysiologyStatus: petData.physiology_status,
                     petChronicDiseaseForUser: chronicDisease,
                     petActivityType: petData.activitie,
-                    updateRecent: differenceInDays(currentDay, petData.update_date!)
+                    updateRecent: differenceInDays(currentDay, petData.updatedate!)
                 } 
             }));
             const result = {
@@ -68,13 +67,12 @@ export default class PetController {
                 message: 'Content can not be empty!'
             });
             return;
-        }
-        const { petName, petType, factorType, petFactorNumber, petWeight, petNeuteringStatus, petAgeType, petPhysiologyStatus, petChronicDiseaseForUser, petActivityType} = req.body;
+        }0
+        const { petName, petTypeId, factorType, petFactorNumber, petWeight, petNeuteringStatus, petAgeType, petPhysiologyStatus, petChronicDiseaseForUser, petActivityType} = req.body;
         try {
-            const animaltype = await animaltypeRespository.retrieveByName(petType);
             const pet = new Pet();
             pet.user_user_id = userid;
-            pet.animaltype_type_id = animaltype.type_id;
+            pet.animaltype_type_id = parseInt(petTypeId);
             pet.pet_name = petName;
             pet.weight = petWeight;
             pet.neutering_status = petNeuteringStatus;
@@ -95,8 +93,8 @@ export default class PetController {
                     const addnewpetdisease = await diseaseRepository.save(disease);
                     return;
                 }catch (err) {
-                    await petRepository.deleteByID(addpet.pet_id);
                     await diseaseRepository.deleteByPetID(addpet.pet_id);
+                    await petRepository.deleteByID(addpet.pet_id);
                     throw err;
                 }
             }));
@@ -121,7 +119,7 @@ export default class PetController {
             });
             return;
         }
-        const { petID, petName, petType, factorType, petFactorNumber, petWeight, petNeuteringStatus, petAgeType, petPhysiologyStatus, petChronicDiseaseForUser, petActivityType} = req.body;
+        const { petID, petName, petTypeId, factorType, petFactorNumber, petWeight, petNeuteringStatus, petAgeType, petPhysiologyStatus, petChronicDiseaseForUser, petActivityType} = req.body;
         if (petID === "" || petID === undefined || petID === null) {
             res.status(400).send({
                 message: 'Pet ID can not be empty!'
@@ -129,11 +127,10 @@ export default class PetController {
             return;
         }
         try {
-            const animaltype = await animaltypeRespository.retrieveByName(petType);
             const pet = new Pet();
             pet.pet_id = parseInt(petID);
             pet.user_user_id = userid;
-            pet.animaltype_type_id = animaltype.type_id;
+            pet.animaltype_type_id = parseInt(petTypeId);
             pet.pet_name = petName;
             pet.weight = petWeight;
             pet.neutering_status = petNeuteringStatus;

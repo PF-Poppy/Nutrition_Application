@@ -134,7 +134,7 @@ class DiseasenutritionRepository implements IDiseasenutritionRepository {
             const connect = AppDataSource.getRepository(Diseasenutrition);
             const result = await connect.delete({ diseasenutrition_id: diseasenutritionid });
             if (result.affected === 0) {
-                logging.info(NAMESPACE, `No diseasenutrition found with id: ${diseasenutritionid}. Nothing to delete.`);
+                logging.error(NAMESPACE, `No diseasenutrition found with id: ${diseasenutritionid}. Nothing to delete.`);
                 return 0;  
             }
             logging.info(NAMESPACE, `Delete diseasenutrition by id: ${diseasenutritionid} successfully.`);
@@ -150,7 +150,7 @@ class DiseasenutritionRepository implements IDiseasenutritionRepository {
             const connect = AppDataSource.getRepository(Diseasenutrition);
             const result = await connect.delete({ diseasedetail_disease_id: diseaseid });
             if (result.affected === 0) {
-                logging.info(NAMESPACE, `No diseasehnutrition found with diseaseid: ${diseaseid}. Nothing to delete.`);
+                logging.error(NAMESPACE, `No diseasehnutrition found with diseaseid: ${diseaseid}. Nothing to delete.`);
                 return 0;  
             }
             logging.info(NAMESPACE, `Delete diseasenutrition by diseaseid: ${diseaseid} successfully.`);
@@ -166,7 +166,7 @@ class DiseasenutritionRepository implements IDiseasenutritionRepository {
             const connect = AppDataSource.getRepository(Diseasenutrition);
             const result = await connect.delete({ nutrition_nutrition_id: nutritionid });
             if (result.affected === 0) {
-                logging.info(NAMESPACE, `No diseasenutrition found with nutritionid: ${nutritionid}. Nothing to delete.`);
+                logging.error(NAMESPACE, `No diseasenutrition found with nutritionid: ${nutritionid}. Nothing to delete.`);
                 return 0;
             }
             logging.info(NAMESPACE, `Delete diseasenutrition by nutritionid: ${nutritionid} successfully.`);

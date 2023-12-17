@@ -131,8 +131,8 @@ export default class AnimalController {
                             const addnewdiseasenutrition = await diseasenutritionRepository.save(nutrientInfo);
                             return;
                         }catch(err){
-                            await diseasedetailRepository.deleteByID(addnewdiseasedetail.disease_id);
                             await diseasenutritionRepository.deleteByDiseaseID(addnewdiseasedetail.disease_id);
+                            await diseasedetailRepository.deleteByID(addnewdiseasedetail.disease_id);
                             throw err;
                         }
                     }));

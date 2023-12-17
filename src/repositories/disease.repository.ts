@@ -57,7 +57,7 @@ class DiseaseRepository implements IDiseaseRepository {
                     throw err;
                 }
             }else {
-                const result = await connect.update({ id : diseaseinfo.id}, disease);
+                const result = await connect.update({ id : diseaseinfo.id }, disease);
                 logging.info(NAMESPACE, "Update disease successfully.");
                 try {
                     const res = await this.retrieveByID(diseaseinfo.id);
@@ -150,7 +150,7 @@ class DiseaseRepository implements IDiseaseRepository {
             const connect = AppDataSource.getRepository(Disease);
             const result = await connect.delete({ diseasedetail_disease_id: diseaseid});
             if (result.affected === 0) {
-                logging.info(NAMESPACE, `No disease found with disease id: ${diseaseid}. Nothing to delete.`);
+                logging.error(NAMESPACE, `No disease found with disease id: ${diseaseid}. Nothing to delete.`);
                 return 0;
             }
             logging.info(NAMESPACE, `Delete disease by disease id: ${diseaseid} successfully.`);

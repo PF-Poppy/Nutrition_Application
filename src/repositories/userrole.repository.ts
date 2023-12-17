@@ -52,7 +52,7 @@ class UserRoleRepository implements IUserRoleRepository {
             const connect = AppDataSource.getRepository(UserRole);
             const result = await connect.delete({role_role_id: roleid});
             if (result.affected === 0) {
-                logging.info(NAMESPACE, "Not found userrole with role id: " + roleid);
+                logging.error(NAMESPACE, "Not found userrole with role id: " + roleid);
                 return 0;
             }
             logging.info(NAMESPACE, "Delete userrole by role id successfully.");
