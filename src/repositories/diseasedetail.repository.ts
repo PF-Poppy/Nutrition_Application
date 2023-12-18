@@ -50,7 +50,7 @@ class DiseasedetailRepository implements IdiseasedetailRepository {
             });
             if (diseasedetailinfo.length > 0) {
                 for (let i = 0; i < diseasedetailinfo.length; i++) {
-                    if (diseasedetailinfo[i].disease_id !== diseasedetail.disease_id) {
+                    if (diseasedetailinfo[i].disease_id !== diseasedetail.disease_id && diseasedetailinfo[i].animaltype_type_id === diseasedetail.animaltype_type_id) {
                         logging.error(NAMESPACE, "Duplicate diseasedetail name.");
                         throw 'Duplicate diseasedetail name.';
                     }

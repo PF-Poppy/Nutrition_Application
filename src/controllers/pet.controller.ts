@@ -91,6 +91,12 @@ export default class PetController {
                     await petRepository.deleteById(addpet.pet_id);
                     throw new Error('Please fill in all the fields.!');
                 }
+                const animaldiscease = await diseasedetailRepository.retrieveByTypeAndDiseaseId(parseInt(petTypeId), parseInt(diseaseData.petChronicDiseaseId));
+                if (!animaldiscease) {
+                    await diseaseRepository.deleteByPetId(addpet.pet_id);
+                    await petRepository.deleteById(addpet.pet_id);
+                    throw new Error('Not found disease detail.');
+                }
                 const disease = new Disease();
                 disease.pet_pet_id = addpet.pet_id;
                 disease.diseasedetail_disease_id = parseInt(diseaseData.petChronicDiseaseId);

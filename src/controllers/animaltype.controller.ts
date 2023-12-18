@@ -10,7 +10,7 @@ import diseaseRepository from "../repositories/disease.repository";
 import diseasedetailRepository from "../repositories/diseasedetail.repository";
 import diseasenutritionRepository from "../repositories/diseasenutrition.repository";
 import logging from "../config/logging";
-import { ca } from "date-fns/locale";
+
 
 const NAMESPACE = "AnimalType Controller";
 
@@ -230,6 +230,7 @@ export default class AnimalController {
                 try {
                     let updatediseasedetail: Diseasedetail;
                     if (diseaseData.petChronicDiseaseId === "") {
+                        chronicDisease.create_by = `${userid}_${username}`;
                         updatediseasedetail = await diseasedetailRepository.save(chronicDisease);
                     }else{
                         chronicDisease.disease_id = parseInt(diseaseData.petChronicDiseaseId);
