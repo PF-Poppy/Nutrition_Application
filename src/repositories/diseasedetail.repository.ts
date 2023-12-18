@@ -9,6 +9,7 @@ interface IdiseasedetailRepository {
     update(diseasedetail:Diseasedetail): Promise<Diseasedetail>;
     retrieveById(diseaseid: number): Promise<Diseasedetail | undefined>;
     retrieveByAnimalTypeId(typeid: number): Promise<Diseasedetail[]>;
+    retrieveByTypeAndDiseaseId(typeid: number, diseaseid: number): Promise<Diseasedetail | undefined>;
     deleteById(diseaseid: number): Promise<number>;
     deleteByAnimalTypeId(typeid: number): Promise<number>
     deleteAll(): Promise<number>;
@@ -100,6 +101,24 @@ class DiseasedetailRepository implements IdiseasedetailRepository {
                 select: ["disease_id","disease_name","animaltype_type_id"]
             });
             logging.info(NAMESPACE, "Retrieve diseasedetail by animal type id successfully.");
+            return result;
+        } catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async retrieveByTypeAndDiseaseId(typeid: number, diseaseid: number): Promise<Diseasedetail> {
+        try {
+            const result = await AppDataSource.getRepository(Diseasedetail).findOne({
+                where: { disease_id: diseaseid, animaltype_type_id : typeid }, 
+                select: ["disease_id","disease_name","animaltype_type_id"]
+            });
+            if (!result) {
+                logging.error(NAMESPACE, "Not found diseasedetail with id: " + diseaseid);
+                throw new Error("Not found diseasedetail with id: " + diseaseid);
+            }
+            logging.info(NAMESPACE, "Retrieve diseasedetail by id successfully.");
             return result;
         } catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);

@@ -10,6 +10,7 @@ import diseaseRepository from "../repositories/disease.repository";
 import diseasedetailRepository from "../repositories/diseasedetail.repository";
 import diseasenutritionRepository from "../repositories/diseasenutrition.repository";
 import logging from "../config/logging";
+import { ca } from "date-fns/locale";
 
 const NAMESPACE = "AnimalType Controller";
 
@@ -124,22 +125,23 @@ export default class AnimalController {
                             await diseasedetailRepository.deleteById(addnewdiseasedetail.disease_id);
                             throw new Error("Please fill in all the fields!");
                         }
-                        const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
-                        if  (nutrient === null || nutrient === undefined) {
-                            await diseasedetailRepository.deleteById(addnewdiseasedetail.disease_id);
-                            throw new Error("Not found nutrient with name: " + nutrientInfoData.nutrientName);
-                        }
-                        const nutrientInfo = new Diseasenutrition();
-                        nutrientInfo.diseasedetail_disease_id = addnewdiseasedetail.disease_id;
-                        nutrientInfo.nutrition_nutrition_id = nutrient!.nutrition_id;
-                        nutrientInfo.value_min = nutrientInfoData.min;
-                        nutrientInfo.value_max = nutrientInfoData.max;
-                        nutrientInfo.create_by = `${userid}_${username}`;
-                        nutrientInfo.update_by = `${userid}_${username}`;
-                        nutrientInfo.update_date = new Date();
                         try {
-                            const addnewdiseasenutrition = await diseasenutritionRepository.save(nutrientInfo);
-                            return;
+                            const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
+
+                            const nutrientInfo = new Diseasenutrition();
+                            nutrientInfo.diseasedetail_disease_id = addnewdiseasedetail.disease_id;
+                            nutrientInfo.nutrition_nutrition_id = nutrient!.nutrition_id;
+                            nutrientInfo.value_min = nutrientInfoData.min;
+                            nutrientInfo.value_max = nutrientInfoData.max;
+                            nutrientInfo.create_by = `${userid}_${username}`;
+                            nutrientInfo.update_by = `${userid}_${username}`;
+                            nutrientInfo.update_date = new Date();
+                            try {
+                                const addnewdiseasenutrition = await diseasenutritionRepository.save(nutrientInfo);
+                                return;
+                            }catch(err){
+                                throw err;
+                            }
                         }catch(err){
                             await diseasenutritionRepository.deleteByDiseaseId(addnewdiseasedetail.disease_id);
                             throw err;
@@ -189,6 +191,7 @@ export default class AnimalController {
             return;
         }
         try {
+
             const animaltype = new AnimalType();
             animaltype.type_id = parseInt(petTypeId);
             animaltype.type_name = petTypeName;
@@ -197,7 +200,28 @@ export default class AnimalController {
             const updateanimaltype = await animalRepository.update(animaltype);
 
             animaltype.diseasedetail = await Promise.all(petChronicDisease.map(async (diseaseData: any) => {
+                if (diseaseData.petChronicDiseaseId === "") {
+                    if (!diseaseData.petChronicDiseaseName || !diseaseData.NutrientLimitInfo) {
+                        throw new Error("Please fill in all the fields!");
+                    }
+                }else {
+                    if (!diseaseData.petChronicDiseaseId || !diseaseData.NutrientLimitInfo) {
+                        throw new Error("Please fill in all the fields!");
+                    }
+                }
+                await Promise.all(diseaseData.NutrientLimitInfo.map(async (nutrientInfoData: any) => {
+                    if (!nutrientInfoData.nutrientName || !nutrientInfoData.min || !nutrientInfoData.max) {
+                        throw new Error("Please fill in all the fields!");
+                    }
+                    try {
+                        const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
+                    }catch(err){
+                        throw err;
+                    }
+                }));
+            }));
 
+            animaltype.diseasedetail = await Promise.all(petChronicDisease.map(async (diseaseData: any) => {
                 const chronicDisease = new Diseasedetail();
                 chronicDisease.disease_name = diseaseData.petChronicDiseaseName;
                 chronicDisease.animaltype_type_id = parseInt(petTypeId);
@@ -206,43 +230,34 @@ export default class AnimalController {
                 try {
                     let updatediseasedetail: Diseasedetail;
                     if (diseaseData.petChronicDiseaseId === "") {
-                        if (!diseaseData.petChronicDiseaseName || !diseaseData.NutrientLimitInfo) {
-                            throw new Error("Please fill in all the fields!");
-                        }
                         updatediseasedetail = await diseasedetailRepository.save(chronicDisease);
                     }else{
-                        if (!diseaseData.NutrientLimitInfo) {
-                            throw new Error("Please fill in all the fields!");
-                        }
                         chronicDisease.disease_id = parseInt(diseaseData.petChronicDiseaseId);
                         updatediseasedetail = await diseasedetailRepository.update(chronicDisease);
                     }
+                    
                     chronicDisease.diseasenutrition = await Promise.all(diseaseData.NutrientLimitInfo.map(async (nutrientInfoData: any) => {
-                        if (!nutrientInfoData.nutrientName || !nutrientInfoData.min || !nutrientInfoData.max) {
-                            throw new Error("Please fill in all the fields!");
-                        }
-                        const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
-                        if  (nutrient === null || nutrient === undefined) {
-                            throw new Error("Not found nutrient with name: " + nutrientInfoData.nutrientName);
-                        }
-                        const nutrientInfo = new Diseasenutrition();
-                        nutrientInfo.diseasedetail_disease_id = updatediseasedetail.disease_id;
-                        nutrientInfo.nutrition_nutrition_id = nutrient!.nutrition_id;
-                        nutrientInfo.value_min = nutrientInfoData.min;
-                        nutrientInfo.value_max = nutrientInfoData.max;
-                        nutrientInfo.update_by = `${userid}_${username}`;
-                        nutrientInfo.update_date = new Date();
                         try {
+                            const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
+
+                            const nutrientInfo = new Diseasenutrition();
+                            nutrientInfo.diseasedetail_disease_id = updatediseasedetail.disease_id;
+                            nutrientInfo.nutrition_nutrition_id = nutrient!.nutrition_id;
+                            nutrientInfo.value_min = nutrientInfoData.min;
+                            nutrientInfo.value_max = nutrientInfoData.max;
+                            nutrientInfo.update_by = `${userid}_${username}`;
+                            nutrientInfo.update_date = new Date();
+
                             const updatediseasenutrition = await diseasenutritionRepository.update(nutrientInfo);
                             return;
-                        }catch(err){  
+                        }catch(err){
                             throw err;
                         }
                     }));
                 }catch(err){
                     throw err;
                 }
-            return;
+                return;
             }));
             logging.info(NAMESPACE, "Update animal type successfully.");
             res.status(200).send({

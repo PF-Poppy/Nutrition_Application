@@ -31,24 +31,26 @@ export default class IngredientController {
             
             ingredient.ingredientnutrition = await Promise.all(nutrient.map(async (nutrientInfoData: any) => {
                 if (!nutrientInfoData.nutrientName || !nutrientInfoData.amount) {
+                    await ingredientnutritionRepository.deleteByIngredientId(addingredient.ingredient_id);
                     await ingredientsRepository.deleteById(addingredient.ingredient_id);
                     throw new Error("Please fill in all the fields!");
                 }
-                const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
-                if (nutrient === null || nutrient === undefined) {
-                    await ingredientsRepository.deleteById(addingredient.ingredient_id);
-                    throw new Error("Not found nutrient with name: " + nutrientInfoData.nutrientName);
-                }
-                const nutrientInfo = new Ingredientnutrition();
-                nutrientInfo.nutrition_nutrition_id = nutrient.nutrition_id;
-                nutrientInfo.ingredients_ingredient_id = addingredient.ingredient_id;
-                nutrientInfo.nutrient_value = nutrientInfoData.amount;
-                nutrientInfo.create_by = `${userid}_${username}`;
-                nutrientInfo.update_date = new Date();
-                nutrientInfo.update_by = `${userid}_${username}`;
                 try {
-                    const addnewngredientnutrition = await ingredientnutritionRepository.save(nutrientInfo);
-                    return;
+                    const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
+
+                    const nutrientInfo = new Ingredientnutrition();
+                    nutrientInfo.nutrition_nutrition_id = nutrient.nutrition_id;
+                    nutrientInfo.ingredients_ingredient_id = addingredient.ingredient_id;
+                    nutrientInfo.nutrient_value = nutrientInfoData.amount;
+                    nutrientInfo.create_by = `${userid}_${username}`;
+                    nutrientInfo.update_date = new Date();
+                    nutrientInfo.update_by = `${userid}_${username}`;
+                    try {
+                        const addnewngredientnutrition = await ingredientnutritionRepository.save(nutrientInfo);
+                        return;
+                    }catch(err){
+                        throw err;
+                    }
                 }catch(err){
                     await ingredientnutritionRepository.deleteByIngredientId(addingredient.ingredient_id);
                     await ingredientsRepository.deleteById(addingredient.ingredient_id);
@@ -91,6 +93,7 @@ export default class IngredientController {
             });
             return;
         }
+
         try {
             const ingredient = new Ingredients();
             ingredient.ingredient_id = ingredientId;
@@ -99,24 +102,31 @@ export default class IngredientController {
             ingredient.update_by = `${userid}_${username}`;
             const updateingredient = await ingredientsRepository.update(ingredient);
 
-            ingredient.ingredientnutrition = await Promise.all(nutrient.map(async (nutrientInfoData: any) => {
+            await Promise.all(nutrient.map(async (nutrientInfoData: any) => {
                 if (!nutrientInfoData.nutrientName || !nutrientInfoData.amount) {
                     throw new Error("Please fill in all the fields!");
                 }
-                const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
-                if (nutrient === null || nutrient === undefined) {
-                    throw new Error("Not found nutrient with name: " + nutrientInfoData.nutrientName);
-                }
-                const nutrientInfo = new Ingredientnutrition();
-                nutrientInfo.nutrition_nutrition_id = nutrient.nutrition_id;
-                nutrientInfo.ingredients_ingredient_id = updateingredient.ingredient_id;
-                nutrientInfo.nutrient_value = nutrientInfoData.amount;
-                nutrientInfo.update_by = `${userid}_${username}`;
-                nutrientInfo.update_date = new Date();
                 try {
+                    const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
+                }catch(err){
+                    throw err;
+                }
+            }));
+
+            ingredient.ingredientnutrition = await Promise.all(nutrient.map(async (nutrientInfoData: any) => {
+                try {
+                    const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
+
+                    const nutrientInfo = new Ingredientnutrition();
+                    nutrientInfo.nutrition_nutrition_id = nutrient.nutrition_id;
+                    nutrientInfo.ingredients_ingredient_id = updateingredient.ingredient_id;
+                    nutrientInfo.nutrient_value = nutrientInfoData.amount;
+                    nutrientInfo.update_by = `${userid}_${username}`;
+                    nutrientInfo.update_date = new Date();
+
                     const updateingredientnutrition = await ingredientnutritionRepository.update(nutrientInfo);
                     return;
-                }catch(err) {
+                }catch(err){
                     throw err;
                 }
             }));

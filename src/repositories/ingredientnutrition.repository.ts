@@ -22,6 +22,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
             const info = await connect.find(
                 { where: { nutrition_nutrition_id: ingredientnutrition.nutrition_nutrition_id, ingredients_ingredient_id: ingredientnutrition.ingredients_ingredient_id}}
             );
+
             if (info.length > 0) {
                 logging.error(NAMESPACE, "Duplicate ingredientnutrition.");
                 throw 'Duplicate ingredientnutrition.';
