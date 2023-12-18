@@ -6,18 +6,18 @@ import logging from "../config/logging";
 
 const NAMESPACE = "Diseasenutrition Repository";
 
-interface IDiseasenutritionRepository {
+interface IdiseasenutritionRepository {
     save(diseasenutrition:Diseasenutrition): Promise<Diseasenutrition>;
     update(diseasenutrition:Diseasenutrition): Promise<Diseasenutrition>;
-    retrieveByID(diseasenutritionid: number): Promise<Diseasenutrition | undefined>;
-    retrieveByDiseaseID(diseasehid: number): Promise<any[]>;
-    deleteByID(diseasenutritionid: number): Promise<number>;
-    deleteByNutritionID(nutritionid: number): Promise<number>;
-    deleteByDiseaseID(diseaseid: number): Promise<number>
+    retrieveById(diseasenutritionid: number): Promise<Diseasenutrition | undefined>;
+    retrieveByDiseaseId(diseasehid: number): Promise<any[]>;
+    deleteById(diseasenutritionid: number): Promise<number>;
+    deleteByNutritionId(nutritionid: number): Promise<number>;
+    deleteByDiseaseId(diseaseid: number): Promise<number>
     deleteAll(): Promise<number>;
 }
 
-class DiseasenutritionRepository implements IDiseasenutritionRepository {
+class DiseasenutritionRepository implements IdiseasenutritionRepository {
     async save(diseasenutrition:Diseasenutrition): Promise<Diseasenutrition> {
         try {
             const connect = AppDataSource.getRepository(Diseasenutrition)
@@ -32,10 +32,10 @@ class DiseasenutritionRepository implements IDiseasenutritionRepository {
             const result = await connect.save(diseasenutrition);
             logging.info(NAMESPACE, "Save diseasenutrition successfully.");
             try {
-                const res = await this.retrieveByID(result.diseasenutrition_id);
+                const res = await this.retrieveById(result.diseasenutrition_id);
                 return res;
             }catch(err){
-                logging.error(NAMESPACE, 'Error call retrieveByID from insert diseasenutrition');
+                logging.error(NAMESPACE, 'Error call retrieveById from insert diseasenutrition');
                 throw err;
             }
         } catch (err) {
@@ -56,10 +56,10 @@ class DiseasenutritionRepository implements IDiseasenutritionRepository {
                     const result = await connect.save(diseasenutrition);
                     logging.info(NAMESPACE, "Update diseasenutrition successfully.");
                     try {
-                        const res = await this.retrieveByID(result.diseasenutrition_id);
+                        const res = await this.retrieveById(result.diseasenutrition_id);
                         return res;
                     }catch(err){
-                        logging.error(NAMESPACE, 'Error call retrieveByID from insert diseasenutrition');
+                        logging.error(NAMESPACE, 'Error call retrieveById from insert diseasenutrition');
                         throw err;
                     }
                 }catch(err){
@@ -71,10 +71,10 @@ class DiseasenutritionRepository implements IDiseasenutritionRepository {
                     const result = await connect.update({ diseasenutrition_id : diseasenutritioninfo.diseasenutrition_id }, diseasenutrition);    
                     logging.info(NAMESPACE, "Update diseasenutrition successfully.");
                     try {
-                        const res = await this.retrieveByID(diseasenutritioninfo.diseasenutrition_id);
+                        const res = await this.retrieveById(diseasenutritioninfo.diseasenutrition_id);
                         return res;
                     }catch(err){
-                        logging.error(NAMESPACE, 'Error call retrieveByID from insert diseasenutrition');
+                        logging.error(NAMESPACE, 'Error call retrieveById from insert diseasenutrition');
                         throw err;
                     }
                 }catch(err){
@@ -88,7 +88,7 @@ class DiseasenutritionRepository implements IDiseasenutritionRepository {
         }
     }
 
-    async retrieveByID(diseasenutritionid: number): Promise<Diseasenutrition> {
+    async retrieveById(diseasenutritionid: number): Promise<Diseasenutrition> {
         try {
             const result = await AppDataSource.getRepository(Diseasenutrition).findOne({
                 where: { diseasenutrition_id: diseasenutritionid }, 
@@ -106,7 +106,7 @@ class DiseasenutritionRepository implements IDiseasenutritionRepository {
         }
     }
 
-    async retrieveByDiseaseID(diseaseid: number): Promise<any[]> {
+    async retrieveByDiseaseId(diseaseid: number): Promise<any[]> {
         try {
             const result = await AppDataSource.getRepository(Diseasenutrition)
             .createQueryBuilder("diseasenutrition")
@@ -129,7 +129,7 @@ class DiseasenutritionRepository implements IDiseasenutritionRepository {
         }
     }
 
-    async deleteByID(diseasenutritionid: number): Promise<number> {
+    async deleteById(diseasenutritionid: number): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Diseasenutrition);
             const result = await connect.delete({ diseasenutrition_id: diseasenutritionid });
@@ -145,7 +145,7 @@ class DiseasenutritionRepository implements IDiseasenutritionRepository {
         }
     }
 
-    async deleteByDiseaseID(diseaseid: number): Promise<number>{
+    async deleteByDiseaseId(diseaseid: number): Promise<number>{
         try {
             const connect = AppDataSource.getRepository(Diseasenutrition);
             const result = await connect.delete({ diseasedetail_disease_id: diseaseid });
@@ -161,7 +161,7 @@ class DiseasenutritionRepository implements IDiseasenutritionRepository {
         }
     }
 
-    async deleteByNutritionID(nutritionid: number): Promise<number> {
+    async deleteByNutritionId(nutritionid: number): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Diseasenutrition);
             const result = await connect.delete({ nutrition_nutrition_id: nutritionid });

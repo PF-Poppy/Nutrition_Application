@@ -15,12 +15,12 @@ class CheckUserAdminRole implements ICheckUserAdminRole {
         logging.info(NAMESPACE, 'Check User Management Admin Role');
         try {
 
-            const user = await userRespository.retrieveByID(userId); 
+            const user = await userRespository.retrieveById(userId); 
             if (!user) {
                 return false;
             }
 
-            const userRoles = await userroleRepository.retrieveByID(userId);
+            const userRoles = await userroleRepository.retrieveById(userId);
             if (userRoles.length == 0) {
                 return false;
             }
@@ -43,12 +43,12 @@ class CheckUserAdminRole implements ICheckUserAdminRole {
         logging.info(NAMESPACE, 'Check Pet Food Management Admin Role');
         try {
 
-            const user = await userRespository.retrieveByID(userId); 
+            const user = await userRespository.retrieveById(userId); 
             if (!user) {
                 return false;
             }
 
-            const userRoles = await userroleRepository.retrieveByID(userId);
+            const userRoles = await userroleRepository.retrieveById(userId);
             if (userRoles.length == 0) {
                 return false;
             }

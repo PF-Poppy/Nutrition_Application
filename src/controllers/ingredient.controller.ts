@@ -13,13 +13,13 @@ export default class IngredientController {
     async addNewIngredient(req: Request, res: Response){
         logging.info(NAMESPACE, 'Add new ingredientnutrition');
         const { userid, username } = (req as JwtPayload).jwtPayload;
-        if (!req.body) {
+        const { ingredientName, nutrient} = req.body;
+        if (!ingredientName || !nutrient) {
             res.status(400).send({
-                message: 'Content can not be empty!'
+                message: "Please fill in all the fields!"
             });
             return;
         }
-        const { ingredientName, nutrient} = req.body;
         try {
             const ingredient = new Ingredients();
             ingredient.ingredient_name = ingredientName;
@@ -30,9 +30,13 @@ export default class IngredientController {
             const addingredient = await ingredientsRepository.save(ingredient);
             
             ingredient.ingredientnutrition = await Promise.all(nutrient.map(async (nutrientInfoData: any) => {
+                if (!nutrientInfoData.nutrientName || !nutrientInfoData.amount) {
+                    await ingredientsRepository.deleteById(addingredient.ingredient_id);
+                    throw new Error("Please fill in all the fields!");
+                }
                 const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
                 if (nutrient === null || nutrient === undefined) {
-                    await ingredientsRepository.deleteByID(addingredient.ingredient_id);
+                    await ingredientsRepository.deleteById(addingredient.ingredient_id);
                     throw new Error("Not found nutrient with name: " + nutrientInfoData.nutrientName);
                 }
                 const nutrientInfo = new Ingredientnutrition();
@@ -46,7 +50,8 @@ export default class IngredientController {
                     const addnewngredientnutrition = await ingredientnutritionRepository.save(nutrientInfo);
                     return;
                 }catch(err){
-                    await ingredientsRepository.deleteByID(addingredient.ingredient_id);
+                    await ingredientnutritionRepository.deleteByIngredientId(addingredient.ingredient_id);
+                    await ingredientsRepository.deleteById(addingredient.ingredient_id);
                     throw err;
                 }
             }));
@@ -56,9 +61,17 @@ export default class IngredientController {
             });
         }catch(err){
             logging.error(NAMESPACE, (err as Error).message, err);
-            return res.status(500).send({
-                message: 'Error while adding ingredientnutrition'
-            });
+            if ( (err as Error).message === "Please fill in all the fields!" ) {
+                res.status(400).send({
+                    message: (err as Error).message
+                });
+                return;
+            }else {
+                res.status(500).send({
+                    message: "Some error occurred while creating animal."
+                });
+                return;
+            }
         }
     }
 
@@ -71,22 +84,25 @@ export default class IngredientController {
             });
             return;
         }
-        const { ingredientID, ingredientName, nutrient} = req.body;
-        if ( ingredientID === "" || ingredientID === undefined || ingredientID === null) {
+        const { ingredientId, ingredientName, nutrient} = req.body;
+        if ( ingredientId === "" || ingredientId === undefined || ingredientId === null) {
             res.status(400).send({
-                message: 'Ingredient ID can not be empty!'
+                message: 'Ingredient Id can not be empty!'
             });
             return;
         }
         try {
             const ingredient = new Ingredients();
-            ingredient.ingredient_id = ingredientID;
+            ingredient.ingredient_id = ingredientId;
             ingredient.ingredient_name = ingredientName;
             ingredient.update_date = new Date();
             ingredient.update_by = `${userid}_${username}`;
             const updateingredient = await ingredientsRepository.update(ingredient);
 
             ingredient.ingredientnutrition = await Promise.all(nutrient.map(async (nutrientInfoData: any) => {
+                if (!nutrientInfoData.nutrientName || !nutrientInfoData.amount) {
+                    throw new Error("Please fill in all the fields!");
+                }
                 const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
                 if (nutrient === null || nutrient === undefined) {
                     throw new Error("Not found nutrient with name: " + nutrientInfoData.nutrientName);
@@ -109,10 +125,17 @@ export default class IngredientController {
                 message: 'Update ingredientnutrition successfully'
             });
         }catch(err){
-            logging.error(NAMESPACE, (err as Error).message, err);
-            return res.status(500).send({
-                message: 'Error while updating ingredientnutrition'
-            });
+            if ( (err as Error).message === "Please fill in all the fields!" ) {
+                res.status(400).send({
+                    message: (err as Error).message
+                });
+                return;
+            }else {
+                res.status(500).send({
+                    message: "Some error occurred while creating animal."
+                });
+                return;
+            }
         }
     }
 
@@ -122,7 +145,7 @@ export default class IngredientController {
             const ingredient = await ingredientsRepository.retrieveAll();
 
             const result = await Promise.all(ingredient.map(async (ingredientInfo: Ingredients) => {
-                const ingredientnutrition = await ingredientnutritionRepository.retrieveByIngredientID(ingredientInfo.ingredient_id);
+                const ingredientnutrition = await ingredientnutritionRepository.retrieveByIngredientId(ingredientInfo.ingredient_id);
 
                 const nutrientlimitinfo = await Promise.all(ingredientnutrition.map(async (ingredientnutritionInfo: any) => {
                     return {
@@ -131,7 +154,7 @@ export default class IngredientController {
                     }
                 }));
                 return {
-                    ingredientID: ingredientInfo.ingredient_id,
+                    ingredientId: ingredientInfo.ingredient_id,
                     ingredientName: ingredientInfo.ingredient_name,
                     nutrient: nutrientlimitinfo
                 };
@@ -148,17 +171,17 @@ export default class IngredientController {
 
     async deleleIngredient(req: Request, res: Response) {
         logging.info(NAMESPACE, 'Delete ingredientnutrition');
-        console.log(req.params.ingredientID)
-        if (req.params.ingredientID == ":ingredientID" || !req.params.ingredientID) {
+        console.log(req.params.ingredientId)
+        if (req.params.ingredientId == ":ingredientId" || !req.params.ingredientId) {
             res.status(400).send({
-                message: 'Ingredient ID can not be empty!'
+                message: 'Ingredient Id can not be empty!'
             });
             return;
         }
-        const ingredientid: string = req.params.ingredientID;
+        const ingredientid: string = req.params.ingredientId;
 
         try {
-            const ingredient = await ingredientsRepository.retrieveByID(ingredientid);
+            const ingredient = await ingredientsRepository.retrieveById(ingredientid);
             if (!ingredient) {
                 res.status(404).send( {
                     message: `Not found ingredient with id=${ingredient}.`
@@ -167,9 +190,9 @@ export default class IngredientController {
             }
 
             try {
-                await ingredientnutritionRepository.deleteByIngredientID(ingredientid);
+                await ingredientnutritionRepository.deleteByIngredientId(ingredientid);
                 //TODO ลบrecipeingredients ด้วย
-                await ingredientsRepository.deleteByID(ingredientid);
+                await ingredientsRepository.deleteById(ingredientid);
             }catch (err) {
                 logging.error(NAMESPACE, (err as Error).message, err);
                 return res.status(500).send({

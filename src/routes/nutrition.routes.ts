@@ -14,7 +14,7 @@ class NutritionRoutes {
         this.router.get("/", [authJwt.validateToken, authJwt.isPetFoodManagementAdmin], this.controller.getAllNutrition);
         this.router.post("/add-new", [authJwt.validateToken, authJwt.isPetFoodManagementAdmin], this.controller.addNewNutrition);
         this.router.put("/update", [authJwt.validateToken, authJwt.isPetFoodManagementAdmin], this.controller.updateNutrition);
-        this.router.delete("/delete/:nutritionID", [authJwt.validateToken, authJwt.isPetFoodManagementAdmin], this.controller.deleteNutrition);
+        this.router.delete("/delete/:nutritionId", [authJwt.validateToken, authJwt.isPetFoodManagementAdmin], this.controller.deleteNutrition);
     }
 }
 

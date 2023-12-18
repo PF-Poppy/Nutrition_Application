@@ -9,11 +9,11 @@ interface IPetRepository {
     save(pet: Pet): Promise<Pet>;
     update(pet: Pet): Promise<Pet>;
     retrieveAll(): Promise<Pet[]>;
-    retrieveByUserID(userid: string): Promise<any[]>;
+    retrieveByUserId(userid: string): Promise<any[]>;
     retrieveByName(petname:string, userid:string): Promise<Pet | undefined>;
-    retrieveByID(petid: number): Promise<Pet | undefined>;
-    deleteByID(petid: number): Promise<number>;
-    deleteByAnimalTypeID(animaltypeid: number): Promise<number>;
+    retrieveById(petid: number): Promise<Pet | undefined>;
+    deleteById(petid: number): Promise<number>;
+    deleteByAnimalTypeId(animaltypeid: number): Promise<number>;
     deleteAll(): Promise<number>;
 }
 
@@ -24,10 +24,10 @@ class PetRepository implements IPetRepository {
             const result = await connect.save(pet);
             logging.info(NAMESPACE, "Save pet successfully.");
             try {
-                const res = await this.retrieveByID(result.pet_id);
+                const res = await this.retrieveById(result.pet_id);
                 return res;
             }catch (err) {
-                logging.error(NAMESPACE, 'Error call retrieveByID from insert pet');
+                logging.error(NAMESPACE, 'Error call retrieveById from insert pet');
                 throw err;
             }
         } catch (err) {
@@ -46,10 +46,10 @@ class PetRepository implements IPetRepository {
             }
             logging.info(NAMESPACE, "Update pet successfully.");
             try {
-                const res = await this.retrieveByID(pet.pet_id);
+                const res = await this.retrieveById(pet.pet_id);
                 return res;
             }catch (err) {
-                logging.error(NAMESPACE, 'Error call retrieveByID from update pet');
+                logging.error(NAMESPACE, 'Error call retrieveById from update pet');
                 throw err;
             }
         } catch (err) {
@@ -71,7 +71,7 @@ class PetRepository implements IPetRepository {
         }
     }
 
-    async retrieveByUserID(userid: string): Promise<any[]> {
+    async retrieveByUserId(userid: string): Promise<any[]> {
         try {
             const result = await AppDataSource.getRepository(Pet)
             .createQueryBuilder("pet")
@@ -118,7 +118,7 @@ class PetRepository implements IPetRepository {
         }
     }
 
-    async retrieveByID(petid: number): Promise<Pet> {
+    async retrieveById(petid: number): Promise<Pet> {
         try {
             const result = await AppDataSource.getRepository(Pet).findOne({
                 where: { pet_id: petid },
@@ -136,7 +136,7 @@ class PetRepository implements IPetRepository {
         }
     }
 
-    async deleteByID(petid: number): Promise<number> {
+    async deleteById(petid: number): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Pet)
             const result = await connect.delete({ pet_id: petid});
@@ -152,7 +152,7 @@ class PetRepository implements IPetRepository {
         }
     }
 
-    async deleteByAnimalTypeID(animaltypeid: number): Promise<number> {
+    async deleteByAnimalTypeId(animaltypeid: number): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Pet)
             const result = await connect.delete({ animaltype_type_id: animaltypeid});

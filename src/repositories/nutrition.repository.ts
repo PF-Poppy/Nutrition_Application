@@ -8,9 +8,9 @@ interface INutritionRepository {
     save(nutrition:Nutrition): Promise<Nutrition>;
     update(nutrition:Nutrition): Promise<Nutrition>;
     retrieveAll(): Promise<Nutrition[]>;
-    retrieveByID(nutrientid: number): Promise<Nutrition | undefined>;
+    retrieveById(nutrientid: number): Promise<Nutrition | undefined>;
     retrieveByName(nutrientname: string): Promise<Nutrition | undefined>;
-    deleteByID(nutrientid: number): Promise<number>;
+    deleteById(nutrientid: number): Promise<number>;
     deleteAll(): Promise<number>;
 }
 
@@ -29,10 +29,10 @@ class NutritionRepository implements INutritionRepository {
             const result = await connect.save(nutrition);
             logging.info(NAMESPACE, "Save nutrition successfully.");
             try {
-                const res = await this.retrieveByID(result.nutrition_id);
+                const res = await this.retrieveById(result.nutrition_id);
                 return res;
             }catch(err){
-                logging.error(NAMESPACE, 'Error call retrieveByID from insert nutrition');
+                logging.error(NAMESPACE, 'Error call retrieveById from insert nutrition');
                 throw err;
             }
         } catch (err) {
@@ -62,10 +62,10 @@ class NutritionRepository implements INutritionRepository {
             }
             logging.info(NAMESPACE, "Update nutrition successfully.");
             try {
-                const res = await this.retrieveByID(nutrition.nutrition_id);
+                const res = await this.retrieveById(nutrition.nutrition_id);
                 return res;
             }catch (err) {
-                logging.error(NAMESPACE, 'Error call retrieveByID from update nutrition');
+                logging.error(NAMESPACE, 'Error call retrieveById from update nutrition');
                 throw err;
             }
         } catch (err) {
@@ -87,7 +87,7 @@ class NutritionRepository implements INutritionRepository {
         }
     }
 
-    async retrieveByID(nutrientid: number): Promise<Nutrition>{
+    async retrieveById(nutrientid: number): Promise<Nutrition>{
         try {
             const result = await AppDataSource.getRepository(Nutrition).findOne({
                 where: { nutrition_id : nutrientid },
@@ -123,7 +123,7 @@ class NutritionRepository implements INutritionRepository {
         }
     }
 
-    async deleteByID(nutrientid: number): Promise<number>{
+    async deleteById(nutrientid: number): Promise<number>{
         try {
             const connect = AppDataSource.getRepository(Nutrition)
             const result = await connect.delete({ nutrition_id : nutrientid})

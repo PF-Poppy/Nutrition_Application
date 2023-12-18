@@ -5,28 +5,36 @@ import logging from '../config/logging';
 
 const NAMESPACE = 'Disease Repository';
 
-interface IDiseaseRepository {
+interface IdiseaseRepository {
     save(disease: Disease): Promise<Disease>;
     update(disease: Disease): Promise<Disease>;
-    retrieveByID(diseaseid: number): Promise<Disease | undefined>;
-    retrieveByPetID(petid: number): Promise<any[]>;
-    deleteByID(diseaseid: number): Promise<number>;
-    deleteByPetID(petid: number): Promise<number>;
-    deleteByDiseaseID(diseaseid: number): Promise<number>;
+    retrieveById(diseaseid: number): Promise<Disease | undefined>;
+    retrieveByPetId(petid: number): Promise<any[]>;
+    deleteById(diseaseid: number): Promise<number>;
+    deleteByPetId(petid: number): Promise<number>;
+    deleteByDiseaseId(diseaseid: number): Promise<number>;
     deleteAll(): Promise<number>;
 }
 
-class DiseaseRepository implements IDiseaseRepository {
+class DiseaseRepository implements IdiseaseRepository {
     async save(disease: Disease): Promise<Disease> {
         try {
             const connect = AppDataSource.getRepository(Disease);
+            const info = await connect.find(
+                { where: { diseasedetail_disease_id: disease.diseasedetail_disease_id, pet_pet_id: disease.pet_pet_id }}
+            );
+            if (info.length > 0) {
+                logging.error(NAMESPACE, "Duplicate disease.");
+                throw 'Duplicate disease.';
+            } 
+            
             const result = await connect.save(disease);
             logging.info(NAMESPACE, "Save disease successfully.");
             try {
-                const res = await this.retrieveByID(result.id);
+                const res = await this.retrieveById(result.id);
                 return res;
             }catch (err) {
-                logging.error(NAMESPACE, 'Error call retrieveByID from insert disease');
+                logging.error(NAMESPACE, 'Error call retrieveById from insert disease');
                 throw err;
             }
         }catch (err) {
@@ -46,24 +54,24 @@ class DiseaseRepository implements IDiseaseRepository {
                     const result = await connect.save(disease);
                     logging.info(NAMESPACE, "Update disease successfully.");
                     try {
-                        const res = await this.retrieveByID(result.id);
+                        const res = await this.retrieveById(result.id);
                         return res;
                     }catch (err) {
-                        logging.error(NAMESPACE, 'Error call retrieveByID from update disease');
+                        logging.error(NAMESPACE, 'Error call retrieveById from update disease');
                         throw err;
                     }
                 }catch (err) {
-                    logging.error(NAMESPACE, 'Error call retrieveByID from update disease');
+                    logging.error(NAMESPACE, 'Error call retrieveById from update disease');
                     throw err;
                 }
             }else {
                 const result = await connect.update({ id : diseaseinfo.id }, disease);
                 logging.info(NAMESPACE, "Update disease successfully.");
                 try {
-                    const res = await this.retrieveByID(diseaseinfo.id);
+                    const res = await this.retrieveById(diseaseinfo.id);
                     return res;
                 }catch (err) {
-                    logging.error(NAMESPACE, 'Error call retrieveByID from update disease');
+                    logging.error(NAMESPACE, 'Error call retrieveById from update disease');
                     throw err;
                 }
             }
@@ -73,7 +81,7 @@ class DiseaseRepository implements IDiseaseRepository {
         }
     }
 
-    async retrieveByID(diseaseid: number): Promise<Disease>{
+    async retrieveById(diseaseid: number): Promise<Disease>{
         try {
             const result = await AppDataSource.getRepository(Disease).findOne({
                 where: { id: diseaseid},
@@ -91,7 +99,7 @@ class DiseaseRepository implements IDiseaseRepository {
         }
     }
 
-    async retrieveByPetID(petid: number): Promise<any[]> {
+    async retrieveByPetId(petid: number): Promise<any[]> {
         try {
             const result = await AppDataSource.getRepository(Disease)
             .createQueryBuilder("disease")
@@ -113,7 +121,7 @@ class DiseaseRepository implements IDiseaseRepository {
         }
     }
 
-    async deleteByID(diseaseid: number): Promise<number> {
+    async deleteById(diseaseid: number): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Disease);
             const result = await connect.delete({ id: diseaseid});
@@ -129,7 +137,7 @@ class DiseaseRepository implements IDiseaseRepository {
         }
     }
 
-    async deleteByPetID(petid: number): Promise<number> {
+    async deleteByPetId(petid: number): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Disease);
             const result = await connect.delete({ pet_pet_id: petid});
@@ -145,7 +153,7 @@ class DiseaseRepository implements IDiseaseRepository {
         }
     }
 
-    async deleteByDiseaseID(diseaseid: number): Promise<number> {
+    async deleteByDiseaseId(diseaseid: number): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Disease);
             const result = await connect.delete({ diseasedetail_disease_id: diseaseid});

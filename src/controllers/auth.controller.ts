@@ -61,7 +61,7 @@ export default class AuthController {
                 try {
                     const result = await userRoleRepository.save(userrole);
                 }catch (err) {
-                    await userRepository.deleteByID(signup.user_id);
+                    await userRepository.deleteById(signup.user_id);
                     res.status(500).send({
                         message: err
                     });
@@ -129,7 +129,7 @@ export default class AuthController {
                 res.status(200).send({
                     accessToken: (await token).valueOf(),
                     username: user.username,
-                    userID: user.user_id,
+                    userId: user.user_id,
                     userRole: roleResult
                 });
             }catch (err) {

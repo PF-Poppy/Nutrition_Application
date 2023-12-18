@@ -15,7 +15,7 @@ class AnimalRoutes {
         this.router.get('/admin-allanimaltype',[authJwt.validateToken,authJwt.isPetFoodManagementAdmin], this.controller.getAllAnimalType);
         this.router.post('/add-new',[authJwt.validateToken,authJwt.isPetFoodManagementAdmin], this.controller.addNewAnimalType);
         this.router.put('/update',[authJwt.validateToken,authJwt.isPetFoodManagementAdmin],this.controller.updateAnimalType)
-        this.router.delete('/delete/:petTypeInfoID',[authJwt.validateToken,authJwt.isPetFoodManagementAdmin],this.controller.deleteAnimalType)
+        this.router.delete('/delete/:petTypeInfoId',[authJwt.validateToken,authJwt.isPetFoodManagementAdmin],this.controller.deleteAnimalType)
     }
 }
 

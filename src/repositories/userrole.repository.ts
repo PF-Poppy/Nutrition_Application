@@ -6,13 +6,13 @@ import logging from "../config/logging";
 const NAMESPACE = "UserRole Repository";
 
 interface IUserRoleRepository {
-    retrieveByID(userid:string): Promise<any[]>;
+    retrieveById(userid:string): Promise<any[]>;
     save(userrole:UserRole): Promise<UserRole[]>
-    deleteByRoleID(roleid:number): Promise<number>;
+    deleteByRoleId(roleid:number): Promise<number>;
 }
 
 class UserRoleRepository implements IUserRoleRepository {
-    async retrieveByID(userid:string) : Promise<any[]>{
+    async retrieveById(userid:string) : Promise<any[]>{
         try {
             const result = await AppDataSource.getRepository(UserRole)
             .createQueryBuilder("userrole")
@@ -35,10 +35,10 @@ class UserRoleRepository implements IUserRoleRepository {
             const result = await AppDataSource.getRepository(UserRole).save(userrole);
             logging.info(NAMESPACE, 'Insert UserRole successfully.');
             try {
-                const role = await this.retrieveByID(result.user_user_id);
+                const role = await this.retrieveById(result.user_user_id);
                 return role;
             }catch (err) {
-                logging.error(NAMESPACE, 'Error call retrieveByID from insert userRole');
+                logging.error(NAMESPACE, 'Error call retrieveById from insert userRole');
                 throw err;
             }
         } catch (err) {
@@ -47,7 +47,7 @@ class UserRoleRepository implements IUserRoleRepository {
         }
     }
 
-    async deleteByRoleID(roleid:number): Promise<number> {
+    async deleteByRoleId(roleid:number): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(UserRole);
             const result = await connect.delete({role_role_id: roleid});

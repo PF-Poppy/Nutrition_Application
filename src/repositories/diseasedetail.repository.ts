@@ -4,17 +4,17 @@ import logging from "../config/logging";
 
 const NAMESPACE = "Diseasedetail Repository";
 
-interface IDiseasedetailRepository {
+interface IdiseasedetailRepository {
     save(diseasedetail:Diseasedetail): Promise<Diseasedetail>;
     update(diseasedetail:Diseasedetail): Promise<Diseasedetail>;
-    retrieveByID(diseaseid: number): Promise<Diseasedetail | undefined>;
-    retrieveByAnimalTypeID(typeid: number): Promise<Diseasedetail[]>;
-    deleteByID(diseaseid: number): Promise<number>;
-    deleteByAnimalTypeID(typeid: number): Promise<number>
+    retrieveById(diseaseid: number): Promise<Diseasedetail | undefined>;
+    retrieveByAnimalTypeId(typeid: number): Promise<Diseasedetail[]>;
+    deleteById(diseaseid: number): Promise<number>;
+    deleteByAnimalTypeId(typeid: number): Promise<number>
     deleteAll(): Promise<number>;
 }
 
-class DiseasedetailRepository implements IDiseasedetailRepository {
+class DiseasedetailRepository implements IdiseasedetailRepository {
     async save(diseasedetail:Diseasedetail): Promise<Diseasedetail> {
         try {
             const connect = AppDataSource.getRepository(Diseasedetail)
@@ -29,10 +29,10 @@ class DiseasedetailRepository implements IDiseasedetailRepository {
             const result = await connect.save(diseasedetail);
             logging.info(NAMESPACE, "Save diseasedetail successfully.");
             try {
-                const res = await this.retrieveByID(result.disease_id);
+                const res = await this.retrieveById(result.disease_id);
                 return res;
             }catch(err){
-                logging.error(NAMESPACE, 'Error call retrieveByID from insert diseasedetail');
+                logging.error(NAMESPACE, 'Error call retrieveById from insert diseasedetail');
                 throw err;
             }
         } catch (err) {
@@ -59,10 +59,10 @@ class DiseasedetailRepository implements IDiseasedetailRepository {
                 const result = await connect.update({ disease_id : diseasedetail.disease_id }, diseasedetail);    
                 logging.info(NAMESPACE, "Update diseasedetail successfully.");
                 try {
-                    const res = await this.retrieveByID(diseasedetail.disease_id);
+                    const res = await this.retrieveById(diseasedetail.disease_id);
                     return res;
                 }catch(err){
-                    logging.error(NAMESPACE, 'Error call retrieveByID from insert diseasenutrition');
+                    logging.error(NAMESPACE, 'Error call retrieveById from insert diseasenutrition');
                     throw err;
                 }
             }catch(err){
@@ -75,7 +75,7 @@ class DiseasedetailRepository implements IDiseasedetailRepository {
         }
     }
 
-    async retrieveByID(diseaseid: number): Promise<Diseasedetail> {
+    async retrieveById(diseaseid: number): Promise<Diseasedetail> {
         try {
             const result = await AppDataSource.getRepository(Diseasedetail).findOne({
                 where: { disease_id: diseaseid }, 
@@ -93,7 +93,7 @@ class DiseasedetailRepository implements IDiseasedetailRepository {
         }
     }
 
-    async retrieveByAnimalTypeID(typeid: number): Promise<Diseasedetail[]> {
+    async retrieveByAnimalTypeId(typeid: number): Promise<Diseasedetail[]> {
         try {
             const result = await AppDataSource.getRepository(Diseasedetail).find({
                 where: { animaltype_type_id : typeid }, 
@@ -107,7 +107,7 @@ class DiseasedetailRepository implements IDiseasedetailRepository {
         }
     }
 
-    async deleteByID(diseaseid: number): Promise<number> {
+    async deleteById(diseaseid: number): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Diseasedetail);
             const result = await connect.delete({ disease_id: diseaseid });
@@ -123,7 +123,7 @@ class DiseasedetailRepository implements IDiseasedetailRepository {
         }
     }
 
-    async deleteByAnimalTypeID(typeid: number): Promise<number> {
+    async deleteByAnimalTypeId(typeid: number): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Diseasedetail);
             const result = await connect.delete({ animaltype_type_id: typeid });

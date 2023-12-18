@@ -9,8 +9,8 @@ interface IROleRepository {
     update(role:Role): Promise<Role>;
     retrieveAll(): Promise<Role[]>;
     retrieveByName(rolename:string): Promise<Role | undefined>;
-    retrieveByID(roleid: number): Promise<Role | undefined>;
-    deleteByID(roleid: number): Promise<number>;
+    retrieveById(roleid: number): Promise<Role | undefined>;
+    deleteById(roleid: number): Promise<number>;
     deleteAll(): Promise<number>;
 }
 
@@ -29,10 +29,10 @@ class ROleRepository implements IROleRepository {
             const result = await connect.save(role);
             logging.info(NAMESPACE, "Save role successfully.");
             try {
-                const res = await this.retrieveByID(result.role_id);
+                const res = await this.retrieveById(result.role_id);
                 return res;
             }catch (err) {
-                logging.error(NAMESPACE, 'Error call retrieveByID from insert role');
+                logging.error(NAMESPACE, 'Error call retrieveById from insert role');
                 throw err;
             }  
         } catch (err) {
@@ -62,10 +62,10 @@ class ROleRepository implements IROleRepository {
             }
             logging.info(NAMESPACE, "Update role successfully.");
             try {
-                const res = await this.retrieveByID(role.role_id);
+                const res = await this.retrieveById(role.role_id);
                 return res;
             }catch (err) {
-                logging.error(NAMESPACE, 'Error call retrieveByID from update role');
+                logging.error(NAMESPACE, 'Error call retrieveById from update role');
                 throw err;
             }
         }catch (err) {
@@ -105,7 +105,7 @@ class ROleRepository implements IROleRepository {
         }
     }
 
-    async retrieveByID(roleid: number): Promise<Role> {
+    async retrieveById(roleid: number): Promise<Role> {
         try { 
             const result = await AppDataSource.getRepository(Role).findOne({
                 where: { role_id : roleid },
@@ -123,7 +123,7 @@ class ROleRepository implements IROleRepository {
         }
     }
 
-    async deleteByID(roleid: number): Promise<number>{
+    async deleteById(roleid: number): Promise<number>{
         try {
             const connect = AppDataSource.getRepository(Role)
             const result = await connect.delete({role_id: roleid});

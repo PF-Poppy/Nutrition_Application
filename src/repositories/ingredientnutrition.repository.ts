@@ -8,10 +8,10 @@ const NAMESPACE = "Ingredientnutrition Repository";
 interface IIngredientnutritionRepository {
     save(ingredientnutrition:Ingredientnutrition): Promise<Ingredientnutrition>;
     update(ingredientnutrition:Ingredientnutrition): Promise<Ingredientnutrition>; 
-    retrieveByID(ingredientnutritionid: number): Promise<Ingredientnutrition | undefined>;
-    retrieveByIngredientID(ingredientid: string): Promise<any[]>;
-    deleteByIngredientID(ingredientid: string): Promise<number>
-    deleteByNutritionID(nutritionid: number): Promise<number>
+    retrieveById(ingredientnutritionid: number): Promise<Ingredientnutrition | undefined>;
+    retrieveByIngredientId(ingredientid: string): Promise<any[]>;
+    deleteByIngredientId(ingredientid: string): Promise<number>
+    deleteByNutritionId(nutritionid: number): Promise<number>
     deleteAll(): Promise<number>
 }
 
@@ -30,10 +30,10 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
             const result = await connect.save(ingredientnutrition);
             logging.info(NAMESPACE, "Save ingredientnutrition successfully.");
             try {
-                const res = await this.retrieveByID(result.ingredient_nutrition_id);
+                const res = await this.retrieveById(result.ingredient_nutrition_id);
                 return res;
             }catch(err){
-                logging.error(NAMESPACE, 'Error call retrieveByID from insert ingredientnutrition');
+                logging.error(NAMESPACE, 'Error call retrieveById from insert ingredientnutrition');
                 throw err;
             }
         }catch(err){
@@ -54,10 +54,10 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
                     const result = await connect.save(ingredientnutrition);
                     logging.info(NAMESPACE, "Update ingredientnutrition successfully.");
                     try {
-                        const res = await this.retrieveByID(result.ingredient_nutrition_id);
+                        const res = await this.retrieveById(result.ingredient_nutrition_id);
                         return res;
                     }catch(err){
-                        logging.error(NAMESPACE, 'Error call retrieveByID from insert ingredientnutrition');
+                        logging.error(NAMESPACE, 'Error call retrieveById from insert ingredientnutrition');
                         throw err;
                     }
                 }catch(err){
@@ -69,10 +69,10 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
                     const result = await connect.update({ ingredient_nutrition_id : info.ingredient_nutrition_id}, ingredientnutrition);
                     logging.info(NAMESPACE, "Update ingredientnutrition successfully.");
                     try {
-                        const res = await this.retrieveByID(info.ingredient_nutrition_id);
+                        const res = await this.retrieveById(info.ingredient_nutrition_id);
                         return res;
                     }catch(err){
-                        logging.error(NAMESPACE, 'Error call retrieveByID from insert ingredientnutrition');
+                        logging.error(NAMESPACE, 'Error call retrieveById from insert ingredientnutrition');
                         throw err;
                     }
                 }catch(err){
@@ -86,7 +86,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
         }
     }
 
-    async retrieveByID(ingredientnutritionid: number): Promise<Ingredientnutrition> {
+    async retrieveById(ingredientnutritionid: number): Promise<Ingredientnutrition> {
         try {
             const result = await AppDataSource.getRepository(Ingredientnutrition).findOne({
                 where: { ingredient_nutrition_id : ingredientnutritionid },
@@ -104,7 +104,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
         }
     }
 
-    async retrieveByIngredientID(ingredientid: string): Promise<any[]> {
+    async retrieveByIngredientId(ingredientid: string): Promise<any[]> {
         try {
             const result = await AppDataSource.getRepository(Ingredientnutrition)
             .createQueryBuilder("ingredientnutrition")
@@ -126,7 +126,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
         }
     }
 
-    async deleteByIngredientID(ingredientid: string): Promise<number> {
+    async deleteByIngredientId(ingredientid: string): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Ingredientnutrition)
             const result = await connect.delete({ ingredients_ingredient_id : ingredientid});
@@ -142,7 +142,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
         }
     }
 
-    async deleteByNutritionID(nutritionid: number): Promise<number> {
+    async deleteByNutritionId(nutritionid: number): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Ingredientnutrition);
             const result = await connect.delete({ nutrition_nutrition_id: nutritionid });

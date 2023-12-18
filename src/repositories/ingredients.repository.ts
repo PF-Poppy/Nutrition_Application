@@ -8,8 +8,8 @@ interface IIngredientsRepository {
     save(ingredient:Ingredients): Promise<Ingredients>;
     update(ingredient:Ingredients): Promise<Ingredients>;
     retrieveAll(): Promise<Ingredients[]>;
-    retrieveByID(ingredientid: string): Promise<Ingredients | undefined>;
-    deleteByID(ingredientid: string): Promise<number>;
+    retrieveById(ingredientid: string): Promise<Ingredients | undefined>;
+    deleteById(ingredientid: string): Promise<number>;
     deleteAll(): Promise<number>
 }
 
@@ -28,10 +28,10 @@ class IngredientsRepository implements IIngredientsRepository {
             const result =  await connect.save(ingredient);
             logging.info(NAMESPACE, "Save ingredients successfully.");
             try {
-                const res = await this.retrieveByID(result.ingredient_id);
+                const res = await this.retrieveById(result.ingredient_id);
                 return res;
             }catch(err){
-                logging.error(NAMESPACE, 'Error call retrieveByID from insert ingredients');
+                logging.error(NAMESPACE, 'Error call retrieveById from insert ingredients');
                 throw err;
             }
         }catch(err){
@@ -62,10 +62,10 @@ class IngredientsRepository implements IIngredientsRepository {
             }
             logging.info(NAMESPACE, "Update ingredients successfully.");
             try {
-                const res = await this.retrieveByID(ingredient.ingredient_id);
+                const res = await this.retrieveById(ingredient.ingredient_id);
                 return res;
             }catch(err){
-                logging.error(NAMESPACE, 'Error call retrieveByID from update ingredients');
+                logging.error(NAMESPACE, 'Error call retrieveById from update ingredients');
                 throw err;
             }
         }catch(err){
@@ -87,7 +87,7 @@ class IngredientsRepository implements IIngredientsRepository {
         }
     }
 
-    async retrieveByID(ingredientid: string): Promise<Ingredients> {
+    async retrieveById(ingredientid: string): Promise<Ingredients> {
         try {
             const result = await AppDataSource.getRepository(Ingredients).findOne({
                 where: { ingredient_id : ingredientid },
@@ -105,7 +105,7 @@ class IngredientsRepository implements IIngredientsRepository {
         }
     }
 
-    async deleteByID(ingredientid: string): Promise<number> {
+    async deleteById(ingredientid: string): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Ingredients)
             const result = await connect.delete({ ingredient_id : ingredientid});

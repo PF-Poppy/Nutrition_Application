@@ -14,7 +14,7 @@ class IngredientRoutes {
         this.router.get('/',[authJwt.validateToken,authJwt.isPetFoodManagementAdmin], this.controller.getAllIngredient);
         this.router.post('/add-new',[authJwt.validateToken,authJwt.isPetFoodManagementAdmin], this.controller.addNewIngredient);
         this.router.put('/update',[authJwt.validateToken,authJwt.isPetFoodManagementAdmin],this.controller.updateIngredient)
-        this.router.delete('/delete/:ingredientID',[authJwt.validateToken,authJwt.isPetFoodManagementAdmin],this.controller.deleleIngredient)
+        this.router.delete('/delete/:ingredientId',[authJwt.validateToken,authJwt.isPetFoodManagementAdmin],this.controller.deleleIngredient)
     }
 
 }

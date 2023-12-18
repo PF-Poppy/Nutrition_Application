@@ -6,12 +6,12 @@ import logging from "../config/logging";
 const NAMESPACE = "User Repository";
 
 interface IUserRepository {
-    retrieveByID(userid:string): Promise<User | undefined>;
-    deleteByID(userid:string): Promise<number>;
+    retrieveById(userid:string): Promise<User | undefined>;
+    deleteById(userid:string): Promise<number>;
 }
 
 class UserRepository implements IUserRepository {
-    async retrieveByID(userid:string) : Promise<User>{
+    async retrieveById(userid:string) : Promise<User>{
         try {
             const result = await AppDataSource.getRepository(User).findOne({
                 where: { user_id : userid },
@@ -39,7 +39,7 @@ class UserRepository implements IUserRepository {
         }
     }
 
-    async deleteByID(userid:string) : Promise<number>{
+    async deleteById(userid:string) : Promise<number>{
         try {
             const result = await AppDataSource.getRepository(User).delete({
                 user_id : userid

@@ -15,7 +15,7 @@ export default class NutritionController {
             const nutrient = await nutritionRepository.retrieveAll();
             const result = await Promise.all(nutrient.map(async (nutrientData: Nutrition) => {
                 return {
-                    nutritionID: nutrientData.nutrition_id.toString(),
+                    nutritionId: nutrientData.nutrition_id.toString(),
                     nutrientName: nutrientData.nutrient_name
                 };
             }));
@@ -32,13 +32,15 @@ export default class NutritionController {
     async addNewNutrition(req: Request, res: Response) {
         logging.info(NAMESPACE, "Add new nutrition");
         const { userid, username} = (req as JwtPayload).jwtPayload;
-        if (!req.body) {
-            res.status(400).send({
-                message: "Content can not be empty!"
-            });
-        }
         const { nutrientName } = req.body;
+        if(!nutrientName) {
+            res.status(400).send({
+                message: "Please fill in all the fields!"
+            });
+            return;
+        }
         try {
+            
             const nutrition = new Nutrition();
             nutrition.nutrient_name = nutrientName;
             nutrition.create_by = `${userid}_${username}`;
@@ -60,22 +62,22 @@ export default class NutritionController {
     async updateNutrition(req: Request, res: Response) {
         logging.info(NAMESPACE, "Update nutrition");
         const { userid, username} = (req as JwtPayload).jwtPayload;
-        if (!req.body) {
+        const { nutritionId, nutrientName } = req.body;
+        if (nutritionId == "" || nutritionId == null || nutritionId == undefined) {
             res.status(400).send({
-                message: "Content can not be empty!"
+                message: "Nutrition Id can not be empty!"
             });
             return;
         }
-        const { nutritionID, nutrientName } = req.body;
-        if (nutritionID == "" || nutritionID == null || nutritionID == undefined) {
+        if (!nutrientName) {
             res.status(400).send({
-                message: "Nutrition ID can not be empty!"
+                message: "Please fill in all the fields!"
             });
             return;
         }
         try {
             const nutrient = new Nutrition();
-            nutrient.nutrition_id = parseInt(nutritionID);
+            nutrient.nutrition_id = parseInt(nutritionId);
             nutrient.nutrient_name = nutrientName;
             nutrient.update_by = `${userid}_${username}`;
             nutrient.update_date = new Date();
@@ -94,18 +96,18 @@ export default class NutritionController {
 
     async deleteNutrition(req: Request, res: Response) {
         logging.info(NAMESPACE, "Delete nutrition");
-        if (req.params.nutritionID == ":nutritionID" || !req.params.nutritionID) {
+        if (req.params.nutritionId == ":nutritionId" || !req.params.nutritionId) {
             res.status(400).send({
-                message: "Nutrition ID can not be empty!"
+                message: "Nutrition Id can not be empty!"
             });
             return;
         }
-        const nutritionID:number = parseInt(req.params.nutritionID);
+        const nutritionId:number = parseInt(req.params.nutritionId);
 
         try {
-            await diseasenutritionRepository.deleteByNutritionID(nutritionID);
-            await ingredientnutritionRepository.deleteByNutritionID(nutritionID);
-            await nutritionRepository.deleteByID(nutritionID);
+            await diseasenutritionRepository.deleteByNutritionId(nutritionId);
+            await ingredientnutritionRepository.deleteByNutritionId(nutritionId);
+            await nutritionRepository.deleteById(nutritionId);
             logging.info(NAMESPACE, "Delete nutrition successfully.");
             res.status(200).send({
                 message: "Delete nutrition successfully.",

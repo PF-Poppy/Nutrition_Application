@@ -6,10 +6,10 @@ import logging from "../config/logging";
 const NAMESPACE = "User Controller";
 
 export default class AnimalController {
-    async getUserByID(req: Request, res: Response) {
+    async getUserById(req: Request, res: Response) {
         const id:string = req.params.id;
         try {
-            const result = await userRespository.retrieveByID(id);
+            const result = await userRespository.retrieveById(id);
             if (result) res.status(200).send(result);
             else
                 res.status(404).send({

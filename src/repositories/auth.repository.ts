@@ -23,10 +23,10 @@ class AuthenRepository implements IAuthenRepository {
       const result = await AppDataSource.getRepository(User).save(user);
       logging.info(NAMESPACE, 'User signed up successfully.');
       try {
-        const res = await userRespository.retrieveByID(result.user_id);
+        const res = await userRespository.retrieveById(result.user_id);
         return res;
       }catch(err){
-        logging.error(NAMESPACE, 'Error call retrieveByID from insert user');
+        logging.error(NAMESPACE, 'Error call retrieveById from insert user');
         throw err;
       }
     } catch (err) {

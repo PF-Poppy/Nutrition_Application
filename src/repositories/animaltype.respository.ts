@@ -8,9 +8,9 @@ interface IAnimalRepository {
     save(animal:AnimalType): Promise<AnimalType>;
     update(animal:AnimalType): Promise<AnimalType>;
     retrieveAll(): Promise<AnimalType[]>;
-    retrieveByID(typeid: number): Promise<AnimalType | undefined>;
+    retrieveById(typeid: number): Promise<AnimalType | undefined>;
     retrieveByName(typename: string): Promise<AnimalType | undefined>;
-    deleteByID(typeid: number): Promise<number>;
+    deleteById(typeid: number): Promise<number>;
     deleteAll(): Promise<number>;
 }
 
@@ -29,10 +29,10 @@ class AnimalRepository implements IAnimalRepository {
             const result = await connect.save(animal);
             logging.info(NAMESPACE, "Save animal type successfully.");
             try {
-                const res = await this.retrieveByID(result.type_id);
+                const res = await this.retrieveById(result.type_id);
                 return res;
             }catch(err){
-                logging.error(NAMESPACE, 'Error call retrieveByID from insert animal type');
+                logging.error(NAMESPACE, 'Error call retrieveById from insert animal type');
                 throw err;
             }
         } catch (err) {
@@ -62,10 +62,10 @@ class AnimalRepository implements IAnimalRepository {
             }
             logging.info(NAMESPACE, "Update animal type successfully.");
             try {
-                const res = await this.retrieveByID(animal.type_id);
+                const res = await this.retrieveById(animal.type_id);
                 return res;
             }catch(err){
-                logging.error(NAMESPACE, 'Error call retrieveByID from update animal type');
+                logging.error(NAMESPACE, 'Error call retrieveById from update animal type');
                 throw err;
             }
         } catch (err) {
@@ -87,7 +87,7 @@ class AnimalRepository implements IAnimalRepository {
         }
     }
 
-    async retrieveByID(typeid: number): Promise<AnimalType>{
+    async retrieveById(typeid: number): Promise<AnimalType>{
         try {
             const result = await AppDataSource.getRepository(AnimalType).findOne({
                 where: { type_id : typeid },
@@ -123,7 +123,7 @@ class AnimalRepository implements IAnimalRepository {
         }
     }
 
-    async deleteByID(typeid: number): Promise<number>{
+    async deleteById(typeid: number): Promise<number>{
         try {
             const connect = AppDataSource.getRepository(AnimalType)
             const result = await connect.delete({ type_id : typeid });
