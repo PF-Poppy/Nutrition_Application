@@ -27,6 +27,33 @@ export default class RoleController {
         }
     }
 
+    async addNewRolefirsttime(req: Request, res: Response) {
+        logging.info(NAMESPACE, "Add new role first time");
+        const { roleName } = req.body;
+        if (!roleName) {
+            res.status(400).send({
+                message: "Please fill in all the fields!"
+            });
+            return;
+        }
+        try {
+            const role = new Role();
+            role.role_name = roleName;
+            role.update_date = new Date();
+            const addeole = await roleRespository.save(role);
+            logging.info(NAMESPACE, "Add new role successfully.");
+            res.status(200).send({
+                message: "Add new role successfully."
+            });
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            res.status(500).send({
+                message: (err as Error).message
+            });
+        }
+    }
+
+
     async addNewRole(req: Request, res: Response) {
         logging.info(NAMESPACE, "Add new role");
         const { userid, username } = (req as any).jwtPayload;

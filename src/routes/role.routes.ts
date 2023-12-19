@@ -12,6 +12,7 @@ class RoleRoutes {
 
     initializeRoutes() {
         this.router.get("/", [authJwt.validateToken, authJwt.isUserManagementAdmin], this.controller.getAllRole);
+        this.router.post("/add-new-first-time", this.controller.addNewRolefirsttime);
         this.router.post("/add-new", [authJwt.validateToken, authJwt.isUserManagementAdmin], this.controller.addNewRole);
         this.router.put("/update", [authJwt.validateToken, authJwt.isUserManagementAdmin], this.controller.updateRole);
         this.router.delete("/delete/:roleId", [authJwt.validateToken, authJwt.isUserManagementAdmin], this.controller.deleteRole);
