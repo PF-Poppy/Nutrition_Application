@@ -6,6 +6,7 @@ import ingredientsRepository from '../repositories/ingredients.repository';
 import ingredientnutritionRepository from '../repositories/ingredientnutrition.repository';
 import nutritionRepository from '../repositories/nutrition.repository';
 import logging from '../config/logging';
+import { ca } from 'date-fns/locale';
 
 const NAMESPACE = 'Ingredient Controller';
 
@@ -198,21 +199,22 @@ export default class IngredientController {
             });
             return;
         }
-        const ingredientid: string = req.params.ingredientId;
+        const ingredientId: string = req.params.ingredientId;
+        
+        try {
+            const ingredient = await ingredientsRepository.retrieveById(ingredientId);
+        }catch(err){
+            res.status(404).send( {
+                message: `Not found ingredient with id=${ingredientId}.`
+            });
+            return;
+        }
 
         try {
-            const ingredient = await ingredientsRepository.retrieveById(ingredientid);
-            if (!ingredient) {
-                res.status(404).send( {
-                    message: `Not found ingredient with id=${ingredient}.`
-                });
-                return;
-            }
-
             try {
-                await ingredientnutritionRepository.deleteByIngredientId(ingredientid);
+                await ingredientnutritionRepository.deleteByIngredientId(ingredientId);
                 //TODO ลบrecipeingredients ด้วย
-                await ingredientsRepository.deleteById(ingredientid);
+                await ingredientsRepository.deleteById(ingredientId);
             }catch (err) {
                 logging.error(NAMESPACE, (err as Error).message, err);
                 return res.status(500).send({

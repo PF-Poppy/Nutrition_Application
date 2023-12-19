@@ -111,6 +111,15 @@ export default class NutritionController {
         const nutritionId:string = req.params.nutritionId;
 
         try {
+            const nutrition = await nutritionRepository.retrieveById(nutritionId);
+        }catch(err){
+            res.status(404).send( {
+                message: `Not found nutrition with id=${nutritionId}.`
+            });
+            return;
+        }
+
+        try {
             await diseasenutritionRepository.deleteByNutritionId(nutritionId);
             await ingredientnutritionRepository.deleteByNutritionId(nutritionId);
             await nutritionRepository.deleteById(nutritionId);

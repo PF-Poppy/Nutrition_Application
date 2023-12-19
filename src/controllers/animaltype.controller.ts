@@ -10,6 +10,7 @@ import diseaseRepository from "../repositories/disease.repository";
 import diseasedetailRepository from "../repositories/diseasedetail.repository";
 import diseasenutritionRepository from "../repositories/diseasenutrition.repository";
 import logging from "../config/logging";
+import { ca } from "date-fns/locale";
 
 
 const NAMESPACE = "AnimalType Controller";
@@ -301,16 +302,17 @@ export default class AnimalController {
             return;
         }
         const typeid:string = req.params.petTypeInfoId;
+        
+        try {
+            const animaltype = await animalRepository.retrieveById(typeid);
+        }catch(err){
+            res.status(404).send({
+                message: `Not found animal type with id=${typeid}.`
+            });
+            return;
+        }
 
         try {
-            
-            const animaltype = await animalRepository.retrieveById(typeid);
-            if (!animaltype) {
-                res.status(404).send({
-                    message: `Not found animal type with id=${typeid}.`
-                });
-                return;
-            }
             const diseasedetail = await diseasedetailRepository.retrieveByAnimalTypeId(typeid);
             try {
                 const diseasenutrition = await Promise.all(diseasedetail.map(async (diseasedetailData: Diseasedetail) => {

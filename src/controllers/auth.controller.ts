@@ -10,6 +10,7 @@ import authRepository from "../repositories/auth.repository";
 import createJwtToken from "../middleware/createJwtToken";
 import logging from "../config/logging";
 import checkuserAdminrole from "../middleware/checkuser.adminrole";
+import { th } from "date-fns/locale";
 
 const NAMESPACE = 'AuthController';
 
@@ -44,33 +45,26 @@ export default class AuthController {
                 
                 const signup = await authRepository.save(user);
                 
-                const role = await roleRepository.retrieveByName("User");
-                if (!role) {
-                    logging.error(NAMESPACE, "Role not found!");
-                    res.status(500).send({
-                        message: "Role not found!"
-                    });
-                    return;
-                }
-
-                const userrole = new UserRole();
-                userrole.user_user_id = signup.user_id;
-                userrole.role_role_id = role.role_id!;
-                userrole.update_date = new Date();
                 try {
-                    const result = await userRoleRepository.save(userrole);
+                    const role = await roleRepository.retrieveByName("User");
+
+                    const userrole = new UserRole();
+                    userrole.user_user_id = signup.user_id;
+                    userrole.role_role_id = role.role_id!;
+                    userrole.update_date = new Date();
+                    try {
+                        const result = await userRoleRepository.save(userrole);
+                        logging.info(NAMESPACE, "User registered successfully!");
+                        res.status(200).send({
+                            message: "User registered successfully!"
+                        });
+                    }catch (err) {
+                        throw err;
+                    }
                 }catch (err) {
                     await userRepository.deleteById(signup.user_id);
-                    res.status(500).send({
-                        message: err
-                    });
-                    return;
+                    throw new Error("Role not found!");
                 }
-                
-                logging.info(NAMESPACE, "User registered successfully!");
-                res.status(200).send({
-                    message: "User registered successfully!"
-                });
             }catch (err) {
                 logging.error(NAMESPACE, (err as Error).message, err);
                 res.status(500).send({

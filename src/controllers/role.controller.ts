@@ -105,15 +105,17 @@ export default class RoleController {
             return;
         }
         const roleId:string = req.params.roleId;
-        
+
         try {
             const role = await roleRespository.retrieveById(roleId);
-            if (!role) {
-                res.status(404).send({
-                    message: `Not found role with id=${roleId}.`
-                });
-                return;
-            }
+        }catch(err){
+            res.status(404).send({
+                message: `Not found role with id=${roleId}.`
+            });
+            return;
+        }
+        
+        try {
             await userroleRepository.deleteByRoleId(roleId);
             await roleRespository.deleteById(roleId);
             logging.info(NAMESPACE, "Delete role successfully.");

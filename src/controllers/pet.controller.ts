@@ -218,12 +218,14 @@ export default class PetController {
 
         try {
             const pet = await petRepository.retrieveById(petId);
-            if (!pet) {
-                res.status(404).send({
-                    message: `Not found pet with id=${petId}.`
-                });
-                return;
-            }
+        }catch(err){
+            res.status(404).send({
+                message: `Not found pet with id=${petId}.`
+            });
+            return;
+        }
+
+        try {
             await diseaseRepository.deleteByPetId(petId);
             await petRepository.deleteById(petId);
             logging.info(NAMESPACE, 'Delete pet successfully');
