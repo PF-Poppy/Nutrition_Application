@@ -24,7 +24,7 @@ export default class NutritionController {
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             res.status(500).send({
-                message: err
+                message: (err as Error).message
             });
         }
     }
@@ -54,7 +54,7 @@ export default class NutritionController {
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             res.status(500).send({
-                message: err
+                message: (err as Error).message
             });
         }
     }
@@ -95,7 +95,7 @@ export default class NutritionController {
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             res.status(500).send({
-                message: err
+                message: (err as Error).message
             });
         }
     }
@@ -130,7 +130,7 @@ export default class NutritionController {
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             res.status(500).send({
-                message: err
+                message: (err as Error).message
             });
         }
     }

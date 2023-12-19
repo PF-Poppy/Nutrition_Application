@@ -30,7 +30,7 @@ export default class AuthController {
             if (err) {
                 logging.error(NAMESPACE, (err as Error).message, err);
                 res.status(500).send({
-                    message: err.message
+                    message: (err as Error).message
                 });
             }
             try {
@@ -68,7 +68,7 @@ export default class AuthController {
             }catch (err) {
                 logging.error(NAMESPACE, (err as Error).message, err);
                 res.status(500).send({
-                    message: err
+                    message: (err as Error).message
                 });
             }
         });
@@ -136,7 +136,7 @@ export default class AuthController {
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             res.status(500).send({
-                message: err
+                message: (err as Error).message
             });
         }
     }
