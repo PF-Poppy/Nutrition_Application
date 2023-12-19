@@ -63,10 +63,16 @@ export default class PetController {
     async addNewPet(req: Request, res: Response) {
         logging.info(NAMESPACE, 'Add new pet');
         const { userid } = (req as JwtPayload).jwtPayload;
+        if (!req.body) {
+            res.status(400).send({
+                message: 'Content can not be empty!'
+            });
+            return;
+        }
         const { petName, petTypeId, factorType, petFactorNumber, petWeight, petNeuteringStatus, petAgeType, petPhysiologyStatus, petChronicDiseaseForUser, petActivityType} = req.body;
         if (!petName || !petTypeId || !factorType || !petFactorNumber || !petWeight || !petNeuteringStatus || !petAgeType || !petPhysiologyStatus || !petChronicDiseaseForUser || !petActivityType) {
             res.status(400).send({
-                message: 'Please fill in all the fields.!'
+                message: "Please fill in all the fields!"
             });
             return;
         }
@@ -89,21 +95,21 @@ export default class PetController {
                 if (!diseaseData.petChronicDiseaseId || !diseaseData.petChronicDiseaseName) {
                     await diseaseRepository.deleteByPetId(addpet.pet_id);
                     await petRepository.deleteById(addpet.pet_id);
-                    throw new Error('Please fill in all the fields.!');
+                    throw new Error("Please fill in all the fields!");
                 }
-                const animaldiscease = await diseasedetailRepository.retrieveByTypeAndDiseaseId(parseInt(petTypeId), parseInt(diseaseData.petChronicDiseaseId));
-                if (!animaldiscease) {
-                    await diseaseRepository.deleteByPetId(addpet.pet_id);
-                    await petRepository.deleteById(addpet.pet_id);
-                    throw new Error('Not found disease detail.');
-                }
-                const disease = new Disease();
-                disease.pet_pet_id = addpet.pet_id;
-                disease.diseasedetail_disease_id = parseInt(diseaseData.petChronicDiseaseId);
-                disease.update_date = new Date();
-                try {
-                    const addnewpetdisease = await diseaseRepository.save(disease);
-                    return;
+                try{
+                    const animaldiscease = await diseasedetailRepository.retrieveByTypeAndDiseaseId(parseInt(petTypeId), parseInt(diseaseData.petChronicDiseaseId));
+
+                    const disease = new Disease();
+                    disease.pet_pet_id = addpet.pet_id;
+                    disease.diseasedetail_disease_id = parseInt(diseaseData.petChronicDiseaseId);
+                    disease.update_date = new Date();
+                    try {
+                        const addnewpetdisease = await diseaseRepository.save(disease);
+                        return;
+                    }catch (err) {
+                        throw err;
+                    }
                 }catch (err) {
                     await diseaseRepository.deleteByPetId(addpet.pet_id);
                     await petRepository.deleteById(addpet.pet_id);
@@ -146,6 +152,12 @@ export default class PetController {
             });
             return;
         }
+        if (!petName || !petTypeId || !factorType || !petFactorNumber || !petWeight || !petNeuteringStatus || !petAgeType || !petPhysiologyStatus || !petChronicDiseaseForUser || !petActivityType) {
+            res.status(400).send({
+                message: "Please fill in all the fields!"
+            });
+            return;
+        }
         try {
             const pet = new Pet();
             pet.pet_id = parseInt(petId);
@@ -163,16 +175,24 @@ export default class PetController {
             const updatepet = await petRepository.update(pet);
 
             pet.disease = await Promise.all(petChronicDiseaseForUser.map(async (diseaseData: any) => {
+                if (!diseaseData.petChronicDiseaseId || !diseaseData.petChronicDiseaseName) {
+                    throw new Error("Please fill in all the fields!");
+                }
+                try {
+                    const animaldiscease = await diseasedetailRepository.retrieveByTypeAndDiseaseId(parseInt(petTypeId), parseInt(diseaseData.petChronicDiseaseId));
+                }catch (err) {
+                    throw err;
+                }
+            }));
+
+            pet.disease = await Promise.all(petChronicDiseaseForUser.map(async (diseaseData: any) => {
                 const disease = new Disease();
                 disease.pet_pet_id = updatepet.pet_id;
                 disease.diseasedetail_disease_id = parseInt(diseaseData.petChronicDiseaseId);
                 disease.update_date = new Date();
-                try {
-                    const updatepetdisease = await diseaseRepository.update(disease);
-                    return;
-                }catch (err) {
-                    throw err;
-                }
+                
+                const updatepetdisease = await diseaseRepository.update(disease);
+                return;
             }));
             logging.info(NAMESPACE, 'Update pet successfully');
             res.status(200).send({

@@ -59,6 +59,12 @@ export default class RoleController {
     async updateRole(req: Request, res: Response) {
         logging.info(NAMESPACE, "Update role");
         const { userid, username } = (req as any).jwtPayload;
+        if (!req.body) {
+            res.status(400).send({
+                message: 'Content can not be empty!'
+            });
+            return;
+        }
         const { roleId, roleName } = req.body;
         if (roleId == "" || roleId == null || roleId == undefined) {
             res.status(400).send({
@@ -89,6 +95,7 @@ export default class RoleController {
             });
         }
     }
+    
     async deleteRole(req: Request, res: Response) {
         logging.info(NAMESPACE, "Delete role");
         if (req.params.roleId == ":roleId" || !req.params.roleId) {

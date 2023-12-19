@@ -46,6 +46,7 @@ class IngredientsRepository implements IIngredientsRepository {
             const info = await connect.find(
                 { where: { ingredient_name: ingredient.ingredient_name } }
             );
+            
             if (info.length > 0){
                 for (let i = 0; i < info.length; i++) {
                     if (info[i].ingredient_id !== ingredient.ingredient_id) {

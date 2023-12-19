@@ -62,6 +62,12 @@ export default class NutritionController {
     async updateNutrition(req: Request, res: Response) {
         logging.info(NAMESPACE, "Update nutrition");
         const { userid, username} = (req as JwtPayload).jwtPayload;
+        if (!req.body) {
+            res.status(400).send({
+                message: 'Content can not be empty!'
+            });
+            return;
+        }
         const { nutritionId, nutrientName } = req.body;
         if (nutritionId == "" || nutritionId == null || nutritionId == undefined) {
             res.status(400).send({

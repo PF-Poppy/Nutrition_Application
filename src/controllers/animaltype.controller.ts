@@ -89,6 +89,12 @@ export default class AnimalController {
 
     async addNewAnimalType(req: Request, res: Response) {
         logging.info(NAMESPACE, 'Add new animal type');
+        if (!req.body) {
+            res.status(400).send({
+                message: 'Content can not be empty!'
+            });
+            return;
+        }
         const { userid, username } = (req as JwtPayload).jwtPayload;
         const { petTypeName, petChronicDisease} = req.body;
         if (!petTypeName || !petChronicDisease) {
@@ -187,6 +193,12 @@ export default class AnimalController {
         if (petTypeId === "" || petTypeId === null || petTypeId === undefined) {
             res.status(400).send({
               message: "Pet type id can not be empty!"
+            });
+            return;
+        }
+        if (!petTypeName || !petChronicDisease) {
+            res.status(400).send({
+                message: "Please fill in all the fields!"
             });
             return;
         }

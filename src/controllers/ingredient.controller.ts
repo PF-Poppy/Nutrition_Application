@@ -13,6 +13,12 @@ export default class IngredientController {
     async addNewIngredient(req: Request, res: Response){
         logging.info(NAMESPACE, 'Add new ingredientnutrition');
         const { userid, username } = (req as JwtPayload).jwtPayload;
+        if (!req.body) {
+            res.status(400).send({
+                message: 'Content can not be empty!'
+            });
+            return;
+        }
         const { ingredientName, nutrient} = req.body;
         if (!ingredientName || !nutrient) {
             res.status(400).send({
@@ -57,9 +63,9 @@ export default class IngredientController {
                     throw err;
                 }
             }));
-            logging.info(NAMESPACE, 'Add new ingredientnutrition successfully');
+            logging.info(NAMESPACE, 'Add new ingredient successfully');
             return res.status(200).send({
-                message: 'Add new ingredientnutrition successfully'
+                message: 'Add new ingredient successfully'
             });
         }catch(err){
             logging.error(NAMESPACE, (err as Error).message, err);
@@ -70,7 +76,7 @@ export default class IngredientController {
                 return;
             }else {
                 res.status(500).send({
-                    message: "Some error occurred while creating animal."
+                    message: "Some error occurred while creating ingredient."
                 });
                 return;
             }
@@ -93,7 +99,12 @@ export default class IngredientController {
             });
             return;
         }
-
+        if (!ingredientName || !nutrient) {
+            res.status(400).send({
+                message: "Please fill in all the fields!"
+            });
+            return;
+        }
         try {
             const ingredient = new Ingredients();
             ingredient.ingredient_id = ingredientId;
@@ -130,9 +141,9 @@ export default class IngredientController {
                     throw err;
                 }
             }));
-            logging.info(NAMESPACE, 'Update ingredientnutrition successfully');
+            logging.info(NAMESPACE, 'Update ingredient successfully');
             return res.status(200).send({
-                message: 'Update ingredientnutrition successfully'
+                message: 'Update ingredient successfully'
             });
         }catch(err){
             if ( (err as Error).message === "Please fill in all the fields!" ) {
@@ -142,7 +153,7 @@ export default class IngredientController {
                 return;
             }else {
                 res.status(500).send({
-                    message: "Some error occurred while creating animal."
+                    message: "Some error occurred while creating ingredient."
                 });
                 return;
             }
