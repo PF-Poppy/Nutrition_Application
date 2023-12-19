@@ -4,8 +4,8 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 
 @Entity({ name: "ingredienttypes" })
 export class Ingredienttypes {
-  @PrimaryGeneratedColumn()
-  ingredienttypes_id!: number
+  @PrimaryGeneratedColumn("uuid")
+  ingredienttypes_id!: string
 
   @Column({type: "varchar", length: 255})
   ingredienttypes_name!: string

@@ -6,8 +6,8 @@ import { Diseasedetail } from "./diseasedetail.entity";
 
 @Entity({ name: "animaltype" })
 export class AnimalType {
-  @PrimaryGeneratedColumn()
-  type_id!: number
+  @PrimaryGeneratedColumn("uuid")
+  type_id!: string
 
   @Column({type: "varchar", length: 255})
   type_name!: string

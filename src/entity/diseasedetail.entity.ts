@@ -7,14 +7,14 @@ import { Diseasenutrition } from "./diseasenutrition.entity";
 
 @Entity({ name: "diseasedetail" })
 export class Diseasedetail {
-  @PrimaryGeneratedColumn()
-  disease_id!: number
+  @PrimaryGeneratedColumn("uuid")
+  disease_id!: string
 
   @Column({type: "varchar", length: 255})
   disease_name!: string
 
   @Column()
-  animaltype_type_id!: number
+  animaltype_type_id!: string
 
   @CreateDateColumn()
   create_date?: Date;

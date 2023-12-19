@@ -41,7 +41,6 @@ export default class AuthController {
                 user.password = hash;
                 user.is_active = 1;
                 user.update_date = new Date();
-                user.generateUserId();
                 
                 const signup = await authRepository.save(user);
                 

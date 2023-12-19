@@ -5,8 +5,8 @@ import { User } from "./user.entity";
 
 @Entity({ name: "favorite" })
 export class Favorite {
-  @PrimaryGeneratedColumn()
-  favorite_id!: number
+  @PrimaryGeneratedColumn("uuid")
+  favorite_id!: string
 
   @Column()
   user_user_id!: string

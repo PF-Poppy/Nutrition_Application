@@ -8,11 +8,11 @@ const NAMESPACE = 'Disease Repository';
 interface IdiseaseRepository {
     save(disease: Disease): Promise<Disease>;
     update(disease: Disease): Promise<Disease>;
-    retrieveById(diseaseid: number): Promise<Disease | undefined>;
-    retrieveByPetId(petid: number): Promise<any[]>;
-    deleteById(diseaseid: number): Promise<number>;
-    deleteByPetId(petid: number): Promise<number>;
-    deleteByDiseaseId(diseaseid: number): Promise<number>;
+    retrieveById(diseaseid: string): Promise<Disease | undefined>;
+    retrieveByPetId(petid: string): Promise<any[]>;
+    deleteById(diseaseid: string): Promise<number>;
+    deleteByPetId(petid: string): Promise<number>;
+    deleteByDiseaseId(diseaseid: string): Promise<number>;
     deleteAll(): Promise<number>;
 }
 
@@ -81,7 +81,7 @@ class DiseaseRepository implements IdiseaseRepository {
         }
     }
 
-    async retrieveById(diseaseid: number): Promise<Disease>{
+    async retrieveById(diseaseid: string): Promise<Disease>{
         try {
             const result = await AppDataSource.getRepository(Disease).findOne({
                 where: { id: diseaseid},
@@ -99,7 +99,7 @@ class DiseaseRepository implements IdiseaseRepository {
         }
     }
 
-    async retrieveByPetId(petid: number): Promise<any[]> {
+    async retrieveByPetId(petid: string): Promise<any[]> {
         try {
             const result = await AppDataSource.getRepository(Disease)
             .createQueryBuilder("disease")
@@ -121,7 +121,7 @@ class DiseaseRepository implements IdiseaseRepository {
         }
     }
 
-    async deleteById(diseaseid: number): Promise<number> {
+    async deleteById(diseaseid: string): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Disease);
             const result = await connect.delete({ id: diseaseid});
@@ -137,7 +137,7 @@ class DiseaseRepository implements IdiseaseRepository {
         }
     }
 
-    async deleteByPetId(petid: number): Promise<number> {
+    async deleteByPetId(petid: string): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Disease);
             const result = await connect.delete({ pet_pet_id: petid});
@@ -153,7 +153,7 @@ class DiseaseRepository implements IdiseaseRepository {
         }
     }
 
-    async deleteByDiseaseId(diseaseid: number): Promise<number> {
+    async deleteByDiseaseId(diseaseid: string): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Disease);
             const result = await connect.delete({ diseasedetail_disease_id: diseaseid});

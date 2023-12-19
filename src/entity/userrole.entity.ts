@@ -5,14 +5,14 @@ import { User } from './user.entity';
 
 @Entity({ name: "userrole" })
 export class UserRole {
-  @PrimaryGeneratedColumn()
-  id!: number
+  @PrimaryGeneratedColumn("uuid")
+  id!: string
 
   @Column()
   user_user_id!: string
 
   @Column()
-  role_role_id!: number
+  role_role_id!: string
 
   @CreateDateColumn()
   create_date?: Date;

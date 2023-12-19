@@ -11,9 +11,9 @@ interface IPetRepository {
     retrieveAll(): Promise<Pet[]>;
     retrieveByUserId(userid: string): Promise<any[]>;
     retrieveByName(petname:string, userid:string): Promise<Pet | undefined>;
-    retrieveById(petid: number): Promise<Pet | undefined>;
-    deleteById(petid: number): Promise<number>;
-    deleteByAnimalTypeId(animaltypeid: number): Promise<number>;
+    retrieveById(petid: string): Promise<Pet | undefined>;
+    deleteById(petid: string): Promise<number>;
+    deleteByAnimalTypeId(animaltypeid: string): Promise<number>;
     deleteAll(): Promise<number>;
 }
 
@@ -118,7 +118,7 @@ class PetRepository implements IPetRepository {
         }
     }
 
-    async retrieveById(petid: number): Promise<Pet> {
+    async retrieveById(petid: string): Promise<Pet> {
         try {
             const result = await AppDataSource.getRepository(Pet).findOne({
                 where: { pet_id: petid },
@@ -136,7 +136,7 @@ class PetRepository implements IPetRepository {
         }
     }
 
-    async deleteById(petid: number): Promise<number> {
+    async deleteById(petid: string): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Pet)
             const result = await connect.delete({ pet_id: petid});
@@ -152,7 +152,7 @@ class PetRepository implements IPetRepository {
         }
     }
 
-    async deleteByAnimalTypeId(animaltypeid: number): Promise<number> {
+    async deleteByAnimalTypeId(animaltypeid: string): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Pet)
             const result = await connect.delete({ animaltype_type_id: animaltypeid});

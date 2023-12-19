@@ -5,8 +5,8 @@ import { Ingredientnutrition } from './ingredientnutrition.entity';
 
 @Entity({ name: "nutrition" })
 export class Nutrition {
-  @PrimaryGeneratedColumn()
-  nutrition_id!: number
+  @PrimaryGeneratedColumn("uuid")
+  nutrition_id!: string
 
   @Column({type: "varchar", length: 255})
   nutrient_name!: string

@@ -8,9 +8,9 @@ interface IAnimalRepository {
     save(animal:AnimalType): Promise<AnimalType>;
     update(animal:AnimalType): Promise<AnimalType>;
     retrieveAll(): Promise<AnimalType[]>;
-    retrieveById(typeid: number): Promise<AnimalType | undefined>;
+    retrieveById(typeid: string): Promise<AnimalType | undefined>;
     retrieveByName(typename: string): Promise<AnimalType | undefined>;
-    deleteById(typeid: number): Promise<number>;
+    deleteById(typeid: string): Promise<number>;
     deleteAll(): Promise<number>;
 }
 
@@ -87,7 +87,7 @@ class AnimalRepository implements IAnimalRepository {
         }
     }
 
-    async retrieveById(typeid: number): Promise<AnimalType>{
+    async retrieveById(typeid: string): Promise<AnimalType>{
         try {
             const result = await AppDataSource.getRepository(AnimalType).findOne({
                 where: { type_id : typeid },
@@ -123,7 +123,7 @@ class AnimalRepository implements IAnimalRepository {
         }
     }
 
-    async deleteById(typeid: number): Promise<number>{
+    async deleteById(typeid: string): Promise<number>{
         try {
             const connect = AppDataSource.getRepository(AnimalType)
             const result = await connect.delete({ type_id : typeid });

@@ -1,6 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, BeforeInsert, Not, IsNull} from 'typeorm';
-import { AppDataSource } from "../db/data-source";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { UserRole } from './userrole.entity';
 import { Favorite } from "./favorite.entity";
 import { Pet } from "./pet.entity";
@@ -8,7 +7,7 @@ import { Usernotification } from "./usernotification.entity";
 
 @Entity({ name: "user" })
 export class User {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn("uuid")
   user_id!: string
 
   @Column({type: "varchar", length: 255})
@@ -46,23 +45,4 @@ export class User {
 
   @OneToMany(() => Usernotification, usernotification => usernotification.user_user_id)
   usernotifications?: Usernotification[];
-
-  @BeforeInsert()
-  async generateUserId() {
-    const lastEntity = await AppDataSource.getRepository(User).findOne({
-      where: { user_id: Not(IsNull()) },
-      order: { user_id: 'DESC' },
-    });
-
-    let newId = 'USER0001';
-    if (lastEntity) {
-      const lastId = lastEntity.user_id;
-      const lastNumber = parseInt(lastId.slice(4), 10);
-      const numberOfDigits = lastId.length - 'USER'.length;
-      const nextNumber = lastNumber + 1;
-      newId = `USER${nextNumber.toString().padStart(numberOfDigits, '0')}`;
-    }
-
-    this.user_id = newId;
-  }
 }

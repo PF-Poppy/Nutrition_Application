@@ -6,14 +6,14 @@ import { User } from "./user.entity";
 
 @Entity({ name: "pet" })
 export class Pet {
-  @PrimaryGeneratedColumn()
-  pet_id!: number
+  @PrimaryGeneratedColumn("uuid")
+  pet_id!: string
 
   @Column()
   user_user_id!: string
 
   @Column()
-  animaltype_type_id!: number
+  animaltype_type_id!: string
 
   @Column({type: "varchar", length: 255})
   pet_name!: string

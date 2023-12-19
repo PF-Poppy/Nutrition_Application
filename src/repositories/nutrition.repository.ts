@@ -8,9 +8,9 @@ interface INutritionRepository {
     save(nutrition:Nutrition): Promise<Nutrition>;
     update(nutrition:Nutrition): Promise<Nutrition>;
     retrieveAll(): Promise<Nutrition[]>;
-    retrieveById(nutrientid: number): Promise<Nutrition | undefined>;
+    retrieveById(nutrientid: string): Promise<Nutrition | undefined>;
     retrieveByName(nutrientname: string): Promise<Nutrition | undefined>;
-    deleteById(nutrientid: number): Promise<number>;
+    deleteById(nutrientid: string): Promise<number>;
     deleteAll(): Promise<number>;
 }
 
@@ -87,7 +87,7 @@ class NutritionRepository implements INutritionRepository {
         }
     }
 
-    async retrieveById(nutrientid: number): Promise<Nutrition>{
+    async retrieveById(nutrientid: string): Promise<Nutrition>{
         try {
             const result = await AppDataSource.getRepository(Nutrition).findOne({
                 where: { nutrition_id : nutrientid },
@@ -123,7 +123,7 @@ class NutritionRepository implements INutritionRepository {
         }
     }
 
-    async deleteById(nutrientid: number): Promise<number>{
+    async deleteById(nutrientid: string): Promise<number>{
         try {
             const connect = AppDataSource.getRepository(Nutrition)
             const result = await connect.delete({ nutrition_id : nutrientid})

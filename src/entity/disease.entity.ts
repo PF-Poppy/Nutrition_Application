@@ -5,14 +5,14 @@ import { Diseasedetail } from "./diseasedetail.entity";
 
 @Entity({ name: "disease" })
 export class Disease {
-  @PrimaryGeneratedColumn()
-  id!: number
+  @PrimaryGeneratedColumn("uuid")
+  id!: string
 
   @Column()
-  pet_pet_id!: number
+  pet_pet_id!: string
 
   @Column()
-  diseasedetail_disease_id!: number
+  diseasedetail_disease_id!: string
 
   @CreateDateColumn()
   create_date?: Date;

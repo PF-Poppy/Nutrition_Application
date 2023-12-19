@@ -5,14 +5,14 @@ import { Questions } from "./questions.entity";
 
 @Entity({ name: "choices" })
 export class Choices {
-  @PrimaryGeneratedColumn()
-  choice_id!: number
+  @PrimaryGeneratedColumn("uuid")
+  choice_id!: string
 
   @Column({type: "varchar", length: 255})
   choice_text!: string
 
   @Column()
-  questions_question_id!: number
+  questions_question_id!: string
 
   @CreateDateColumn()
   create_date?: Date;

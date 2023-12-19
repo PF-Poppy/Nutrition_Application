@@ -35,14 +35,14 @@ export default class AnimalController {
                     }));
                     
                     return {
-                        petChronicDiseaseId: (diseasedetailData.disease_id).toString(),
+                        petChronicDiseaseId: diseasedetailData.disease_id,
                         petChronicDiseaseName: diseasedetailData.disease_name,
                         NutrientLimitInfo: nutrientlimitinfo
                     };
                 }));
                 
                 return {
-                    petTypeId: (animaltypeData.type_id).toString(),
+                    petTypeId: animaltypeData.type_id,
                     petTypeName: animaltypeData.type_name,
                     petChronicDisease: chronicDisease
                 };
@@ -67,12 +67,12 @@ export default class AnimalController {
                 
                 const chronicDisease = await Promise.all(diseasedetail.map(async (diseasedetailData: Diseasedetail) => {
                     return {
-                        petChronicDiseaseId: (diseasedetailData.disease_id).toString(),
+                        petChronicDiseaseId: diseasedetailData.disease_id,
                         petChronicDiseaseName: diseasedetailData.disease_name
                     }
                 }));
                 return {
-                    petTypeId: (animaltypeData.type_id).toString(),
+                    petTypeId: animaltypeData.type_id,
                     petTypeName: animaltypeData.type_name,
                     petChronicDiseaseForUser: chronicDisease
                 }
@@ -205,7 +205,7 @@ export default class AnimalController {
         try {
 
             const animaltype = new AnimalType();
-            animaltype.type_id = parseInt(petTypeId);
+            animaltype.type_id = petTypeId;
             animaltype.type_name = petTypeName;
             animaltype.update_date = new Date();
             animaltype.update_by = `${userid}_${username}`;
@@ -236,7 +236,7 @@ export default class AnimalController {
             animaltype.diseasedetail = await Promise.all(petChronicDisease.map(async (diseaseData: any) => {
                 const chronicDisease = new Diseasedetail();
                 chronicDisease.disease_name = diseaseData.petChronicDiseaseName;
-                chronicDisease.animaltype_type_id = parseInt(petTypeId);
+                chronicDisease.animaltype_type_id = petTypeId;
                 chronicDisease.update_by = `${userid}_${username}`;
                 chronicDisease.update_date = new Date();
                 try {
@@ -245,7 +245,7 @@ export default class AnimalController {
                         chronicDisease.create_by = `${userid}_${username}`;
                         updatediseasedetail = await diseasedetailRepository.save(chronicDisease);
                     }else{
-                        chronicDisease.disease_id = parseInt(diseaseData.petChronicDiseaseId);
+                        chronicDisease.disease_id = diseaseData.petChronicDiseaseId;
                         updatediseasedetail = await diseasedetailRepository.update(chronicDisease);
                     }
                     
@@ -300,7 +300,7 @@ export default class AnimalController {
             });
             return;
         }
-        const typeid:number = parseInt(req.params.petTypeInfoId);
+        const typeid:string = req.params.petTypeInfoId;
 
         try {
             

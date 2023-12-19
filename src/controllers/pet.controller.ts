@@ -23,15 +23,15 @@ export default class PetController {
 
                 const chronicDisease = await Promise.all(disease.map(async (diseaseData: any) => {
                     return {
-                        petChronicDiseaseId: (diseaseData.diseasedetailid).toString(),
+                        petChronicDiseaseId: diseaseData.diseasedetailid,
                         petChronicDiseaseName: diseaseData.diseasename,
                     }
                 }));
                 return {
-                    petId: (petData.petid).toString(),
+                    petId: petData.petid,
                     petName: petData.petname,
                     petType: petData.animaltypename,
-                    petTypeId: (petData.animaltypeid).toString(),
+                    petTypeId: petData.animaltypeid,
                     factorType: petData.factortype,
                     petFactorNumber: petData.factornumber,
                     petWeight: petData.weight,
@@ -79,7 +79,7 @@ export default class PetController {
         try {
             const pet = new Pet();
             pet.user_user_id = userid;
-            pet.animaltype_type_id = parseInt(petTypeId);
+            pet.animaltype_type_id = petTypeId;
             pet.pet_name = petName;
             pet.weight = petWeight;
             pet.neutering_status = petNeuteringStatus;
@@ -98,11 +98,11 @@ export default class PetController {
                     throw new Error("Please fill in all the fields!");
                 }
                 try{
-                    const animaldiscease = await diseasedetailRepository.retrieveByTypeAndDiseaseId(parseInt(petTypeId), parseInt(diseaseData.petChronicDiseaseId));
+                    const animaldiscease = await diseasedetailRepository.retrieveByTypeAndDiseaseId(petTypeId, diseaseData.petChronicDiseaseId);
 
                     const disease = new Disease();
                     disease.pet_pet_id = addpet.pet_id;
-                    disease.diseasedetail_disease_id = parseInt(diseaseData.petChronicDiseaseId);
+                    disease.diseasedetail_disease_id = diseaseData.petChronicDiseaseId;
                     disease.update_date = new Date();
                     try {
                         const addnewpetdisease = await diseaseRepository.save(disease);
@@ -160,9 +160,9 @@ export default class PetController {
         }
         try {
             const pet = new Pet();
-            pet.pet_id = parseInt(petId);
+            pet.pet_id = petId;
             pet.user_user_id = userid;
-            pet.animaltype_type_id = parseInt(petTypeId);
+            pet.animaltype_type_id = petTypeId;
             pet.pet_name = petName;
             pet.weight = petWeight;
             pet.neutering_status = petNeuteringStatus;
@@ -179,7 +179,7 @@ export default class PetController {
                     throw new Error("Please fill in all the fields!");
                 }
                 try {
-                    const animaldiscease = await diseasedetailRepository.retrieveByTypeAndDiseaseId(parseInt(petTypeId), parseInt(diseaseData.petChronicDiseaseId));
+                    const animaldiscease = await diseasedetailRepository.retrieveByTypeAndDiseaseId(petTypeId, diseaseData.petChronicDiseaseId);
                 }catch (err) {
                     throw err;
                 }
@@ -188,7 +188,7 @@ export default class PetController {
             pet.disease = await Promise.all(petChronicDiseaseForUser.map(async (diseaseData: any) => {
                 const disease = new Disease();
                 disease.pet_pet_id = updatepet.pet_id;
-                disease.diseasedetail_disease_id = parseInt(diseaseData.petChronicDiseaseId);
+                disease.diseasedetail_disease_id = diseaseData.petChronicDiseaseId;
                 disease.update_date = new Date();
                 
                 const updatepetdisease = await diseaseRepository.update(disease);
@@ -214,7 +214,7 @@ export default class PetController {
             });
             return;
         }
-        const petId:number = parseInt(req.params.petProfileId);
+        const petId:string = req.params.petProfileId;
 
         try {
             const pet = await petRepository.retrieveById(petId);

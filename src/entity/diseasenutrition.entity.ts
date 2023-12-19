@@ -5,14 +5,14 @@ import { Nutrition } from "./nutrition.entity";
 
 @Entity({ name: "diseasenutrition" })
 export class Diseasenutrition {
-  @PrimaryGeneratedColumn()
-  diseasenutrition_id!: number
+  @PrimaryGeneratedColumn("uuid")
+  diseasenutrition_id!: string
 
   @Column()
-  diseasedetail_disease_id!: number
+  diseasedetail_disease_id!: string
 
   @Column()
-  nutrition_nutrition_id!: number
+  nutrition_nutrition_id!: string
 
   @Column({type: "double",default: 0.0})
   value_max! : number

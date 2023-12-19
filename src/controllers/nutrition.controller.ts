@@ -15,7 +15,7 @@ export default class NutritionController {
             const nutrient = await nutritionRepository.retrieveAll();
             const result = await Promise.all(nutrient.map(async (nutrientData: Nutrition) => {
                 return {
-                    nutritionId: nutrientData.nutrition_id.toString(),
+                    nutritionId: nutrientData.nutrition_id,
                     nutrientName: nutrientData.nutrient_name
                 };
             }));
@@ -83,7 +83,7 @@ export default class NutritionController {
         }
         try {
             const nutrient = new Nutrition();
-            nutrient.nutrition_id = parseInt(nutritionId);
+            nutrient.nutrition_id = nutritionId;
             nutrient.nutrient_name = nutrientName;
             nutrient.update_by = `${userid}_${username}`;
             nutrient.update_date = new Date();
@@ -108,7 +108,7 @@ export default class NutritionController {
             });
             return;
         }
-        const nutritionId:number = parseInt(req.params.nutritionId);
+        const nutritionId:string = req.params.nutritionId;
 
         try {
             await diseasenutritionRepository.deleteByNutritionId(nutritionId);

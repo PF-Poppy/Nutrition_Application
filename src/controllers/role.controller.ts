@@ -104,7 +104,7 @@ export default class RoleController {
             });
             return;
         }
-        const roleId:number = parseInt(req.params.roleId);
+        const roleId:string = req.params.roleId;
         
         try {
             const role = await roleRespository.retrieveById(roleId);

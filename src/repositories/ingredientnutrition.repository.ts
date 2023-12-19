@@ -8,10 +8,10 @@ const NAMESPACE = "Ingredientnutrition Repository";
 interface IIngredientnutritionRepository {
     save(ingredientnutrition:Ingredientnutrition): Promise<Ingredientnutrition>;
     update(ingredientnutrition:Ingredientnutrition): Promise<Ingredientnutrition>; 
-    retrieveById(ingredientnutritionid: number): Promise<Ingredientnutrition | undefined>;
+    retrieveById(ingredientnutritionid: string): Promise<Ingredientnutrition | undefined>;
     retrieveByIngredientId(ingredientid: string): Promise<any[]>;
     deleteByIngredientId(ingredientid: string): Promise<number>
-    deleteByNutritionId(nutritionid: number): Promise<number>
+    deleteByNutritionId(nutritionid: string): Promise<number>
     deleteAll(): Promise<number>
 }
 
@@ -87,7 +87,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
         }
     }
 
-    async retrieveById(ingredientnutritionid: number): Promise<Ingredientnutrition> {
+    async retrieveById(ingredientnutritionid: string): Promise<Ingredientnutrition> {
         try {
             const result = await AppDataSource.getRepository(Ingredientnutrition).findOne({
                 where: { ingredient_nutrition_id : ingredientnutritionid },
@@ -143,7 +143,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
         }
     }
 
-    async deleteByNutritionId(nutritionid: number): Promise<number> {
+    async deleteByNutritionId(nutritionid: string): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Ingredientnutrition);
             const result = await connect.delete({ nutrition_nutrition_id: nutritionid });

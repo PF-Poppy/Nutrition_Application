@@ -5,14 +5,14 @@ import { Petrecipes } from "./petrecipes.entity";
 
 @Entity({ name: "recipeingredients" })
 export class Recipeingredients {
-  @PrimaryGeneratedColumn()
-  recipe_ingredient_id!: number
+  @PrimaryGeneratedColumn("uuid")
+  recipe_ingredient_id!: string
 
   @Column()
-  ingredients_ingredient_id!: number
+  ingredients_ingredient_id!: string
 
   @Column()
-  petrecipes_recipes_id!: number 
+  petrecipes_recipes_id!: string 
 
   @Column()
   quantity!: number

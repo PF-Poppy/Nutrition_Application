@@ -5,14 +5,14 @@ import { Notification } from "./notification.entity";
 
 @Entity({ name: "usernotification" })
 export class Usernotification {
-  @PrimaryGeneratedColumn()
-  user_noti_id!: number
+  @PrimaryGeneratedColumn("uuid")
+  user_noti_id!: string
 
   @Column()
   user_user_id!: string
 
   @Column()
-  notification_notification_id!: number
+  notification_notification_id!: string
 
   @CreateDateColumn()
   create_date?: Date;

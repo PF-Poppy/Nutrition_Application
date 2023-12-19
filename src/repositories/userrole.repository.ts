@@ -8,7 +8,7 @@ const NAMESPACE = "UserRole Repository";
 interface IUserRoleRepository {
     retrieveById(userid:string): Promise<any[]>;
     save(userrole:UserRole): Promise<UserRole[]>
-    deleteByRoleId(roleid:number): Promise<number>;
+    deleteByRoleId(roleid:string): Promise<number>;
 }
 
 class UserRoleRepository implements IUserRoleRepository {
@@ -47,7 +47,7 @@ class UserRoleRepository implements IUserRoleRepository {
         }
     }
 
-    async deleteByRoleId(roleid:number): Promise<number> {
+    async deleteByRoleId(roleid:string): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(UserRole);
             const result = await connect.delete({role_role_id: roleid});

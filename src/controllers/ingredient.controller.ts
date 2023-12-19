@@ -32,7 +32,6 @@ export default class IngredientController {
             ingredient.create_by = `${userid}_${username}`;
             ingredient.update_date = new Date();
             ingredient.update_by = `${userid}_${username}`;
-            ingredient.generateIngredientId();
             const addingredient = await ingredientsRepository.save(ingredient);
             
             ingredient.ingredientnutrition = await Promise.all(nutrient.map(async (nutrientInfoData: any) => {

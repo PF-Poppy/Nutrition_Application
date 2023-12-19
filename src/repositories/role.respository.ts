@@ -9,8 +9,8 @@ interface IROleRepository {
     update(role:Role): Promise<Role>;
     retrieveAll(): Promise<Role[]>;
     retrieveByName(rolename:string): Promise<Role | undefined>;
-    retrieveById(roleid: number): Promise<Role | undefined>;
-    deleteById(roleid: number): Promise<number>;
+    retrieveById(roleid: string): Promise<Role | undefined>;
+    deleteById(roleid: string): Promise<number>;
     deleteAll(): Promise<number>;
 }
 
@@ -105,7 +105,7 @@ class ROleRepository implements IROleRepository {
         }
     }
 
-    async retrieveById(roleid: number): Promise<Role> {
+    async retrieveById(roleid: string): Promise<Role> {
         try { 
             const result = await AppDataSource.getRepository(Role).findOne({
                 where: { role_id : roleid },
@@ -123,7 +123,7 @@ class ROleRepository implements IROleRepository {
         }
     }
 
-    async deleteById(roleid: number): Promise<number>{
+    async deleteById(roleid: string): Promise<number>{
         try {
             const connect = AppDataSource.getRepository(Role)
             const result = await connect.delete({role_id: roleid});

@@ -4,8 +4,8 @@ import { UserRole } from './userrole.entity';
 
 @Entity({ name: "role" })
 export class Role {
-  @PrimaryGeneratedColumn()
-  role_id!: number
+  @PrimaryGeneratedColumn("uuid")
+  role_id!: string
 
   @Column({type: "varchar", length: 255})
   role_name!: string

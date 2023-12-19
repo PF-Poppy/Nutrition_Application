@@ -7,11 +7,11 @@ const NAMESPACE = "Diseasedetail Repository";
 interface IdiseasedetailRepository {
     save(diseasedetail:Diseasedetail): Promise<Diseasedetail>;
     update(diseasedetail:Diseasedetail): Promise<Diseasedetail>;
-    retrieveById(diseaseid: number): Promise<Diseasedetail | undefined>;
-    retrieveByAnimalTypeId(typeid: number): Promise<Diseasedetail[]>;
-    retrieveByTypeAndDiseaseId(typeid: number, diseaseid: number): Promise<Diseasedetail | undefined>;
-    deleteById(diseaseid: number): Promise<number>;
-    deleteByAnimalTypeId(typeid: number): Promise<number>
+    retrieveById(diseaseid: string): Promise<Diseasedetail | undefined>;
+    retrieveByAnimalTypeId(typeid: string): Promise<Diseasedetail[]>;
+    retrieveByTypeAndDiseaseId(typeid: string, diseaseid: string): Promise<Diseasedetail | undefined>;
+    deleteById(diseaseid: string): Promise<number>;
+    deleteByAnimalTypeId(typeid: string): Promise<number>
     deleteAll(): Promise<number>;
 }
 
@@ -76,7 +76,7 @@ class DiseasedetailRepository implements IdiseasedetailRepository {
         }
     }
 
-    async retrieveById(diseaseid: number): Promise<Diseasedetail> {
+    async retrieveById(diseaseid: string): Promise<Diseasedetail> {
         try {
             const result = await AppDataSource.getRepository(Diseasedetail).findOne({
                 where: { disease_id: diseaseid }, 
@@ -94,7 +94,7 @@ class DiseasedetailRepository implements IdiseasedetailRepository {
         }
     }
 
-    async retrieveByAnimalTypeId(typeid: number): Promise<Diseasedetail[]> {
+    async retrieveByAnimalTypeId(typeid: string): Promise<Diseasedetail[]> {
         try {
             const result = await AppDataSource.getRepository(Diseasedetail).find({
                 where: { animaltype_type_id : typeid }, 
@@ -108,7 +108,7 @@ class DiseasedetailRepository implements IdiseasedetailRepository {
         }
     }
 
-    async retrieveByTypeAndDiseaseId(typeid: number, diseaseid: number): Promise<Diseasedetail> {
+    async retrieveByTypeAndDiseaseId(typeid: string, diseaseid: string): Promise<Diseasedetail> {
         try {
             const result = await AppDataSource.getRepository(Diseasedetail).findOne({
                 where: { disease_id: diseaseid, animaltype_type_id : typeid }, 
@@ -126,7 +126,7 @@ class DiseasedetailRepository implements IdiseasedetailRepository {
         }
     }
 
-    async deleteById(diseaseid: number): Promise<number> {
+    async deleteById(diseaseid: string): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Diseasedetail);
             const result = await connect.delete({ disease_id: diseaseid });
@@ -142,7 +142,7 @@ class DiseasedetailRepository implements IdiseasedetailRepository {
         }
     }
 
-    async deleteByAnimalTypeId(typeid: number): Promise<number> {
+    async deleteByAnimalTypeId(typeid: string): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Diseasedetail);
             const result = await connect.delete({ animaltype_type_id: typeid });

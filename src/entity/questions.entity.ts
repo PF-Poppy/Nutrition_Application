@@ -4,8 +4,8 @@ import { Choices } from "./choice.entity";
 
 @Entity({ name: "questions" })
 export class Questions {
-  @PrimaryGeneratedColumn()
-  question_id!: number
+  @PrimaryGeneratedColumn("uuid")
+  question_id!: string
 
   @Column({type: "varchar", length: 255})
   question_text!: string
