@@ -10,7 +10,6 @@ import diseaseRepository from "../repositories/disease.repository";
 import diseasedetailRepository from "../repositories/diseasedetail.repository";
 import diseasenutritionRepository from "../repositories/diseasenutrition.repository";
 import logging from "../config/logging";
-import { ca } from "date-fns/locale";
 
 
 const NAMESPACE = "AnimalType Controller";

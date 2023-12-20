@@ -7,6 +7,7 @@ const NAMESPACE = "User Repository";
 
 interface IUserRepository {
     retrieveById(userid:string): Promise<User | undefined>;
+    retrieveByName(userid:string): Promise<User | undefined>;
     deleteById(userid:string): Promise<number>;
 }
 
@@ -31,7 +32,7 @@ class UserRepository implements IUserRepository {
                 where: { username : username },
                 select: ["user_id","firstname","lastname","age","username","password"]
             });
-            logging.info(NAMESPACE, "Get user by id successfully.");
+            logging.info(NAMESPACE, "Get user by name successfully.");
             return result!;
         } catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);

@@ -1,18 +1,19 @@
 import { UserRole } from "../entity/userrole.entity";
 import { Role } from "../entity/role.entity";
+import { User } from "../entity/user.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
 
 const NAMESPACE = "UserRole Repository";
 
 interface IUserRoleRepository {
-    retrieveById(userid:string): Promise<any[]>;
+    retrieveByUserId(userid:string): Promise<any[]>;
     save(userrole:UserRole): Promise<UserRole[]>
     deleteByRoleId(roleid:string): Promise<number>;
 }
 
 class UserRoleRepository implements IUserRoleRepository {
-    async retrieveById(userid:string) : Promise<any[]>{
+    async retrieveByUserId(userid:string) : Promise<any[]>{
         try {
             const result = await AppDataSource.getRepository(UserRole)
             .createQueryBuilder("userrole")
@@ -35,7 +36,7 @@ class UserRoleRepository implements IUserRoleRepository {
             const result = await AppDataSource.getRepository(UserRole).save(userrole);
             logging.info(NAMESPACE, 'Insert UserRole successfully.');
             try {
-                const role = await this.retrieveById(result.user_user_id);
+                const role = await this.retrieveByUserId(result.user_user_id);
                 return role;
             }catch (err) {
                 logging.error(NAMESPACE, 'Error call retrieveById from insert userRole');

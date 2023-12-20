@@ -10,7 +10,6 @@ import authRepository from "../repositories/auth.repository";
 import createJwtToken from "../middleware/createJwtToken";
 import logging from "../config/logging";
 import checkuserAdminrole from "../middleware/checkuser.adminrole";
-import { th } from "date-fns/locale";
 
 const NAMESPACE = 'AuthController';
 

@@ -20,7 +20,7 @@ class CheckUserAdminRole implements ICheckUserAdminRole {
                 return false;
             }
 
-            const userRoles = await userroleRepository.retrieveById(userId);
+            const userRoles = await userroleRepository.retrieveByUserId(userId);
             if (userRoles.length == 0) {
                 return false;
             }
@@ -48,7 +48,7 @@ class CheckUserAdminRole implements ICheckUserAdminRole {
                 return false;
             }
 
-            const userRoles = await userroleRepository.retrieveById(userId);
+            const userRoles = await userroleRepository.retrieveByUserId(userId);
             if (userRoles.length == 0) {
                 return false;
             }

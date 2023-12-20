@@ -6,7 +6,6 @@ import ingredientsRepository from '../repositories/ingredients.repository';
 import ingredientnutritionRepository from '../repositories/ingredientnutrition.repository';
 import nutritionRepository from '../repositories/nutrition.repository';
 import logging from '../config/logging';
-import { ca } from 'date-fns/locale';
 
 const NAMESPACE = 'Ingredient Controller';
 
