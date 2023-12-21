@@ -4,6 +4,7 @@ import { AnimalType } from "../entity/animaltype.entity";
 import { Diseasedetail } from "../entity/diseasedetail.entity";
 import { Diseasenutrition } from "../entity/diseasenutrition.entity";
 import petRepository from "../repositories/pet.repository";
+import profilepetRepository from "../repositories/profilepet.repository";
 import nutritionRepository from "../repositories/nutrition.repository";
 import animalRepository from "../repositories/animaltype.respository";
 import diseaseRepository from "../repositories/disease.repository";
@@ -312,11 +313,17 @@ export default class AnimalController {
         }
 
         try {
+            //TODO ลบ petrecipes ลบ recipeingredients
             const diseasedetail = await diseasedetailRepository.retrieveByAnimalTypeId(typeid);
+            const pet = await petRepository.retrieveByAnimalTypeId(typeid);
             try {
                 const diseasenutrition = await Promise.all(diseasedetail.map(async (diseasedetailData: Diseasedetail) => {
                     await diseasenutritionRepository.deleteByDiseaseId(diseasedetailData.disease_id);
                     await diseaseRepository.deleteByDiseaseId(diseasedetailData.disease_id);
+                    return;
+                }));
+                const petprofile = await Promise.all(pet.map(async (petData: any) => {
+                    await profilepetRepository.deleteByPetId(petData.pet_id);
                     return;
                 }));
                 await diseasedetailRepository.deleteByAnimalTypeId(typeid);

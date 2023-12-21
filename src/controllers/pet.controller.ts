@@ -3,7 +3,9 @@ import { JwtPayload } from 'jsonwebtoken';
 import { differenceInDays } from 'date-fns';
 import { Pet } from '../entity/pet.entity';
 import { Disease } from '../entity/disease.entity';
+import { Profilepet } from '../entity/profilepet.entity';
 import petRepository from '../repositories/pet.repository';
+import profilepetRepository from '../repositories/profilepet.repository';
 import diseaseRepository from '../repositories/disease.repository';
 import diseasedetailRepository from '../repositories/diseasedetail.repository';
 import logging from '../config/logging';
@@ -19,6 +21,7 @@ export default class PetController {
             const pet = await petRepository.retrieveByUserId(userid);
 
             const petInfo = await Promise.all(pet.map(async (petData: any) => {
+                const profile = await profilepetRepository.retrieveByPetId(petData.petid);
                 const disease = await diseaseRepository.retrieveByPetId(petData.petid);
 
                 const chronicDisease = await Promise.all(disease.map(async (diseaseData: any) => {
@@ -32,14 +35,14 @@ export default class PetController {
                     petName: petData.petname,
                     petType: petData.animaltypename,
                     petTypeId: petData.animaltypeid,
-                    factorType: petData.factortype,
-                    petFactorNumber: petData.factornumber,
-                    petWeight: petData.weight,
-                    petNeuteringStatus: petData.neutering_status,
-                    petAgeType: petData.age,
-                    petPhysiologyStatus: petData.physiology_status,
+                    factorType: profile.factor_type,
+                    petFactorNumber: profile.factor_number,
+                    petWeight: profile.weight,
+                    petNeuteringStatus: profile.neutering_status,
+                    petAgeType: profile.age,
+                    petPhysiologyStatus: profile.physiology_status,
                     petChronicDiseaseForUser: chronicDisease,
-                    petActivityType: petData.activitie,
+                    petActivityType: profile.activitie,
                     updateRecent: differenceInDays(currentDay, petData.updatedate!)
                 } 
             }));
@@ -81,19 +84,29 @@ export default class PetController {
             pet.user_user_id = userid;
             pet.animaltype_type_id = petTypeId;
             pet.pet_name = petName;
-            pet.weight = petWeight;
-            pet.neutering_status = petNeuteringStatus;
-            pet.age = petAgeType;
-            pet.activitie = petActivityType;
-            pet.factor_type = factorType;
-            pet.factor_number = petFactorNumber;
-            pet.physiology_status = petPhysiologyStatus;
             pet.update_date = new Date();
             const addpet = await petRepository.save(pet);
+            try {
+                const profile = new Profilepet();
+                profile.pet_pet_id = addpet.pet_id;
+                profile.weight = petWeight;
+                profile.neutering_status = petNeuteringStatus;
+                profile.age = petAgeType;
+                profile.activitie = petActivityType;
+                profile.factor_type = factorType;
+                profile.factor_number = petFactorNumber;
+                profile.physiology_status = petPhysiologyStatus;
+                profile.update_date = new Date();
+                const addprofile = await profilepetRepository.save(profile);
+            }catch (err) {
+                await petRepository.deleteById(addpet.pet_id);
+                throw err;
+            }
 
             pet.disease = await Promise.all(petChronicDiseaseForUser.map(async (diseaseData: any) => {
                 if (!diseaseData.petChronicDiseaseId || !diseaseData.petChronicDiseaseName) {
                     await diseaseRepository.deleteByPetId(addpet.pet_id);
+                    await profilepetRepository.deleteByPetId(addpet.pet_id);
                     await petRepository.deleteById(addpet.pet_id);
                     throw new Error("Please fill in all the fields!");
                 }
@@ -112,6 +125,7 @@ export default class PetController {
                     }
                 }catch (err) {
                     await diseaseRepository.deleteByPetId(addpet.pet_id);
+                    await profilepetRepository.deleteByPetId(addpet.pet_id);
                     await petRepository.deleteById(addpet.pet_id);
                     throw err;
                 }
@@ -164,16 +178,26 @@ export default class PetController {
             pet.user_user_id = userid;
             pet.animaltype_type_id = petTypeId;
             pet.pet_name = petName;
-            pet.weight = petWeight;
-            pet.neutering_status = petNeuteringStatus;
-            pet.age = petAgeType;
-            pet.activitie = petActivityType;
-            pet.factor_type = factorType;
-            pet.factor_number = petFactorNumber;
-            pet.physiology_status = petPhysiologyStatus;
             pet.update_date = new Date();
             const updatepet = await petRepository.update(pet);
 
+            try {
+                const profile = new Profilepet();
+                profile.pet_pet_id = updatepet.pet_id;
+                profile.weight = petWeight;
+                profile.neutering_status = petNeuteringStatus;
+                profile.age = petAgeType;
+                profile.activitie = petActivityType;
+                profile.factor_type = factorType;
+                profile.factor_number = petFactorNumber;
+                profile.physiology_status = petPhysiologyStatus;
+                profile.update_date = new Date();
+                const updateprofile = await profilepetRepository.update(profile);
+
+            }catch (err) {
+                throw err;
+            }
+        
             pet.disease = await Promise.all(petChronicDiseaseForUser.map(async (diseaseData: any) => {
                 if (!diseaseData.petChronicDiseaseId || !diseaseData.petChronicDiseaseName) {
                     throw new Error("Please fill in all the fields!");
@@ -191,8 +215,12 @@ export default class PetController {
                 disease.diseasedetail_disease_id = diseaseData.petChronicDiseaseId;
                 disease.update_date = new Date();
                 
-                const updatepetdisease = await diseaseRepository.update(disease);
-                return;
+                try {
+                    const updatepetdisease = await diseaseRepository.update(disease);
+                    return;
+                }catch (err) {
+                    throw err;
+                }
             }));
             logging.info(NAMESPACE, 'Update pet successfully');
             res.status(200).send({
@@ -227,6 +255,7 @@ export default class PetController {
 
         try {
             await diseaseRepository.deleteByPetId(petId);
+            await profilepetRepository.deleteByPetId(petId);
             await petRepository.deleteById(petId);
             logging.info(NAMESPACE, 'Delete pet successfully');
             res.status(200).send({

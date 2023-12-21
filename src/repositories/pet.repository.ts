@@ -10,6 +10,7 @@ interface IPetRepository {
     update(pet: Pet): Promise<Pet>;
     retrieveAll(): Promise<Pet[]>;
     retrieveByUserId(userid: string): Promise<any[]>;
+    retrieveByAnimalTypeId(animaltypeid: string): Promise<any[]>;
     retrieveByName(petname:string, userid:string): Promise<Pet | undefined>;
     retrieveById(petid: string): Promise<Pet | undefined>;
     deleteById(petid: string): Promise<number>;
@@ -61,7 +62,7 @@ class PetRepository implements IPetRepository {
     async retrieveAll(): Promise<Pet[]> {
         try {
             const result = await AppDataSource.getRepository(Pet).find({
-                select: ["pet_id","animaltype_type_id","pet_name","weight","neutering_status","age","activitie","factor_type","factor_number","physiology_status","update_date"]
+                select: ["pet_id","animaltype_type_id","pet_name","update_date"]
             })
             logging.info(NAMESPACE, "Retrieve all pet successfully.");
             return result;
@@ -81,16 +82,31 @@ class PetRepository implements IPetRepository {
                 "animaltype.type_id AS animaltypeid",
                 "animaltype.type_name AS animaltypename",
                 "pet.pet_name AS petname",
-                "pet.weight AS weight",
-                "pet.neutering_status AS neutering_status",
-                "pet.age AS age",
-                "pet.activitie AS activitie",
-                "pet.factor_type AS factortype",
-                "pet.factor_number AS factornumber",
-                "pet.physiology_status AS physiology_status",
                 "pet.update_date AS updatedate"
             ])
             .where("pet.user_user_id = :userid", { userid: userid })
+            .getRawMany();
+            logging.info(NAMESPACE, "Retrieve pet successfully.");
+            return result;
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async retrieveByAnimalTypeId(animaltypeid: string): Promise<any[]> {
+        try {
+            const result = await AppDataSource.getRepository(Pet)
+            .createQueryBuilder("pet")
+            .innerJoinAndSelect(AnimalType, "animaltype", "animaltype.type_id = pet.animaltype_type_id")
+            .select([
+                "pet.pet_id AS petid",
+                "animaltype.type_id AS animaltypeid",
+                "animaltype.type_name AS animaltypename",
+                "pet.pet_name AS petname",
+                "pet.update_date AS updatedate"
+            ])
+            .where("pet.animaltype_type_id = :animaltypeid", { animaltypeid: animaltypeid })
             .getRawMany();
             logging.info(NAMESPACE, "Retrieve pet successfully.");
             return result;
@@ -104,7 +120,7 @@ class PetRepository implements IPetRepository {
         try {
             const result = await AppDataSource.getRepository(Pet).findOne({
                 where: { pet_name: petname, user_user_id: userid },
-                select: ["pet_id","animaltype_type_id","pet_name","weight","neutering_status","age","activitie","factor_type","factor_number","physiology_status","update_date"]
+                select: ["pet_id","animaltype_type_id","pet_name","update_date"]
             });
             if (!result) {
                 logging.error(NAMESPACE, "Not found pet with name: " + petname);
@@ -122,7 +138,7 @@ class PetRepository implements IPetRepository {
         try {
             const result = await AppDataSource.getRepository(Pet).findOne({
                 where: { pet_id: petid },
-                select: ["pet_id","animaltype_type_id","pet_name","weight","neutering_status","age","activitie","factor_type","factor_number","physiology_status","update_date"]
+                select: ["pet_id","animaltype_type_id","pet_name","update_date"]
             })
             if (!result) {
                 logging.error(NAMESPACE, "Not found pet with id: " + petid);

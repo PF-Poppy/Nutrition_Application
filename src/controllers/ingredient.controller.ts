@@ -212,7 +212,7 @@ export default class IngredientController {
         try {
             try {
                 await ingredientnutritionRepository.deleteByIngredientId(ingredientId);
-                //TODO ลบrecipeingredients ด้วย
+                //TODO ลบrecipeingredients petrecipes ด้วย
                 await ingredientsRepository.deleteById(ingredientId);
             }catch (err) {
                 logging.error(NAMESPACE, (err as Error).message, err);
