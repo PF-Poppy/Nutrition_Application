@@ -26,7 +26,7 @@ export class Choices {
   @Column({type: "varchar", length: 255, nullable: true})
   update_by?: string
 
-  @ManyToOne(() => Questions, questions => questions.question_id)
+  @ManyToOne(() => Questions, questions => questions.question_id,{onDelete: 'CASCADE'})
   @JoinColumn({ name: 'questions_question_id' })
   questions!: Questions;
 }

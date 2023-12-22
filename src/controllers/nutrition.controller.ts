@@ -120,8 +120,6 @@ export default class NutritionController {
         }
 
         try {
-            await diseasenutritionRepository.deleteByNutritionId(nutritionId);
-            await ingredientnutritionRepository.deleteByNutritionId(nutritionId);
             await nutritionRepository.deleteById(nutritionId);
             logging.info(NAMESPACE, "Delete nutrition successfully.");
             res.status(200).send({

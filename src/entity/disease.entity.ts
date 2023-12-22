@@ -20,11 +20,11 @@ export class Disease {
   @UpdateDateColumn()
   update_date?: Date;
 
-  @ManyToOne(() => Pet, pet => pet.pet_id)
+  @ManyToOne(() => Pet, pet => pet.pet_id,{onDelete: 'CASCADE'})
   @JoinColumn({ name: 'pet_pet_id' })
   pet!: Pet;
 
-  @ManyToOne(() => Diseasedetail, diseasedetail => diseasedetail.disease_id)
+  @ManyToOne(() => Diseasedetail, diseasedetail => diseasedetail.disease_id,{onDelete: 'CASCADE'})
   @JoinColumn({ name: 'diseasedetail_disease_id' })
   diseasedetail!: Diseasedetail;
 }

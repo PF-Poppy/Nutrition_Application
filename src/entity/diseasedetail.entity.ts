@@ -34,7 +34,7 @@ export class Diseasedetail {
   @OneToMany(() => Diseasenutrition, diseasenutrition => diseasenutrition.diseasedetail_disease_id)
   diseasenutrition?: Diseasenutrition[];
 
-  @ManyToOne(() => AnimalType, animaltype => animaltype.type_id)
+  @ManyToOne(() => AnimalType, animaltype => animaltype.type_id,{onDelete: 'CASCADE'})
   @JoinColumn({ name: 'animaltype_type_id' })
   animaltype!: AnimalType;
 }

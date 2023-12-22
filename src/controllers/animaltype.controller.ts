@@ -4,10 +4,8 @@ import { AnimalType } from "../entity/animaltype.entity";
 import { Diseasedetail } from "../entity/diseasedetail.entity";
 import { Diseasenutrition } from "../entity/diseasenutrition.entity";
 import petRepository from "../repositories/pet.repository";
-import profilepetRepository from "../repositories/profilepet.repository";
 import nutritionRepository from "../repositories/nutrition.repository";
 import animalRepository from "../repositories/animaltype.respository";
-import diseaseRepository from "../repositories/disease.repository";
 import diseasedetailRepository from "../repositories/diseasedetail.repository";
 import diseasenutritionRepository from "../repositories/diseasenutrition.repository";
 import logging from "../config/logging";
@@ -114,7 +112,6 @@ export default class AnimalController {
 
             animaltype.diseasedetail = await Promise.all(petChronicDisease.map(async (diseaseData: any) => {
                 if (!diseaseData.petChronicDiseaseName || !diseaseData.NutrientLimitInfo) {
-                    await diseasedetailRepository.deleteByAnimalTypeId(addanimaltype.type_id);
                     await animalRepository.deleteById(addanimaltype.type_id);
                     throw new Error("Please fill in all the fields!");
                 }
@@ -129,7 +126,6 @@ export default class AnimalController {
                     
                     chronicDisease.diseasenutrition = await Promise.all(diseaseData.NutrientLimitInfo.map(async (nutrientInfoData: any) => {
                         if (!nutrientInfoData.nutrientName || !nutrientInfoData.min || !nutrientInfoData.max) {
-                            await diseasedetailRepository.deleteById(addnewdiseasedetail.disease_id);
                             throw new Error("Please fill in all the fields!");
                         }
                         try {
@@ -150,12 +146,10 @@ export default class AnimalController {
                                 throw err;
                             }
                         }catch(err){
-                            await diseasenutritionRepository.deleteByDiseaseId(addnewdiseasedetail.disease_id);
                             throw err;
                         }
                     }));
                 }catch(err){
-                    await diseasedetailRepository.deleteByAnimalTypeId(addanimaltype.type_id);
                     await animalRepository.deleteById(addanimaltype.type_id);
                     throw err;
                 }
@@ -313,21 +307,9 @@ export default class AnimalController {
         }
 
         try {
-            //TODO ลบ petrecipes ลบ recipeingredients
             const diseasedetail = await diseasedetailRepository.retrieveByAnimalTypeId(typeid);
             const pet = await petRepository.retrieveByAnimalTypeId(typeid);
             try {
-                const diseasenutrition = await Promise.all(diseasedetail.map(async (diseasedetailData: Diseasedetail) => {
-                    await diseasenutritionRepository.deleteByDiseaseId(diseasedetailData.disease_id);
-                    await diseaseRepository.deleteByDiseaseId(diseasedetailData.disease_id);
-                    return;
-                }));
-                const petprofile = await Promise.all(pet.map(async (petData: any) => {
-                    await profilepetRepository.deleteByPetId(petData.pet_id);
-                    return;
-                }));
-                await diseasedetailRepository.deleteByAnimalTypeId(typeid);
-                await petRepository.deleteByAnimalTypeId(typeid);
                 await animalRepository.deleteById(typeid);
             }catch(err){
                 logging.error(NAMESPACE, 'Error call deleteById from delete animal type');

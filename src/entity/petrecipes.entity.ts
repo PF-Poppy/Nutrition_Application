@@ -36,7 +36,7 @@ export class Petrecipes {
   @OneToMany(() => Recipeingredients, recipeingredients => recipeingredients.petrecipes_recipes_id)
   recipeingredients?: Recipeingredients[];
 
-  @ManyToOne(() => AnimalType, animaltype => animaltype.type_id)
+  @ManyToOne(() => AnimalType, animaltype => animaltype.type_id,{onDelete: 'CASCADE'})
   @JoinColumn({ name: 'animaltype_type_id' })
   animaltype!: AnimalType;
 }

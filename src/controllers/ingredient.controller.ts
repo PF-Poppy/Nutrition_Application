@@ -36,7 +36,6 @@ export default class IngredientController {
             
             ingredient.ingredientnutrition = await Promise.all(nutrient.map(async (nutrientInfoData: any) => {
                 if (!nutrientInfoData.nutrientName || !nutrientInfoData.amount) {
-                    await ingredientnutritionRepository.deleteByIngredientId(addingredient.ingredient_id);
                     await ingredientsRepository.deleteById(addingredient.ingredient_id);
                     throw new Error("Please fill in all the fields!");
                 }
@@ -57,7 +56,6 @@ export default class IngredientController {
                         throw err;
                     }
                 }catch(err){
-                    await ingredientnutritionRepository.deleteByIngredientId(addingredient.ingredient_id);
                     await ingredientsRepository.deleteById(addingredient.ingredient_id);
                     throw err;
                 }
@@ -211,8 +209,6 @@ export default class IngredientController {
 
         try {
             try {
-                await ingredientnutritionRepository.deleteByIngredientId(ingredientId);
-                //TODO ลบrecipeingredients petrecipes ด้วย
                 await ingredientsRepository.deleteById(ingredientId);
             }catch (err) {
                 logging.error(NAMESPACE, (err as Error).message, err);

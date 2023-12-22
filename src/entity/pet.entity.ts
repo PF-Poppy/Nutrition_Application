@@ -28,11 +28,11 @@ export class Pet {
   @OneToMany(() => Disease, disease => disease.pet_pet_id)
   disease!: Disease[];
 
-  @ManyToOne(() => AnimalType, animaltype => animaltype.type_id)
+  @ManyToOne(() => AnimalType, animaltype => animaltype.type_id,{onDelete: 'CASCADE'})
   @JoinColumn({ name: "animaltype_type_id" })
   animaltype!: AnimalType;
 
-  @ManyToOne(() => User, user => user.user_id)
+  @ManyToOne(() => User, user => user.user_id,{onDelete: 'CASCADE'})
   @JoinColumn({ name: "user_user_id" })
   user!: User;
 

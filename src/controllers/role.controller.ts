@@ -143,7 +143,6 @@ export default class RoleController {
         }
         
         try {
-            await userroleRepository.deleteByRoleId(roleId);
             await roleRespository.deleteById(roleId);
             logging.info(NAMESPACE, "Delete role successfully.");
             res.status(200).send({

@@ -37,7 +37,7 @@ export class Profilepet {
   @UpdateDateColumn()
   update_date?: Date;
 
-  @OneToOne(() => Pet, pet => pet.pet_id)
+  @OneToOne(() => Pet, pet => pet.pet_id,{onDelete: 'CASCADE'})
   @JoinColumn({ name: "pet_pet_id" }) 
   pet!: Pet;
 }

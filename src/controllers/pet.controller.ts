@@ -105,8 +105,6 @@ export default class PetController {
 
             pet.disease = await Promise.all(petChronicDiseaseForUser.map(async (diseaseData: any) => {
                 if (!diseaseData.petChronicDiseaseId || !diseaseData.petChronicDiseaseName) {
-                    await diseaseRepository.deleteByPetId(addpet.pet_id);
-                    await profilepetRepository.deleteByPetId(addpet.pet_id);
                     await petRepository.deleteById(addpet.pet_id);
                     throw new Error("Please fill in all the fields!");
                 }
@@ -124,8 +122,6 @@ export default class PetController {
                         throw err;
                     }
                 }catch (err) {
-                    await diseaseRepository.deleteByPetId(addpet.pet_id);
-                    await profilepetRepository.deleteByPetId(addpet.pet_id);
                     await petRepository.deleteById(addpet.pet_id);
                     throw err;
                 }
@@ -254,8 +250,6 @@ export default class PetController {
         }
 
         try {
-            await diseaseRepository.deleteByPetId(petId);
-            await profilepetRepository.deleteByPetId(petId);
             await petRepository.deleteById(petId);
             logging.info(NAMESPACE, 'Delete pet successfully');
             res.status(200).send({

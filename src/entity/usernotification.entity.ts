@@ -20,11 +20,11 @@ export class Usernotification {
   @UpdateDateColumn()
   update_date?: Date;
 
-  @ManyToOne(() => User, user => user.user_id)
+  @ManyToOne(() => User, user => user.user_id,{onDelete: 'CASCADE'})
   @JoinColumn({ name: 'user_user_id' })
   user!: User;
 
-  @ManyToOne(() => Notification, notification => notification.notification_id)
+  @ManyToOne(() => Notification, notification => notification.notification_id,{onDelete: 'CASCADE'})
   @JoinColumn({ name: 'notification_notification_id' })
   notification!: Notification;
 }

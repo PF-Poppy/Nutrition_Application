@@ -32,11 +32,11 @@ export class Diseasenutrition {
   @Column({type: "varchar", length: 255, nullable: true})
   update_by?: string
 
-  @ManyToOne(() => Diseasedetail, diseasedetail => diseasedetail.disease_id)
+  @ManyToOne(() => Diseasedetail, diseasedetail => diseasedetail.disease_id,{onDelete: 'CASCADE'})
   @JoinColumn({ name: 'diseasedetail_disease_id' })
   diseasedetail!: Diseasedetail;
 
-  @ManyToOne(() => Nutrition, nutrition => nutrition.nutrition_id)
+  @ManyToOne(() => Nutrition, nutrition => nutrition.nutrition_id,{onDelete: 'CASCADE'})
   @JoinColumn({ name: 'nutrition_nutrition_id' })
   nutrition!: Nutrition;
 }
