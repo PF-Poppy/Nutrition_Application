@@ -29,6 +29,33 @@ export default class NutritionController {
         }
     }
 
+    async addNewNutritionfirsttime(req: Request, res: Response) {
+        logging.info(NAMESPACE, "Add new nutrition");
+        const { nutrientName } = req.body;
+        if(!nutrientName) {
+            res.status(400).send({
+                message: "Please fill in all the fields!"
+            });
+            return;
+        }
+        try {
+            
+            const nutrition = new Nutrition();
+            nutrition.nutrient_name = nutrientName;
+            nutrition.create_date = new Date();
+            const addnutrition = await nutritionRepository.save(nutrition);
+            logging.info(NAMESPACE, "Add new nutrition successfully.");
+            res.status(200).send({
+                message: "Add new nutrition successfully.",
+            })
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            res.status(500).send({
+                message: (err as Error).message
+            });
+        }
+    }
+
     async addNewNutrition(req: Request, res: Response) {
         logging.info(NAMESPACE, "Add new nutrition");
         const { userid, username} = (req as JwtPayload).jwtPayload;
