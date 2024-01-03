@@ -44,6 +44,50 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
     }
 
     async update(ingredientnutrition: Ingredientnutrition): Promise<Ingredientnutrition> {
+        let result: Ingredientnutrition | undefined;
+        try {
+            await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+                try {
+                    const connect = transactionalEntityManager.getRepository(Ingredientnutrition);
+                    const existingIngredientnutrition = await connect
+                    .createQueryBuilder()
+                    .select()
+                    .setLock("pessimistic_write")
+                    .where("nutrition_nutrition_id = :nutrition_nutrition_id AND ingredients_ingredient_id = :ingredients_ingredient_id", {
+                        nutrition_nutrition_id: ingredientnutrition.nutrition_nutrition_id,
+                        ingredients_ingredient_id: ingredientnutrition.ingredients_ingredient_id,
+                    })
+                    .getOne();
+
+                    if (!existingIngredientnutrition) {
+                        try {
+                            ingredientnutrition.create_by = `${ingredientnutrition.update_by}`;
+                            const res = await connect.save(ingredientnutrition);
+                            logging.info(NAMESPACE, "Update ingredientnutrition successfully.");
+
+                            result = await this.retrieveById(res.ingredient_nutrition_id);
+                            return result;
+                        }catch (err) {
+                            logging.error(NAMESPACE, 'Error saving new ingredientnutrition');
+                            throw err;
+                        }
+                    }else {
+                        await connect.update({ ingredient_nutrition_id: existingIngredientnutrition.ingredient_nutrition_id }, ingredientnutrition);
+                        logging.info(NAMESPACE, "Update ingredientnutrition successfully.");
+                        result = await this.retrieveById(existingIngredientnutrition.ingredient_nutrition_id);
+                        return result;
+                    }  
+                }catch (err) {
+                    logging.error(NAMESPACE, 'Error call retrieveById from insert diseasenutrition');
+                    throw err;
+                }
+            });
+            return result!;
+        }catch (err) {
+            logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
+            throw err;
+        }
+        /*
         try {
             const connect = AppDataSource.getRepository(Ingredientnutrition)
             const info = await connect.findOne({
@@ -85,6 +129,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
             logging.error(NAMESPACE, (err as Error).message, err);
             throw err;
         }
+        */
     }
 
     async retrieveById(ingredientnutritionid: string): Promise<Ingredientnutrition> {

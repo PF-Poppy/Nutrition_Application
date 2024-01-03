@@ -42,8 +42,54 @@ class AnimalRepository implements IAnimalRepository {
     }
 
     async update(animal:AnimalType): Promise<AnimalType> {
+        let result: AnimalType | undefined;
         try {
-            const connect = AppDataSource.getRepository(AnimalType)
+            await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+                try {
+                    const connect = transactionalEntityManager.getRepository(AnimalType);
+                    const existingType = await connect
+                    .createQueryBuilder()
+                    .select()
+                    .setLock("pessimistic_write")
+                    .where("type_id = :type_id", { type_id: animal.type_id })
+                    .getOne();
+
+                    if (!existingType) {
+                        logging.error(NAMESPACE, "Not found animal type with id: " + animal.type_id);
+                        throw new Error("Not found animal type with id: " + animal.type_id);
+                    }
+
+                    const duplicateType = await connect.findOne({ where: { type_name: animal.type_name } });
+                    if (duplicateType && duplicateType.type_id !== animal.type_id) {
+                        logging.error(NAMESPACE, "Duplicate animal type name.");
+                        throw new Error("Duplicate animal type name.");
+                    }
+
+                    await connect.update({ type_id: animal.type_id }, animal);
+                    logging.info(NAMESPACE, "Update animal type successfully.");
+
+                    try {
+                        result = await this.retrieveById(animal.type_id);
+                        return result;
+                    } catch (err) {
+                        logging.error(NAMESPACE, 'Error call retrieveById from update animal type');
+                        throw err;
+                    }
+
+                } catch (err) {
+                    logging.error(NAMESPACE, (err as Error).message, err);
+                    throw err;
+                }
+            });
+            return result!;
+        }catch (err) {
+            logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
+            throw err;
+        }
+        /*
+        try {
+
+
             const type = await connect.find(
                 { where: { type_name: animal.type_name } }
             );
@@ -55,11 +101,7 @@ class AnimalRepository implements IAnimalRepository {
                     }
                 }
             } 
-            const result = await connect.update({ type_id : animal.type_id}, animal);
-            if (result.affected === 0) {
-                logging.error(NAMESPACE, "Not found animal type with id: " + animal.type_id);
-                throw new Error("Not found animal type with id: " + animal.type_id);
-            }
+            await connect.update({ type_id : animal.type_id}, animal);
             logging.info(NAMESPACE, "Update animal type successfully.");
             try {
                 const res = await this.retrieveById(animal.type_id);
@@ -72,6 +114,7 @@ class AnimalRepository implements IAnimalRepository {
             logging.error(NAMESPACE, (err as Error).message, err);
             throw err;
         }
+        */
     }
 
     async retrieveAll(): Promise<AnimalType[]>{

@@ -1,6 +1,7 @@
 import { Profilepet } from "../entity/profilepet.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
+import { ca } from "date-fns/locale";
 
 const NAMESPACE = "Profilepet Repository";
 
@@ -32,6 +33,44 @@ class ProfilepetRepository implements IProfilepetRepository {
     }
 
     async update(profilepet: Profilepet): Promise<Profilepet> {
+        let result: Profilepet | undefined;
+        try {
+            await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+                try {
+                    const connect = transactionalEntityManager.getRepository(Profilepet);
+                    const existingPetprofile = await connect
+                    .createQueryBuilder()
+                    .select()
+                    .setLock("pessimistic_write")
+                    .where("profile_id = :profile_id", { profile_id: profilepet.profile_id })
+                    .getOne();
+
+                    if (!existingPetprofile) {
+                        logging.error(NAMESPACE, "Not found profilepet with id: " + profilepet.profile_id);
+                        throw new Error("Not found profilepet with id: " + profilepet.profile_id);
+                    }
+
+                    await connect.update({ profile_id: profilepet.profile_id }, profilepet);
+                    logging.info(NAMESPACE, "Update profilepet successfully.");
+
+                    try {
+                        result = await this.retrieveById(profilepet.profile_id);
+                        return result;
+                    }catch (err) {
+                        logging.error(NAMESPACE, 'Error call retrieveById from update profilepet');
+                        throw err;
+                    }
+                }catch (err) {
+                    logging.error(NAMESPACE, 'Error call retrieveById from update animal type');
+                    throw err;
+                }
+            });
+            return result!;
+        }catch (err) {
+            logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
+            throw err;
+        }
+        /*
         try {
             const connect = AppDataSource.getRepository(Profilepet)
             const result = await connect.update({ profile_id : profilepet.profile_id}, profilepet);
@@ -51,6 +90,7 @@ class ProfilepetRepository implements IProfilepetRepository {
             logging.error(NAMESPACE, (err as Error).message, err);
             throw err;
         }
+        */
     }
 
     async retrieveByPetId(petid: string): Promise<Profilepet> {

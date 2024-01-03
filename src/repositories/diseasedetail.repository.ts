@@ -1,6 +1,7 @@
 import { Diseasedetail } from "../entity/diseasedetail.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
+import { ca } from "date-fns/locale";
 
 const NAMESPACE = "Diseasedetail Repository";
 
@@ -43,6 +44,50 @@ class DiseasedetailRepository implements IdiseasedetailRepository {
     }
 
     async update(diseasedetail:Diseasedetail): Promise<Diseasedetail> {
+        let result: Diseasedetail | undefined;
+        try {
+            await AppDataSource.manager.transaction(async (transactionalEntityManager) => {{
+                try {
+                    const connect = transactionalEntityManager.getRepository(Diseasedetail);
+                    const existingDisease = await connect
+                    .createQueryBuilder()
+                    .select()
+                    .setLock("pessimistic_write")
+                    .where("disease_id = :disease_id", { disease_id: diseasedetail.disease_id })
+                    .getOne();
+
+                    if (!existingDisease) {
+                        logging.error(NAMESPACE, "Not found diseasedetail with id: " + diseasedetail.disease_id);
+                        throw new Error("Not found diseasedetail with id: " + diseasedetail.disease_id);
+                    }
+
+                    const duplicateDisease = await connect.findOne({ where: { disease_name: diseasedetail.disease_name, animaltype_type_id: diseasedetail.animaltype_type_id } });
+                    if (duplicateDisease && duplicateDisease.disease_id !== diseasedetail.disease_id) {
+                        logging.error(NAMESPACE, "Duplicate diseasedetail name.");
+                        throw new Error("Duplicate diseasedetail name.");
+                    }
+
+                    await connect.update({ disease_id: diseasedetail.disease_id }, diseasedetail);
+                    logging.info(NAMESPACE, "Update diseasedetail successfully.");
+
+                    try {
+                        const result = await this.retrieveById(diseasedetail.disease_id);
+                        return result;
+                    }catch (err) {
+                        logging.error(NAMESPACE, 'Error call retrieveById from update diseasedetail');
+                        throw err;
+                    }
+                }catch(err){
+                    logging.error(NAMESPACE, (err as Error).message, err);
+                    throw err;
+                }
+            }});
+            return result!;
+        }catch(err){
+            logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
+            throw err;
+        }
+        /*
         try {
             const connect = AppDataSource.getRepository(Diseasedetail)
             const diseasedetailinfo = await connect.find({
@@ -74,6 +119,7 @@ class DiseasedetailRepository implements IdiseasedetailRepository {
             logging.error(NAMESPACE, (err as Error).message, err);
             throw err;
         }
+        */
     }
 
     async retrieveById(diseaseid: string): Promise<Diseasedetail> {

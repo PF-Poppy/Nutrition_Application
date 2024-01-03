@@ -2,6 +2,7 @@ import { Diseasenutrition } from "../entity/diseasenutrition.entity";
 import { Nutrition } from "../entity/nutrition.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
+import { ca } from "date-fns/locale";
 
 
 const NAMESPACE = "Diseasenutrition Repository";
@@ -45,6 +46,50 @@ class DiseasenutritionRepository implements IdiseasenutritionRepository {
     }
 
     async update(diseasenutrition:Diseasenutrition): Promise<Diseasenutrition> {
+        let result: Diseasenutrition | undefined;
+        try {
+            await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+                try {
+                    const connect = transactionalEntityManager.getRepository(Diseasenutrition);
+                    const existingDiseasenutrition = await connect
+                    .createQueryBuilder()
+                    .select()
+                    .setLock("pessimistic_write")
+                    .where("diseasedetail_disease_id = :diseasedetail_disease_id AND nutrition_nutrition_id = :nutrition_nutrition_id", {
+                        diseasedetail_disease_id: diseasenutrition.diseasedetail_disease_id,
+                        nutrition_nutrition_id: diseasenutrition.nutrition_nutrition_id,
+                    })
+                    .getOne();
+                    
+                    if (!existingDiseasenutrition) {
+                        try {
+                            diseasenutrition.create_by = `${diseasenutrition.update_by}`;
+                            const res = await connect.save(diseasenutrition);
+                            logging.info(NAMESPACE, "Update diseasenutrition successfully.");
+
+                            result = await this.retrieveById(res.diseasenutrition_id);
+                            return result;
+                        }catch(err){
+                            logging.error(NAMESPACE, 'Error saving new diseasenutrition');
+                            throw err;
+                        }
+                    }else {
+                        await connect.update({ diseasenutrition_id: existingDiseasenutrition.diseasenutrition_id }, diseasenutrition);
+                        logging.info(NAMESPACE, "Update diseasenutrition successfully.");
+                        result = await this.retrieveById(existingDiseasenutrition.diseasenutrition_id);
+                        return result;
+                    }
+                }catch(err){
+                    logging.error(NAMESPACE, 'Error call retrieveById from insert diseasenutrition');
+                    throw err;
+                }
+            });
+            return result!;
+        }catch (err) {
+            logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
+            throw err;
+        } 
+        /*
         try {
             const connect = AppDataSource.getRepository(Diseasenutrition)
             const diseasenutritioninfo = await connect.findOne({
@@ -86,6 +131,7 @@ class DiseasenutritionRepository implements IdiseasenutritionRepository {
             logging.error(NAMESPACE, (err as Error).message, err);
             throw err;
         }
+        */
     }
 
     async retrieveById(diseasenutritionid: string): Promise<Diseasenutrition> {

@@ -1,6 +1,7 @@
 import { Ingredients } from "../entity/ingredients.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
+import { ca } from "date-fns/locale";
 
 const NAMESPACE = "Ingredients Repository";
 
@@ -41,6 +42,50 @@ class IngredientsRepository implements IIngredientsRepository {
     }
 
     async update(ingredient: Ingredients): Promise<Ingredients> {
+        let result: Ingredients | undefined;
+        try {
+            await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+                try {
+                    const connect = transactionalEntityManager.getRepository(Ingredients);
+                    const existingIngredient = await connect
+                    .createQueryBuilder()
+                    .select()
+                    .setLock("pessimistic_write")
+                    .where("ingredient_id = :ingredient_id", { ingredient_id: ingredient.ingredient_id })
+                    .getOne();
+
+                    if (!existingIngredient) {
+                        logging.error(NAMESPACE, "Not found ingredients with id: " + ingredient.ingredient_id);
+                        throw new Error("Not found ingredients with id: " + ingredient.ingredient_id);
+                    }
+
+                    const deplicateIngredient = await connect.findOne({ where: { ingredient_name: ingredient.ingredient_name } });
+                    if (deplicateIngredient && deplicateIngredient.ingredient_id !== ingredient.ingredient_id) {
+                        logging.error(NAMESPACE, "Duplicate ingredients name.");
+                        throw new Error("Duplicate ingredients name.");
+                    }
+
+                    await connect.update({ ingredient_id: existingIngredient.ingredient_id }, ingredient);
+                    logging.info(NAMESPACE, "Update ingredients successfully.");
+
+                    try {
+                        result = await this.retrieveById(ingredient.ingredient_id);
+                        return result;
+                    }catch (err) {
+                        logging.error(NAMESPACE, 'Error call retrieveById from update ingredients');
+                        throw err;
+                    }
+                }catch(err){
+                    logging.error(NAMESPACE, (err as Error).message, err);
+                    throw err;
+                }
+            });
+            return result!;
+        }catch(err){
+            logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
+            throw err;
+        }
+        /*
         try {
             const connect = AppDataSource.getRepository(Ingredients)
             const info = await connect.find(
@@ -73,6 +118,7 @@ class IngredientsRepository implements IIngredientsRepository {
             logging.error(NAMESPACE, (err as Error).message, err);
             throw err;
         }
+        */
     }
 
     async retrieveAll(): Promise<Ingredients[]>{
