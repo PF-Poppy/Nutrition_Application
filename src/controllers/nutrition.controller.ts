@@ -2,8 +2,6 @@ import { Request, Response } from "express";
 import { JwtPayload } from "jsonwebtoken";
 import { Nutrition } from "../entity/nutrition.entity";
 import nutritionRepository from "../repositories/nutrition.repository";
-import diseasenutritionRepository from "../repositories/diseasenutrition.repository";
-import ingredientnutritionRepository from "../repositories/ingredientnutrition.repository";
 import logging from "../config/logging";
 
 const NAMESPACE = "Nutrition Controller";

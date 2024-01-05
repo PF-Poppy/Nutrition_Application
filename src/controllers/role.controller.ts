@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { Role } from "../entity/role.entity";
 import roleRespository from "../repositories/role.respository";
-import userroleRepository from "../repositories/userrole.repository";
 import logging from "../config/logging";
 
 const NAMESPACE = "Role Controller";
