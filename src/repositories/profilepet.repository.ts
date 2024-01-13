@@ -42,19 +42,19 @@ class ProfilepetRepository implements IProfilepetRepository {
                     .createQueryBuilder()
                     .select()
                     .setLock("pessimistic_write")
-                    .where("profile_id = :profile_id", { profile_id: profilepet.profile_id })
+                    .where("pet_pet_id = :pet_pet_id", { pet_pet_id: profilepet.pet_pet_id })
                     .getOne();
 
                     if (!existingPetprofile) {
-                        logging.error(NAMESPACE, "Not found profilepet with id: " + profilepet.profile_id);
-                        throw new Error("Not found profilepet with id: " + profilepet.profile_id);
+                        logging.error(NAMESPACE, "Not found profilepet with petid: " + profilepet.pet_pet_id);
+                        throw new Error("Not found profilepet with petid: " + profilepet.pet_pet_id);
                     }
 
-                    await connect.update({ profile_id: profilepet.profile_id }, profilepet);
+                    await connect.update({ pet_pet_id: profilepet.pet_pet_id }, profilepet);
                     logging.info(NAMESPACE, "Update profilepet successfully.");
 
                     try {
-                        result = await this.retrieveById(profilepet.profile_id);
+                        result = await this.retrieveByPetId(profilepet.pet_pet_id);
                         return result;
                     }catch (err) {
                         logging.error(NAMESPACE, 'Error call retrieveById from update profilepet');
