@@ -39,7 +39,7 @@ export default class PetController {
                     petFactorNumber: profile.factor_number,
                     petWeight: profile.weight,
                     petNeuteringStatus: profile.neutering_status,
-                    petAgeType: profile.age,
+                    petBirthDate: profile.petBirthDate,
                     petPhysiologyStatus: profile.physiology_status,
                     petChronicDiseaseForUser: chronicDisease,
                     petActivityType: profile.activitie,
@@ -72,8 +72,8 @@ export default class PetController {
             });
             return;
         }
-        const { petName, petTypeId, factorType, petFactorNumber, petWeight, petNeuteringStatus, petAgeType, petPhysiologyStatus, petChronicDiseaseForUser, petActivityType} = req.body;
-        if (!petName || !petTypeId || !factorType || !petFactorNumber || !petWeight || !petNeuteringStatus || !petAgeType || !petPhysiologyStatus || !petChronicDiseaseForUser || !petActivityType) {
+        const { petName, petTypeId, factorType, petFactorNumber, petWeight, petNeuteringStatus, petBirthDate, petPhysiologyStatus, petChronicDiseaseForUser, petActivityType} = req.body;
+        if (!petName || !petTypeId || !factorType || !petFactorNumber || !petWeight || !petNeuteringStatus || !petBirthDate || !petPhysiologyStatus || !petChronicDiseaseForUser || !petActivityType) {
             res.status(400).send({
                 message: "Please fill in all the fields!"
             });
@@ -91,7 +91,7 @@ export default class PetController {
                 profile.pet_pet_id = addpet.pet_id;
                 profile.weight = petWeight;
                 profile.neutering_status = petNeuteringStatus;
-                profile.age = petAgeType;
+                profile.petBirthDate = petBirthDate;
                 profile.activitie = petActivityType;
                 profile.factor_type = factorType;
                 profile.factor_number = petFactorNumber;
@@ -155,14 +155,14 @@ export default class PetController {
             });
             return;
         }
-        const { petId, petName, petTypeId, factorType, petFactorNumber, petWeight, petNeuteringStatus, petAgeType, petPhysiologyStatus, petChronicDiseaseForUser, petActivityType} = req.body;
+        const { petId, petName, petTypeId, factorType, petFactorNumber, petWeight, petNeuteringStatus, petBirthDate, petPhysiologyStatus, petChronicDiseaseForUser, petActivityType} = req.body;
         if (petId === "" || petId === undefined || petId === null) {
             res.status(400).send({
                 message: 'Pet Id can not be empty!'
             });
             return;
         }
-        if (!petName || !petTypeId || !factorType || !petFactorNumber || !petWeight || !petNeuteringStatus || !petAgeType || !petPhysiologyStatus || !petChronicDiseaseForUser || !petActivityType) {
+        if (!petName || !petTypeId || !factorType || !petFactorNumber || !petWeight || !petNeuteringStatus || !petBirthDate || !petPhysiologyStatus || !petChronicDiseaseForUser || !petActivityType) {
             res.status(400).send({
                 message: "Please fill in all the fields!"
             });
@@ -182,7 +182,7 @@ export default class PetController {
                 profile.pet_pet_id = updatepet.pet_id;
                 profile.weight = petWeight;
                 profile.neutering_status = petNeuteringStatus;
-                profile.age = petAgeType;
+                profile.petBirthDate = petBirthDate;
                 profile.activitie = petActivityType;
                 profile.factor_type = factorType;
                 profile.factor_number = petFactorNumber;

@@ -16,8 +16,8 @@ export class Profilepet {
   @Column({type: "varchar", length: 255})
   neutering_status!: string
 
-  @Column({type: "varchar", length: 255})
-  age!: string
+  @Column()
+  petBirthDate!: Date
 
   @Column({type: "varchar", length: 255})
   activitie!: string
