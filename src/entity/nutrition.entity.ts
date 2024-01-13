@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany} from 'typeorm';
 import { Diseasenutrition } from "./diseasenutrition.entity";
 import { Ingredientnutrition } from './ingredientnutrition.entity';
+import { Recipenutrition } from "./recipesnutrition.entity";
 
 @Entity({ name: "nutrition" })
 export class Nutrition {
@@ -28,4 +29,7 @@ export class Nutrition {
 
   @OneToMany(() => Ingredientnutrition, ingredientnutrition => ingredientnutrition.nutrition_nutrition_id)
   ingredientnutrition!: Ingredientnutrition[];
+
+  @OneToMany(() => Recipenutrition, recipenutrition => recipenutrition.nutrition_nutrition_id)
+  recipenutrition!: Recipenutrition[];
 }

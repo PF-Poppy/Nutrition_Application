@@ -3,6 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { Favorite } from "./favorite.entity";
 import { AnimalType } from "./animaltype.entity";
 import { Recipeingredients } from "./recipeingredients.entity";
+import { Recipenutrition } from "./recipesnutrition.entity";
 
 @Entity({ name: "petrecipes" })
 export class Petrecipes {
@@ -35,6 +36,9 @@ export class Petrecipes {
 
   @OneToMany(() => Recipeingredients, recipeingredients => recipeingredients.petrecipes_recipes_id)
   recipeingredients?: Recipeingredients[];
+
+  @OneToMany(() => Recipenutrition, recipenutrition => recipenutrition.petrecipes_recipes_id)
+  recipenutrition?: Recipenutrition[];
 
   @ManyToOne(() => AnimalType, animaltype => animaltype.type_id,{onDelete: 'CASCADE'})
   @JoinColumn({ name: 'animaltype_type_id' })
