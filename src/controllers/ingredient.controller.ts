@@ -189,7 +189,6 @@ export default class IngredientController {
 
     async deleleIngredient(req: Request, res: Response) {
         logging.info(NAMESPACE, 'Delete ingredientnutrition');
-        console.log(req.params.ingredientId)
         if (req.params.ingredientId == ":ingredientId" || !req.params.ingredientId) {
             res.status(400).send({
                 message: 'Ingredient Id can not be empty!'

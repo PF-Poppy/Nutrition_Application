@@ -2,7 +2,6 @@ import { Ingredientnutrition } from "../entity/ingredientnutrition.entity";
 import { Nutrition } from "../entity/nutrition.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
-import e from "express";
 
 const NAMESPACE = "Ingredientnutrition Repository";
 
@@ -85,7 +84,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
                         return result;
                     } 
                 }catch (err) {
-                    logging.error(NAMESPACE, 'Error call retrieveById from insert diseasenutrition');
+                    logging.error(NAMESPACE, (err as Error).message, err);
                     throw err;
                 }
             });

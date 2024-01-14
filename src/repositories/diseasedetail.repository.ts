@@ -71,7 +71,7 @@ class DiseasedetailRepository implements IdiseasedetailRepository {
                     logging.info(NAMESPACE, "Update diseasedetail successfully.");
                     await connect.query("COMMIT")
                     try {
-                        const result = await this.retrieveById(diseasedetail.disease_id);
+                        result = await this.retrieveById(diseasedetail.disease_id);
                         return result;
                     }catch (err) {
                         logging.error(NAMESPACE, 'Error call retrieveById from update diseasedetail');
@@ -82,6 +82,7 @@ class DiseasedetailRepository implements IdiseasedetailRepository {
                     throw err;
                 }
             }});
+            console.log("result: ", result);
             return result!;
         }catch(err){
             logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);

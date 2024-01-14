@@ -7,6 +7,7 @@ const NAMESPACE = "RecipeNutrition Repositor";
 
 interface IRecipeNutritionRepository {
     save(recipeNutrition: Recipenutrition): Promise<Recipenutrition>;
+    update(recipeNutrition: Recipenutrition): Promise<Recipenutrition>;
     retrieveById(recipeNutritionId: string): Promise<Recipenutrition | undefined>;
     deleteById(recipeNutritionId: string): Promise<number>;
     deleteAll(): Promise<number>;
@@ -38,6 +39,63 @@ class RecipeNutritionRepository implements IRecipeNutritionRepository {
             }
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async update(recipeNutrition: Recipenutrition): Promise<Recipenutrition> {
+        let result: Recipenutrition | undefined;
+        try {
+            await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+                try {
+                    const connect = transactionalEntityManager.getRepository(Recipenutrition);
+                    const existingData = await connect
+                    .createQueryBuilder()
+                    .select()
+                    .setLock("pessimistic_write")
+                    .where("nutrition_nutrition_id = :nutrition_nutrition_id AND petrecipes_recipes_id = :petrecipes_recipes_id", {
+                        nutrition_nutrition_id: recipeNutrition.nutrition_nutrition_id,
+                        petrecipes_recipes_id: recipeNutrition.petrecipes_recipes_id 
+                    })
+                    .getOne();
+
+                    if (!existingData) {
+                        recipeNutrition.create_by = `${recipeNutrition.update_by}`;
+                        try {
+                            const res = await connect.save(recipeNutrition);
+                            logging.info(NAMESPACE, "Save recipe nutrition successfully.");
+                            await connect.query("COMMIT");
+                            try {
+                                result = await this.retrieveById(res.recipes_nutrition_id);
+                                return result;
+                            }catch (err) {
+                                logging.error(NAMESPACE, 'Error call retrieveById from insert recipe nutrition');
+                                throw err;
+                            }
+                        }catch (err) {
+                            logging.error(NAMESPACE, 'Error save new recipe nutrition');
+                            throw err;
+                        }
+                    }else {
+                        await connect.update({ recipes_nutrition_id: existingData.recipes_nutrition_id }, recipeNutrition);
+                        logging.info(NAMESPACE, "Update recipe nutrition successfully.");
+                        await connect.query("COMMIT");
+                        try {
+                            result = await this.retrieveById(existingData.recipes_nutrition_id);
+                            return result;
+                        }catch (err) {
+                            logging.error(NAMESPACE, 'Error call retrieveById from update recipe nutrition');
+                            throw err;
+                        }
+                    }
+                }catch (err) {
+                    logging.error(NAMESPACE, (err as Error).message, err);
+                    throw err;
+                }
+            });
+            return result!;
+        }catch (err) {
+            logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
             throw err;
         }
     }

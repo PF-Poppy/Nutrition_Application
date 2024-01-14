@@ -22,8 +22,8 @@ export default class PetRecipesController {
             return;
         }
         const { userid, username} = (req as JwtPayload).jwtPayload;
-        const { recipeId, recipeName, petTypeId, petTypeName, ingredientInRecipeList, freshNutrientList } = req.body;
-        if (!recipeId || !recipeName || !petTypeId || !petTypeName || !ingredientInRecipeList || !freshNutrientList) {
+        const { recipeName, petTypeId, petTypeName, ingredientInRecipeList, freshNutrientList } = req.body;
+        if (!recipeName || !petTypeId || !petTypeName || !ingredientInRecipeList || !freshNutrientList) {
             res.status(400).json({
                 message: "Please fill in all the fields!",
             });
@@ -94,31 +94,123 @@ export default class PetRecipesController {
                 return;
             }else {
                 res.status(500).send({
-                    message: "Some error occurred while creating animal."
+                    message: "Some error occurred while creating pet recipe."
                 });
                 return;
             }
         }
     }
+
+    async updatePetRecipe(req: Request, res: Response) {
+        logging.info(NAMESPACE, "Update pet recipe");
+        const { userid, username} = (req as JwtPayload).jwtPayload;
+        if (!req.body) {
+            res.status(400).json({
+                message: "Content cannot be empty",
+            });
+            return;
+        }
+        const { recipeId,recipeName, petTypeId, petTypeName, ingredientInRecipeList, freshNutrientList } = req.body;
+        if (recipeId === "" || recipeId === undefined || recipeId === null) {
+            res.status(400).json({
+                message: "Pet recipe id cannot be empty",
+            });
+            return;
+        }
+        if (!recipeName || !petTypeId || !petTypeName || !ingredientInRecipeList || !freshNutrientList) {
+            res.status(400).json({
+                message: "Please fill in all the fields!",
+            });
+            return;
+        }
+        try {
+            const petrecipes = new Petrecipes();
+            petrecipes.recipes_id = recipeId;
+            petrecipes.recipes_name = recipeName;
+            petrecipes.animaltype_type_id = petTypeId;
+            petrecipes.update_by = `${userid}_${username}`;
+            petrecipes.update_date = new Date();
+            const updatePetRecipe = await petrecipesRepository.update(petrecipes);
+
+            petrecipes.recipeingredients = await Promise.all(ingredientInRecipeList.map(async (ingredient: any) => {
+                if (!ingredient.ingredeintId || !ingredient.ingredientName || !ingredient.amount) {
+                    throw new Error("Please fill in all the fields!");
+                }
+                try {
+                    const recipeingredients = new Recipeingredients();
+                    recipeingredients.ingredients_ingredient_id = ingredient.ingredeintId;
+                    recipeingredients.petrecipes_recipes_id = recipeId;
+                    recipeingredients.quantity = ingredient.amount;
+                    recipeingredients.update_by = `${userid}_${username}`;
+                    recipeingredients.update_date = new Date();
+                    const updateRecipeIngredient = await recipeingredientsRepository.update(recipeingredients);
+                }catch (err) {
+                    throw err;
+                }
+                return;
+            }));
+
+            petrecipes.recipenutrition = await Promise.all(freshNutrientList.map(async (nutrientInfoData: any) => {
+                if (!nutrientInfoData.nutrientName || !nutrientInfoData.amount) {
+                    throw new Error("Please fill in all the fields!");
+                }
+                try {
+                    const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
+
+                    const recipenutrition = new Recipenutrition();
+                    recipenutrition.nutrition_nutrition_id = nutrient.nutrition_id;
+                    recipenutrition.petrecipes_recipes_id = recipeId;
+                    recipenutrition.nutrient_value = nutrientInfoData.amount;
+                    recipenutrition.update_by = `${userid}_${username}`;
+                    recipenutrition.update_date = new Date();
+                    const addNewRecipeNutrient = await recipenutritionRepository.update(recipenutrition);
+                }catch (err) {
+                    throw err;
+                }
+                return;
+            }));
+            logging.info(NAMESPACE, "Update pet recipe successfully.");
+            res.status(200).send({
+                message: "Update pet recipe successfully.",
+            });
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            if ( (err as Error).message === "Please fill in all the fields!" ) {
+                res.status(400).send({
+                    message: (err as Error).message
+                });
+                return;
+            }else {
+                res.status(500).send({
+                    message: "Some error occurred while creating pet recipe."
+                });
+                return;
+            }
+        }
+    }
+    
+    async deletePetRecipe(req: Request, res: Response) {
+        logging.info(NAMESPACE, "Delete pet recipe");
+        if (req.params.recipeId == ":recipeId" || !req.params.recipeId) {
+            res.status(400).json({
+                message: "Pet recipe id cannot be empty",
+            });
+            return;
+        } 
+        const recipeId:string = req.params.recipeId;
+
+        try {
+            await petrecipesRepository.deleteById(recipeId);
+            logging.info(NAMESPACE, "Delete pet recipe successfully.");
+            res.status(200).send({
+                message: "Delete pet recipe successfully.",
+            });
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            res.status(500).send({
+                message: "Some error occurred while deleting pet recipe."
+            });
+            return;
+        }
+    }
 }
-/*
-{
-	"recipeId" : "123",
-	"recipeName" : "สูตร123…",
-	“petTypeId” : “123”,
-	“petTypeName” : “สุนัข”,
-	“ingredientInRecipeList” : [
-        {
-            “ingredeintId” : “123”,
-            “ingredientName” : “หมู”,
-            “amount” : 20.00
-        }
-	
-    ]
-    “freshNutrientList” : [
-        {
-	        “nutrientName” : “โปรตีน”,
-	        “amount” : 20.00
-        }
-    ]
-}*/
