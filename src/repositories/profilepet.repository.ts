@@ -52,7 +52,7 @@ class ProfilepetRepository implements IProfilepetRepository {
 
                     await connect.update({ pet_pet_id: profilepet.pet_pet_id }, profilepet);
                     logging.info(NAMESPACE, "Update profilepet successfully.");
-
+                    await connect.query("COMMIT")
                     try {
                         result = await this.retrieveByPetId(profilepet.pet_pet_id);
                         return result;

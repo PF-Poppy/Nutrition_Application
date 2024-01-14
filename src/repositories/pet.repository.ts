@@ -2,7 +2,6 @@ import { Pet } from "../entity/pet.entity";
 import { AnimalType } from "../entity/animaltype.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
-import { ca, tr } from "date-fns/locale";
 
 const NAMESPACE = "Pet Repository";
 
@@ -58,7 +57,7 @@ class PetRepository implements IPetRepository {
 
                     await connect.update({ pet_id: pet.pet_id }, pet);
                     logging.info(NAMESPACE, "Update pet successfully.");
-
+                    await connect.query("COMMIT")
                     try {
                         result = await this.retrieveById(pet.pet_id);
                         return result;

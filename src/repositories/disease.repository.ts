@@ -20,10 +20,10 @@ class DiseaseRepository implements IdiseaseRepository {
     async save(disease: Disease): Promise<Disease> {
         try {
             const connect = AppDataSource.getRepository(Disease);
-            const info = await connect.find(
+            const duplicate = await connect.findOne(
                 { where: { diseasedetail_disease_id: disease.diseasedetail_disease_id, pet_pet_id: disease.pet_pet_id }}
             );
-            if (info.length > 0) {
+            if (duplicate) {
                 logging.error(NAMESPACE, "Duplicate disease.");
                 throw 'Duplicate disease.';
             } 
@@ -63,6 +63,7 @@ class DiseaseRepository implements IdiseaseRepository {
                         try {
                             const res = await connect.save(disease);
                             logging.info(NAMESPACE, "Update disease successfully.");
+                            await connect.query("COMMIT")
     
                             result = await this.retrieveById(res.id);
                             return result;
@@ -73,6 +74,7 @@ class DiseaseRepository implements IdiseaseRepository {
                     } else {
                         await connect.update({ id: existingDisease.id }, disease);
                         logging.info(NAMESPACE, "Update disease successfully.");
+                        await connect.query("COMMIT")
                         result = await this.retrieveById(existingDisease.id);
                         return result;
                     }

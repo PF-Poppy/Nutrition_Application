@@ -18,10 +18,10 @@ class NutritionRepository implements INutritionRepository {
     async save(nutrition: Nutrition): Promise<Nutrition> {
         try {
             const connect = AppDataSource.getRepository(Nutrition)
-            const nutrient = await connect.find(
+            const duplicate = await connect.findOne(
                 { where: { nutrient_name: nutrition.nutrient_name } }
             );
-            if (nutrient.length > 0) {
+            if (duplicate) {
                 logging.error(NAMESPACE, "Duplicate nutrition name.");
                 throw 'Duplicate nutrition name.';
             }
@@ -67,7 +67,7 @@ class NutritionRepository implements INutritionRepository {
 
                     await connect.update({ nutrition_id: nutrition.nutrition_id }, nutrition);
                     logging.info(NAMESPACE, "Update nutrition successfully.");
-
+                    await connect.query("COMMIT")
                     try {
                         result = await this.retrieveById(nutrition.nutrition_id);
                         return result;

@@ -18,10 +18,10 @@ class IngredientsRepository implements IIngredientsRepository {
     async save(ingredient:Ingredients): Promise<Ingredients> {
         try {
             const connect = AppDataSource.getRepository(Ingredients)
-            const info = await connect.find(
+            const duplicate = await connect.findOne(
                 { where: { ingredient_name: ingredient.ingredient_name } }
             );
-            if (info.length > 0 ){
+            if (duplicate){
                 logging.error(NAMESPACE, "Duplicate ingredients name.");
                 throw 'Duplicate ingredients name.';
             }
@@ -67,7 +67,7 @@ class IngredientsRepository implements IIngredientsRepository {
 
                     await connect.update({ ingredient_id: existingIngredient.ingredient_id }, ingredient);
                     logging.info(NAMESPACE, "Update ingredients successfully.");
-
+                    await connect.query("COMMIT")
                     try {
                         result = await this.retrieveById(ingredient.ingredient_id);
                         return result;

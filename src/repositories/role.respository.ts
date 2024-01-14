@@ -19,10 +19,10 @@ class ROleRepository implements IROleRepository {
     async save(role:Role): Promise<Role> {
         try {
             const connect = AppDataSource.getRepository(Role)
-            const roletype = await connect.find({
+            const duplicate = await connect.findOne({
                 where: { role_name: role.role_name}
             });
-            if (roletype.length > 0) {
+            if (duplicate) {
                 logging.error(NAMESPACE, "Duplicate role name.");
                 throw 'Duplicate role name.';
             }
@@ -68,7 +68,7 @@ class ROleRepository implements IROleRepository {
 
                     await connect.update({ role_id: role.role_id }, role);
                     logging.info(NAMESPACE, "Update role successfully.");
-
+                    await connect.query("COMMIT")
                     try {
                         result = await this.retrieveById(role.role_id);
                         return result;

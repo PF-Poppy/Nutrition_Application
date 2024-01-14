@@ -18,10 +18,10 @@ class AnimalRepository implements IAnimalRepository {
     async save(animal:AnimalType): Promise<AnimalType> {
         try {
             const connect = AppDataSource.getRepository(AnimalType)
-            const type = await connect.find(
+            const duplicateType = await connect.findOne(
                 { where: { type_name: animal.type_name } }
             );
-            if (type.length > 0) {
+            if (duplicateType) {
                 logging.error(NAMESPACE, "Duplicate animal type name.");
                 throw 'Duplicate animal type name.';
             } 
@@ -67,7 +67,7 @@ class AnimalRepository implements IAnimalRepository {
 
                     await connect.update({ type_id: animal.type_id }, animal);
                     logging.info(NAMESPACE, "Update animal type successfully.");
-
+                    await connect.query("COMMIT");
                     try {
                         result = await this.retrieveById(animal.type_id);
                         return result;

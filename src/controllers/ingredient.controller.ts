@@ -127,7 +127,7 @@ export default class IngredientController {
 
                     const nutrientInfo = new Ingredientnutrition();
                     nutrientInfo.nutrition_nutrition_id = nutrient.nutrition_id;
-                    nutrientInfo.ingredients_ingredient_id = updateingredient.ingredient_id;
+                    nutrientInfo.ingredients_ingredient_id = ingredientId;
                     nutrientInfo.nutrient_value = nutrientInfoData.amount;
                     nutrientInfo.update_by = `${userid}_${username}`;
                     nutrientInfo.update_date = new Date();

@@ -5,7 +5,7 @@ import { Diseasedetail } from "../entity/diseasedetail.entity";
 import { Diseasenutrition } from "../entity/diseasenutrition.entity";
 import petRepository from "../repositories/pet.repository";
 import nutritionRepository from "../repositories/nutrition.repository";
-import animalRepository from "../repositories/animaltype.respository";
+import animalRepository from "../repositories/animaltype.repository";
 import diseasedetailRepository from "../repositories/diseasedetail.repository";
 import diseasenutritionRepository from "../repositories/diseasenutrition.repository";
 import logging from "../config/logging";

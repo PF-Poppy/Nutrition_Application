@@ -2,6 +2,7 @@ import { Ingredientnutrition } from "../entity/ingredientnutrition.entity";
 import { Nutrition } from "../entity/nutrition.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
+import e from "express";
 
 const NAMESPACE = "Ingredientnutrition Repository";
 
@@ -19,11 +20,11 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
     async save(ingredientnutrition:Ingredientnutrition): Promise<Ingredientnutrition> {
         try {
             const connect = AppDataSource.getRepository(Ingredientnutrition)
-            const info = await connect.find(
+            const duplicate = await connect.findOne(
                 { where: { nutrition_nutrition_id: ingredientnutrition.nutrition_nutrition_id, ingredients_ingredient_id: ingredientnutrition.ingredients_ingredient_id}}
             );
 
-            if (info.length > 0) {
+            if (duplicate) {
                 logging.error(NAMESPACE, "Duplicate ingredientnutrition.");
                 throw 'Duplicate ingredientnutrition.';
             }
@@ -58,15 +59,20 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
                         ingredients_ingredient_id: ingredientnutrition.ingredients_ingredient_id,
                     })
                     .getOne();
-
+                    
                     if (!existingIngredientnutrition) {
+                        ingredientnutrition.create_by = `${ingredientnutrition.update_by}`;
                         try {
-                            ingredientnutrition.create_by = `${ingredientnutrition.update_by}`;
                             const res = await connect.save(ingredientnutrition);
                             logging.info(NAMESPACE, "Update ingredientnutrition successfully.");
-
-                            result = await this.retrieveById(res.ingredient_nutrition_id);
-                            return result;
+                            await connect.query("COMMIT")
+                            try {
+                                result = await this.retrieveById(res.ingredient_nutrition_id);
+                                return result;
+                            }catch(err){
+                                logging.error(NAMESPACE, 'Error call retrieveById from insert ingredientnutrition');
+                                throw err;
+                            }
                         }catch (err) {
                             logging.error(NAMESPACE, 'Error saving new ingredientnutrition');
                             throw err;
@@ -74,9 +80,10 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
                     }else {
                         await connect.update({ ingredient_nutrition_id: existingIngredientnutrition.ingredient_nutrition_id }, ingredientnutrition);
                         logging.info(NAMESPACE, "Update ingredientnutrition successfully.");
+                        await connect.query("COMMIT")
                         result = await this.retrieveById(existingIngredientnutrition.ingredient_nutrition_id);
                         return result;
-                    }  
+                    } 
                 }catch (err) {
                     logging.error(NAMESPACE, 'Error call retrieveById from insert diseasenutrition');
                     throw err;

@@ -16,8 +16,8 @@ export class Petrecipes {
   @Column({type: "varchar", length: 255})
   recipes_name!: string
 
-  @Column({type: "varchar", length: 255})
-  description!: string
+  @Column({type: "varchar", length: 255, nullable: true})
+  description?: string
 
   @CreateDateColumn()
   create_date?: Date;

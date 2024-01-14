@@ -2,7 +2,6 @@ import { Diseasenutrition } from "../entity/diseasenutrition.entity";
 import { Nutrition } from "../entity/nutrition.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
-import { ca } from "date-fns/locale";
 
 
 const NAMESPACE = "Diseasenutrition Repository";
@@ -22,10 +21,10 @@ class DiseasenutritionRepository implements IdiseasenutritionRepository {
     async save(diseasenutrition:Diseasenutrition): Promise<Diseasenutrition> {
         try {
             const connect = AppDataSource.getRepository(Diseasenutrition)
-            const info = await connect.find(
+            const duplicate = await connect.findOne(
                 { where: { diseasedetail_disease_id: diseasenutrition.diseasedetail_disease_id, nutrition_nutrition_id: diseasenutrition.nutrition_nutrition_id } }
             );
-            if (info.length > 0) {
+            if (duplicate) {
                 logging.error(NAMESPACE, "Duplicate diseasenutrition.");
                 throw 'Duplicate diseasenutrition.';
             } 
@@ -66,7 +65,7 @@ class DiseasenutritionRepository implements IdiseasenutritionRepository {
                             diseasenutrition.create_by = `${diseasenutrition.update_by}`;
                             const res = await connect.save(diseasenutrition);
                             logging.info(NAMESPACE, "Update diseasenutrition successfully.");
-
+                            await connect.query("COMMIT")
                             result = await this.retrieveById(res.diseasenutrition_id);
                             return result;
                         }catch(err){
@@ -76,6 +75,7 @@ class DiseasenutritionRepository implements IdiseasenutritionRepository {
                     }else {
                         await connect.update({ diseasenutrition_id: existingDiseasenutrition.diseasenutrition_id }, diseasenutrition);
                         logging.info(NAMESPACE, "Update diseasenutrition successfully.");
+                        await connect.query("COMMIT")
                         result = await this.retrieveById(existingDiseasenutrition.diseasenutrition_id);
                         return result;
                     }
