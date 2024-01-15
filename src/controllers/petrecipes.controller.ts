@@ -200,6 +200,15 @@ export default class PetRecipesController {
         const recipeId:string = req.params.recipeId;
 
         try {
+            const petrecipes = await petrecipesRepository.retrieveById(recipeId);
+        }catch(err){
+            res.status(404).send( {
+                message: `Not found petrecipes with id=${recipeId}.`
+            });
+            return;
+        }
+
+        try {
             await petrecipesRepository.deleteById(recipeId);
             logging.info(NAMESPACE, "Delete pet recipe successfully.");
             res.status(200).send({
