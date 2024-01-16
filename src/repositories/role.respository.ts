@@ -48,6 +48,7 @@ class ROleRepository implements IROleRepository {
             await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
                 try {
                     const connect = transactionalEntityManager.getRepository(Role);
+                    await connect.query("BEGIN");
                     const existingRole = await connect
                     .createQueryBuilder()
                     .select()

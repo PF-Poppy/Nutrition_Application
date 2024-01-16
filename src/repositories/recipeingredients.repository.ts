@@ -1,4 +1,5 @@
 import { Recipeingredients } from "../entity/recipeingredients.entity";
+import { Ingredients } from "../entity/ingredients.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
 
@@ -8,6 +9,7 @@ interface IRecipeIngredientsRepository {
     save(recipeIngredients: Recipeingredients): Promise<Recipeingredients>;
     update(recipeIngredients: Recipeingredients): Promise<Recipeingredients>;
     retrieveById(recipeIngredientId: string): Promise<Recipeingredients | undefined>;
+    retrieveByRecipeId(recipeId: string): Promise<any[]>;
     deleteById(recipeIngredientId: string): Promise<number>;
     deleteAll(): Promise<number>;
 }
@@ -45,6 +47,7 @@ class RecipeIngredientsRepository implements IRecipeIngredientsRepository {
             await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
                 try {
                     const connect = transactionalEntityManager.getRepository(Recipeingredients);
+                    await connect.query("BEGIN");
                     const existingData = await connect
                     .createQueryBuilder()
                     .select()
@@ -106,6 +109,29 @@ class RecipeIngredientsRepository implements IRecipeIngredientsRepository {
                 logging.error(NAMESPACE, "Recipe ingredients not found.");
                 throw 'Recipe ingredients not found.';
             }
+            logging.info(NAMESPACE, "Retrieve recipe ingredients successfully.");
+            return result;
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async retrieveByRecipeId(recipeId: string): Promise<any[]> {
+        try {
+            const result = await AppDataSource.getRepository(Recipeingredients)
+            .createQueryBuilder("recipeingredients")
+            .innerJoinAndSelect(Ingredients, "ingredients", "ingredients.ingredient_id = recipeingredients.ingredients_ingredient_id")
+            .select([
+                "recipeingredients.recipe_ingredient_id AS recipe_ingredient_id",
+                "recipeingredients.ingredients_ingredient_id AS ingredients_ingredient_id",
+                "recipeingredients.petrecipes_recipes_id AS petrecipes_recipes_id",
+                "recipeingredients.quantity AS quantity",
+                "ingredients.ingredient_id AS ingredient_id",
+                "ingredients.ingredient_name AS ingredient_name",
+            ])
+            .where("recipeingredients.petrecipes_recipes_id = :recipeId", { recipeId: recipeId })
+            .getRawMany();
             logging.info(NAMESPACE, "Retrieve recipe ingredients successfully.");
             return result;
         }catch (err) {

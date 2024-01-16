@@ -8,6 +8,7 @@ interface IPetRecipesRepository {
     save(petrecipes:Petrecipes): Promise<Petrecipes>;
     update(petrecipes:Petrecipes): Promise<Petrecipes>;
     retrieveById(recipesid: string): Promise<Petrecipes | undefined>;
+    retrieveByPetTypeId(animaltypeid: string): Promise<Petrecipes[]>;
     deleteById(recipesid: string): Promise<number>;
     deleteAll(): Promise<number>;
 }
@@ -44,6 +45,7 @@ class PetRecipesRepository implements IPetRecipesRepository {
         try {
             await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
                 const connect = transactionalEntityManager.getRepository(Petrecipes);
+                await connect.query("BEGIN");
                 const existingData = await connect
                 .createQueryBuilder()
                 .select()
@@ -92,6 +94,20 @@ class PetRecipesRepository implements IPetRecipesRepository {
                 logging.error(NAMESPACE, "Not found pet recipes with id: " + recipesid);
                 throw new Error("Not found pet recipes with id: " + recipesid);
             }
+            logging.info(NAMESPACE, "Retrieve pet recipes successfully.");
+            return result;
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async retrieveByPetTypeId(animaltypeid: string): Promise<Petrecipes[]> {
+        try {
+            const result = await AppDataSource.getRepository(Petrecipes).find({
+                where: { animaltype_type_id: animaltypeid },
+                select: ["recipes_id", "recipes_name", "animaltype_type_id", "description"]
+            });
             logging.info(NAMESPACE, "Retrieve pet recipes successfully.");
             return result;
         }catch (err) {

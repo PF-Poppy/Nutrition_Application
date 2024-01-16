@@ -11,6 +11,7 @@ class PetRecipesRoutes {
     }
 
     initializeRoutes() {
+        this.router.get('/getpetrecipes',this.controller.getPetsRecipes);
         this.router.post('/add-new',[authJwt.validateToken,authJwt.isPetFoodManagementAdmin], this.controller.addNewPetRecipe);
         this.router.put('/update',[authJwt.validateToken,authJwt.isPetFoodManagementAdmin],this.controller.updatePetRecipe)
         this.router.delete('/delete/:recipeId',[authJwt.validateToken,authJwt.isPetFoodManagementAdmin],this.controller.deletePetRecipe)

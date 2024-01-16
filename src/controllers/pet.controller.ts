@@ -88,7 +88,7 @@ export default class PetController {
             const addpet = await petRepository.save(pet);
             try {
                 const profile = new Profilepet();
-                profile.pet_pet_id = addpet.pet_id;
+                profile.pet_pet_id = addpet.petid;
                 profile.weight = petWeight;
                 profile.neutering_status = petNeuteringStatus;
                 profile.petBirthDate = petBirthDate;
@@ -112,7 +112,7 @@ export default class PetController {
                     const animaldiscease = await diseasedetailRepository.retrieveByTypeAndDiseaseId(petTypeId, diseaseData.petChronicDiseaseId);
 
                     const disease = new Disease();
-                    disease.pet_pet_id = addpet.pet_id;
+                    disease.pet_pet_id = addpet.petid;
                     disease.diseasedetail_disease_id = diseaseData.petChronicDiseaseId;
                     disease.update_date = new Date();
                     try {
@@ -176,10 +176,11 @@ export default class PetController {
             pet.pet_name = petName;
             pet.update_date = new Date();
             const updatepet = await petRepository.update(pet);
+            console.log(updatepet);
 
             try {
                 const profile = new Profilepet();
-                profile.pet_pet_id = updatepet.pet_id;
+                profile.pet_pet_id = petId;
                 profile.weight = petWeight;
                 profile.neutering_status = petNeuteringStatus;
                 profile.petBirthDate = petBirthDate;
@@ -207,7 +208,7 @@ export default class PetController {
 
             pet.disease = await Promise.all(petChronicDiseaseForUser.map(async (diseaseData: any) => {
                 const disease = new Disease();
-                disease.pet_pet_id = updatepet.pet_id;
+                disease.pet_pet_id = petId;
                 disease.diseasedetail_disease_id = diseaseData.petChronicDiseaseId;
                 disease.update_date = new Date();
                 

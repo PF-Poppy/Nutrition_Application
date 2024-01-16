@@ -9,6 +9,7 @@ interface IRecipeNutritionRepository {
     save(recipeNutrition: Recipenutrition): Promise<Recipenutrition>;
     update(recipeNutrition: Recipenutrition): Promise<Recipenutrition>;
     retrieveById(recipeNutritionId: string): Promise<Recipenutrition | undefined>;
+    retrieveByRecipeId(recipeId: string): Promise<any[]>;
     deleteById(recipeNutritionId: string): Promise<number>;
     deleteAll(): Promise<number>;
 }
@@ -49,6 +50,7 @@ class RecipeNutritionRepository implements IRecipeNutritionRepository {
             await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
                 try {
                     const connect = transactionalEntityManager.getRepository(Recipenutrition);
+                    await connect.query("BEGIN");
                     const existingData = await connect
                     .createQueryBuilder()
                     .select()
@@ -110,6 +112,29 @@ class RecipeNutritionRepository implements IRecipeNutritionRepository {
                 logging.error(NAMESPACE, "Recipe nutrition not found.");
                 throw 'Recipe nutrition not found.';
             }
+            logging.info(NAMESPACE, "Retrieve recipe nutrition successfully.");
+            return result;
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async retrieveByRecipeId(recipeId: string): Promise<any[]> {
+        try {
+            const result = await AppDataSource.getRepository(Recipenutrition)
+            .createQueryBuilder("recipenutrition")
+            .innerJoinAndSelect(Nutrition, "nutrition", "nutrition.nutrition_id = recipenutrition.nutrition_nutrition_id")
+            .select([
+                "recipenutrition.recipes_nutrition_id AS recipes_nutrition_id",
+                "recipenutrition.nutrition_nutrition_id AS nutrition_nutrition_id",
+                "recipenutrition.petrecipes_recipes_id AS petrecipes_recipes_id",
+                "recipenutrition.nutrient_value AS nutrient_value",
+                "nutrition.nutrition_id AS nutrition_id",
+                "nutrition.nutrient_name AS nutrient_name",
+            ])
+            .where("recipenutrition.petrecipes_recipes_id = :recipeId", { recipeId: recipeId })
+            .getRawMany();
             logging.info(NAMESPACE, "Retrieve recipe nutrition successfully.");
             return result;
         }catch (err) {

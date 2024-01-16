@@ -47,6 +47,7 @@ class NutritionRepository implements INutritionRepository {
             await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
                 try {
                     const connect = transactionalEntityManager.getRepository(Nutrition);
+                    await connect.query("BEGIN");
                     const existingNutrition = await connect
                     .createQueryBuilder()
                     .select()

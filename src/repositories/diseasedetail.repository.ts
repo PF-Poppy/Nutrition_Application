@@ -49,6 +49,7 @@ class DiseasedetailRepository implements IdiseasedetailRepository {
             await AppDataSource.manager.transaction(async (transactionalEntityManager) => {{
                 try {
                     const connect = transactionalEntityManager.getRepository(Diseasedetail);
+                    await connect.query("BEGIN");
                     const existingDisease = await connect
                     .createQueryBuilder()
                     .select()

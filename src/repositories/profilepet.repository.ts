@@ -38,6 +38,7 @@ class ProfilepetRepository implements IProfilepetRepository {
             await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
                 try {
                     const connect = transactionalEntityManager.getRepository(Profilepet);
+                    await connect.query("BEGIN");
                     const existingPetprofile = await connect
                     .createQueryBuilder()
                     .select()

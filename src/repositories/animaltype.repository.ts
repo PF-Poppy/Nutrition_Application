@@ -47,6 +47,7 @@ class AnimalRepository implements IAnimalRepository {
             await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
                 try {
                     const connect = transactionalEntityManager.getRepository(AnimalType);
+                    await connect.query("BEGIN");
                     const existingType = await connect
                     .createQueryBuilder()
                     .select()

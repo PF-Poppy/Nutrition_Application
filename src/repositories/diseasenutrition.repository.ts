@@ -50,6 +50,7 @@ class DiseasenutritionRepository implements IdiseasenutritionRepository {
             await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
                 try {
                     const connect = transactionalEntityManager.getRepository(Diseasenutrition);
+                    await connect.query("BEGIN");
                     const existingDiseasenutrition = await connect
                     .createQueryBuilder()
                     .select()

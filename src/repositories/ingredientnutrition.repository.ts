@@ -49,6 +49,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
             await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
                 try {
                     const connect = transactionalEntityManager.getRepository(Ingredientnutrition);
+                    await connect.query("BEGIN");
                     const existingIngredientnutrition = await connect
                     .createQueryBuilder()
                     .select()

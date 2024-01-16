@@ -6,20 +6,20 @@ import logging from "../config/logging";
 const NAMESPACE = "Pet Repository";
 
 interface IPetRepository {
-    save(pet: Pet): Promise<Pet>;
-    update(pet: Pet): Promise<Pet>;
+    save(pet: Pet): Promise<any>;
+    update(pet: Pet): Promise<any>;
     retrieveAll(): Promise<Pet[]>;
     retrieveByUserId(userid: string): Promise<any[]>;
     retrieveByAnimalTypeId(animaltypeid: string): Promise<any[]>;
     retrieveByName(petname:string, userid:string): Promise<Pet | undefined>;
-    retrieveById(petid: string): Promise<Pet | undefined>;
+    retrieveById(petid: string): Promise<any | undefined>;
     deleteById(petid: string): Promise<number>;
     deleteByAnimalTypeId(animaltypeid: string): Promise<number>;
     deleteAll(): Promise<number>;
 }
 
 class PetRepository implements IPetRepository {
-    async save(pet: Pet): Promise<Pet> {
+    async save(pet: Pet): Promise<any> {
         try {
             const connect = AppDataSource.getRepository(Pet)
             const result = await connect.save(pet);
@@ -37,12 +37,13 @@ class PetRepository implements IPetRepository {
         }
     }
 
-    async update(pet: Pet): Promise<Pet> {
-        let result: Pet | undefined;
+    async update(pet: Pet): Promise<any> {
+        let result: any | undefined;
         try {
             await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
                 try {
                     const connect = transactionalEntityManager.getRepository(Pet);
+                    await connect.query("BEGIN");
                     const existingPet = await connect
                     .createQueryBuilder()
                     .select()
@@ -173,16 +174,20 @@ class PetRepository implements IPetRepository {
         }
     }
 
-    async retrieveById(petid: string): Promise<Pet> {
+    async retrieveById(petid: string): Promise<any> {
         try {
-            const result = await AppDataSource.getRepository(Pet).findOne({
-                where: { pet_id: petid },
-                select: ["pet_id","animaltype_type_id","pet_name","update_date"]
-            })
-            if (!result) {
-                logging.error(NAMESPACE, "Not found pet with id: " + petid);
-                throw 'Not found pet with id: ' + petid;
-            }
+            const result = await AppDataSource.getRepository(Pet)
+            .createQueryBuilder("pet")
+            .innerJoinAndSelect(AnimalType, "animaltype", "animaltype.type_id = pet.animaltype_type_id")
+            .select([
+                "pet.pet_id AS petid",
+                "animaltype.type_id AS animaltypeid",
+                "animaltype.type_name AS animaltypename",
+                "pet.pet_name AS petname",
+                "pet.update_date AS updatedate"
+            ])
+            .where("pet.pet_id = :petid", { petid: petid })
+            .getRawOne();
             logging.info(NAMESPACE, "Retrieve pet successfully.");
             return result;
         }catch (err) {
