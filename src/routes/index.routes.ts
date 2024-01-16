@@ -8,6 +8,7 @@ import nutritionRoutes from "./nutrition.routes";
 import roleRoutes from "./role.routes";
 import userroleRoutes from "./userrole.routes";
 import petrecipesRoutes from "./petrecipes.routes";
+import searchpetrecipesRoutes from "./searchpetrecipes.routes";
 
 export default class Routes {
     constructor(app: Application) {
@@ -20,5 +21,6 @@ export default class Routes {
         app.use('/api/role', roleRoutes);
         app.use('/api/userrole', userroleRoutes);
         app.use('/api/petrecipes', petrecipesRoutes);
+        app.use('/api/searchpetrecipes', searchpetrecipesRoutes);
     }
 }
