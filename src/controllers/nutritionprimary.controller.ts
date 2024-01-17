@@ -1,20 +1,21 @@
 import { Request, Response } from "express";
 import { JwtPayload } from "jsonwebtoken";
-import { Nutrition } from "../entity/nutrition.entity";
-import nutritionRepository from "../repositories/nutrition.repository";
+import { Nutritionprimary } from "../entity/nutritionprimary.entity";
+import NutritionprimaryRepository from "../repositories/nutritionprimary.repository";
 import logging from "../config/logging";
 
-const NAMESPACE = "Nutrition Controller";
+const NAMESPACE = "Nutritionprimary Controller";
 
-export default class NutritionController {
+export default class NutritionprimaryController {
     async getAllNutrition(req: Request, res: Response) {
         logging.info(NAMESPACE, "Get all nutrition");
         try {
-            const nutrient = await nutritionRepository.retrieveAll();
-            const result = await Promise.all(nutrient.map(async (nutrientData: Nutrition) => {
+            const nutrient = await NutritionprimaryRepository.retrieveAll();
+            const result = await Promise.all(nutrient.map(async (nutrientData: Nutritionprimary) => {
                 return {
                     nutritionId: nutrientData.nutrition_id,
-                    nutrientName: nutrientData.nutrient_name
+                    nutrientName: nutrientData.nutrient_name,
+                    unit: nutrientData.nutrient_unit,
                 };
             }));
             logging.info(NAMESPACE, "Get all nutrition successfully.");
@@ -29,7 +30,7 @@ export default class NutritionController {
 
     async addNewNutritionfirsttime(req: Request, res: Response) {
         logging.info(NAMESPACE, "Add new nutrition");
-        const { nutrientName } = req.body;
+        const { nutrientName, unit } = req.body;
         if(!nutrientName) {
             res.status(400).send({
                 message: "Please fill in all the fields!"
@@ -38,10 +39,11 @@ export default class NutritionController {
         }
         try {
             
-            const nutrition = new Nutrition();
+            const nutrition = new Nutritionprimary();
             nutrition.nutrient_name = nutrientName;
+            nutrition.nutrient_unit = unit;
             nutrition.create_date = new Date();
-            const addnutrition = await nutritionRepository.save(nutrition);
+            const addnutrition = await NutritionprimaryRepository.save(nutrition);
             logging.info(NAMESPACE, "Add new nutrition successfully.");
             res.status(200).send({
                 message: "Add new nutrition successfully.",
@@ -57,7 +59,7 @@ export default class NutritionController {
     async addNewNutrition(req: Request, res: Response) {
         logging.info(NAMESPACE, "Add new nutrition");
         const { userid, username} = (req as JwtPayload).jwtPayload;
-        const { nutrientName } = req.body;
+        const { nutrientName, unit } = req.body;
         if(!nutrientName) {
             res.status(400).send({
                 message: "Please fill in all the fields!"
@@ -66,12 +68,13 @@ export default class NutritionController {
         }
         try {
             
-            const nutrition = new Nutrition();
+            const nutrition = new Nutritionprimary();
             nutrition.nutrient_name = nutrientName;
+            nutrition.nutrient_unit = unit;
             nutrition.create_by = `${userid}_${username}`;
             nutrition.update_by = `${userid}_${username}`;
             nutrition.create_date = new Date();
-            const addnutrition = await nutritionRepository.save(nutrition);
+            const addnutrition = await NutritionprimaryRepository.save(nutrition);
             logging.info(NAMESPACE, "Add new nutrition successfully.");
             res.status(200).send({
                 message: "Add new nutrition successfully.",
@@ -93,7 +96,7 @@ export default class NutritionController {
             });
             return;
         }
-        const { nutritionId, nutrientName } = req.body;
+        const { nutritionId, nutrientName, unit } = req.body;
         if (nutritionId == "" || nutritionId == null || nutritionId == undefined) {
             res.status(400).send({
                 message: "Nutrition Id can not be empty!"
@@ -107,12 +110,13 @@ export default class NutritionController {
             return;
         }
         try {
-            const nutrient = new Nutrition();
+            const nutrient = new Nutritionprimary();
             nutrient.nutrition_id = nutritionId;
             nutrient.nutrient_name = nutrientName;
+            nutrient.nutrient_unit = unit;
             nutrient.update_by = `${userid}_${username}`;
             nutrient.update_date = new Date();
-            const updatenutrition = await nutritionRepository.update(nutrient);
+            const updatenutrition = await NutritionprimaryRepository.update(nutrient);
             logging.info(NAMESPACE, "Update nutrition successfully.");
             res.status(200).send({
                 message: "Update nutrition successfully.",
@@ -136,7 +140,7 @@ export default class NutritionController {
         const nutritionId:string = req.params.nutritionId;
 
         try {
-            const nutrition = await nutritionRepository.retrieveById(nutritionId);
+            const nutrition = await NutritionprimaryRepository.retrieveById(nutritionId);
         }catch(err){
             res.status(404).send( {
                 message: `Not found nutrition with id=${nutritionId}.`
@@ -145,7 +149,7 @@ export default class NutritionController {
         }
 
         try {
-            await nutritionRepository.deleteById(nutritionId);
+            await NutritionprimaryRepository.deleteById(nutritionId);
             logging.info(NAMESPACE, "Delete nutrition successfully.");
             res.status(200).send({
                 message: "Delete nutrition successfully.",

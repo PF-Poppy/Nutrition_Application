@@ -4,7 +4,7 @@ import { Ingredients } from '../entity/ingredients.entity';
 import { Ingredientnutrition } from '../entity/ingredientnutrition.entity';
 import ingredientsRepository from '../repositories/ingredients.repository';
 import ingredientnutritionRepository from '../repositories/ingredientnutrition.repository';
-import nutritionRepository from '../repositories/nutrition.repository';
+import nutritionprimaryRepository from '../repositories/nutritionprimary.repository';
 import logging from '../config/logging';
 
 const NAMESPACE = 'Ingredient Controller';
@@ -40,10 +40,10 @@ export default class IngredientController {
                     throw new Error("Please fill in all the fields!");
                 }
                 try {
-                    const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
+                    const nutrient = await nutritionprimaryRepository.retrieveByName(nutrientInfoData.nutrientName);
 
                     const nutrientInfo = new Ingredientnutrition();
-                    nutrientInfo.nutrition_nutrition_id = nutrient.nutrition_id;
+                    nutrientInfo.nutritionprimary_nutrition_id = nutrient.nutrition_id;
                     nutrientInfo.ingredients_ingredient_id = addingredient.ingredient_id;
                     nutrientInfo.nutrient_value = nutrientInfoData.amount;
                     nutrientInfo.create_by = `${userid}_${username}`;
@@ -115,7 +115,7 @@ export default class IngredientController {
                     throw new Error("Please fill in all the fields!");
                 }
                 try {
-                    const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
+                    const nutrient = await nutritionprimaryRepository.retrieveByName(nutrientInfoData.nutrientName);
                 }catch(err){
                     throw err;
                 }
@@ -123,10 +123,10 @@ export default class IngredientController {
 
             ingredient.ingredientnutrition = await Promise.all(nutrient.map(async (nutrientInfoData: any) => {
                 try {
-                    const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
+                    const nutrient = await nutritionprimaryRepository.retrieveByName(nutrientInfoData.nutrientName);
 
                     const nutrientInfo = new Ingredientnutrition();
-                    nutrientInfo.nutrition_nutrition_id = nutrient.nutrition_id;
+                    nutrientInfo.nutritionprimary_nutrition_id = nutrient.nutrition_id;
                     nutrientInfo.ingredients_ingredient_id = ingredientId;
                     nutrientInfo.nutrient_value = nutrientInfoData.amount;
                     nutrientInfo.update_by = `${userid}_${username}`;

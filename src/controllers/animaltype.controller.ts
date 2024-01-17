@@ -4,7 +4,7 @@ import { AnimalType } from "../entity/animaltype.entity";
 import { Diseasedetail } from "../entity/diseasedetail.entity";
 import { Diseasenutrition } from "../entity/diseasenutrition.entity";
 import petRepository from "../repositories/pet.repository";
-import nutritionRepository from "../repositories/nutrition.repository";
+import nutritionsecondaryRepository from "../repositories/nutritionsecondary.repository";
 import animalRepository from "../repositories/animaltype.repository";
 import diseasedetailRepository from "../repositories/diseasedetail.repository";
 import diseasenutritionRepository from "../repositories/diseasenutrition.repository";
@@ -129,11 +129,11 @@ export default class AnimalController {
                             throw new Error("Please fill in all the fields!");
                         }
                         try {
-                            const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
+                            const nutrient = await nutritionsecondaryRepository.retrieveByName(nutrientInfoData.nutrientName);
 
                             const nutrientInfo = new Diseasenutrition();
                             nutrientInfo.diseasedetail_disease_id = addnewdiseasedetail.disease_id;
-                            nutrientInfo.nutrition_nutrition_id = nutrient!.nutrition_id;
+                            nutrientInfo.nutritionsecondary_nutrition_id = nutrient!.nutrition_id;
                             nutrientInfo.value_min = nutrientInfoData.min;
                             nutrientInfo.value_max = nutrientInfoData.max;
                             nutrientInfo.create_by = `${userid}_${username}`;
@@ -221,7 +221,7 @@ export default class AnimalController {
                         throw new Error("Please fill in all the fields!");
                     }
                     try {
-                        const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
+                        const nutrient = await nutritionsecondaryRepository.retrieveByName(nutrientInfoData.nutrientName);
                     }catch(err){
                         throw err;
                     }
@@ -246,11 +246,11 @@ export default class AnimalController {
                     
                     chronicDisease.diseasenutrition = await Promise.all(diseaseData.NutrientLimitInfo.map(async (nutrientInfoData: any) => {
                         try {
-                            const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
+                            const nutrient = await nutritionsecondaryRepository.retrieveByName(nutrientInfoData.nutrientName);
 
                             const nutrientInfo = new Diseasenutrition();
                             nutrientInfo.diseasedetail_disease_id = updatediseasedetail.disease_id;
-                            nutrientInfo.nutrition_nutrition_id = nutrient!.nutrition_id;
+                            nutrientInfo.nutritionsecondary_nutrition_id = nutrient!.nutrition_id;
                             nutrientInfo.value_min = nutrientInfoData.min;
                             nutrientInfo.value_max = nutrientInfoData.max;
                             nutrientInfo.update_by = `${userid}_${username}`;

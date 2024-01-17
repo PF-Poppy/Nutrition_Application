@@ -1,10 +1,10 @@
 import { Router } from "express";
-import NutritionController from "../controllers/nutrition.controller";
+import NutritionsecondaryController from "../controllers/nutritionsecondary.controller";
 import authJwt from "../middleware/authJwt";
 
-class NutritionRoutes {
+class NutritionsecondaryRoutes {
     router = Router();
-    controller = new NutritionController();
+    controller = new NutritionsecondaryController();
 
     constructor() {
         this.initializeRoutes();
@@ -19,4 +19,4 @@ class NutritionRoutes {
     }
 }
 
-export default new NutritionRoutes().router;
+export default new NutritionsecondaryRoutes().router;

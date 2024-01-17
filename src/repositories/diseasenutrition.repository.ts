@@ -1,5 +1,5 @@
 import { Diseasenutrition } from "../entity/diseasenutrition.entity";
-import { Nutrition } from "../entity/nutrition.entity";
+import { Nutritionsecondary } from "../entity/nutritionsecondary.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
 
@@ -22,7 +22,7 @@ class DiseasenutritionRepository implements IdiseasenutritionRepository {
         try {
             const connect = AppDataSource.getRepository(Diseasenutrition)
             const duplicate = await connect.findOne(
-                { where: { diseasedetail_disease_id: diseasenutrition.diseasedetail_disease_id, nutrition_nutrition_id: diseasenutrition.nutrition_nutrition_id } }
+                { where: { diseasedetail_disease_id: diseasenutrition.diseasedetail_disease_id, nutritionsecondary_nutrition_id: diseasenutrition.nutritionsecondary_nutrition_id } }
             );
             if (duplicate) {
                 logging.error(NAMESPACE, "Duplicate diseasenutrition.");
@@ -55,9 +55,9 @@ class DiseasenutritionRepository implements IdiseasenutritionRepository {
                     .createQueryBuilder()
                     .select()
                     .setLock("pessimistic_write")
-                    .where("diseasedetail_disease_id = :diseasedetail_disease_id AND nutrition_nutrition_id = :nutrition_nutrition_id", {
+                    .where("diseasedetail_disease_id = :diseasedetail_disease_id AND nutritionsecondary_nutrition_id = :nutritionsecondary_nutrition_id", {
                         diseasedetail_disease_id: diseasenutrition.diseasedetail_disease_id,
-                        nutrition_nutrition_id: diseasenutrition.nutrition_nutrition_id,
+                        nutritionsecondary_nutrition_id: diseasenutrition.nutritionsecondary_nutrition_id,
                     })
                     .getOne();
                     
@@ -139,7 +139,7 @@ class DiseasenutritionRepository implements IdiseasenutritionRepository {
         try {
             const result = await AppDataSource.getRepository(Diseasenutrition).findOne({
                 where: { diseasenutrition_id: diseasenutritionid }, 
-                select: ["diseasenutrition_id","diseasedetail_disease_id","nutrition_nutrition_id","value_max","value_min"]
+                select: ["diseasenutrition_id","diseasedetail_disease_id","nutritionsecondary_nutrition_id","value_max","value_min"]
             });
             if (!result) {
                 logging.error(NAMESPACE, "Not found diseasenutrition with id: " + diseasenutritionid);
@@ -157,12 +157,13 @@ class DiseasenutritionRepository implements IdiseasenutritionRepository {
         try {
             const result = await AppDataSource.getRepository(Diseasenutrition)
             .createQueryBuilder("diseasenutrition")
-            .innerJoinAndSelect(Nutrition, "nutrition", "nutrition.nutrition_id = diseasenutrition.nutrition_nutrition_id")
+            .innerJoinAndSelect(Nutritionsecondary, "nutritionsecondary", "nutritionsecondary.nutrition_id = diseasenutrition.nutritionsecondary_nutrition_id")
             .select([
                 "diseasenutrition.diseasenutrition_id AS diseasenutrition_id",
                 "diseasenutrition.diseasedetail_disease_id AS diseasedetail_disease_id",
-                "nutrition.nutrition_id AS nutrition_id",
-                "nutrition.nutrient_name AS nutrient_name",
+                "nutritionsecondary.nutrition_id AS nutrition_id",
+                "nutritionsecondary.nutrient_name AS nutrient_name",
+                "nutritionsecondary.nutrient_unit AS nutrient_unit",
                 "diseasenutrition.value_max AS value_max",
                 "diseasenutrition.value_min AS value_min"
             ])
@@ -211,7 +212,7 @@ class DiseasenutritionRepository implements IdiseasenutritionRepository {
     async deleteByNutritionId(nutritionid: string): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Diseasenutrition);
-            const result = await connect.delete({ nutrition_nutrition_id: nutritionid });
+            const result = await connect.delete({ nutritionsecondary_nutrition_id: nutritionid });
             if (result.affected === 0) {
                 logging.error(NAMESPACE, `No diseasenutrition found with nutritionid: ${nutritionid}. Nothing to delete.`);
                 return 0;

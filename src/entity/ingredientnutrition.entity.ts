@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn} from 'typeorm';
-import { Nutrition } from './nutrition.entity';
+import { Nutritionprimary } from "./nutritionprimary.entity";
 import { Ingredients } from './ingredients.entity';
 
 @Entity({ name: "ingredientnutrition" })
@@ -9,7 +9,7 @@ export class Ingredientnutrition {
   ingredient_nutrition_id!: string
 
   @Column()
-  nutrition_nutrition_id!: string
+  nutritionprimary_nutrition_id!: string
 
   @Column()
   ingredients_ingredient_id!: string
@@ -29,9 +29,9 @@ export class Ingredientnutrition {
   @Column({type: "varchar", length: 255, nullable: true})
   update_by?: string
   
-  @ManyToOne(() => Nutrition, nutrition => nutrition.nutrition_id,{onDelete: 'CASCADE'})
-  @JoinColumn({name: "nutrition_nutrition_id"})
-  nutrition!: Nutrition;
+  @ManyToOne(() => Nutritionprimary, nutritionprimary => nutritionprimary.nutrition_id,{onDelete: 'CASCADE'})
+  @JoinColumn({name: "nutritionprimary_nutrition_id"})
+  nutritionprimary!: Nutritionprimary;
 
   @ManyToOne(() => Ingredients, ingredients => ingredients.ingredient_id,{onDelete: 'CASCADE'})
   @JoinColumn({name: "ingredients_ingredient_id"})

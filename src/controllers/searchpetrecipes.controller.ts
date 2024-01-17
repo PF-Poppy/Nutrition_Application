@@ -32,9 +32,9 @@ export default class SearchPetRecipesController {
             const nutritionSummary: NutritionSummary = {};
 
             const chronicDisease = await Promise.all(disease.map(async (diseaseInfo) => {
-                const diseaseDetail = await diseasenutritionRepository.retrieveByDiseaseId(diseaseInfo.diseasedetailid);
+                const diseasenutrition = await diseasenutritionRepository.retrieveByDiseaseId(diseaseInfo.diseasedetailid);
         
-                diseaseDetail.forEach(diseaseNutritionInfo => {
+                diseasenutrition.forEach(diseaseNutritionInfo => {
                     const nutritionName = diseaseNutritionInfo.nutrient_name;
                     const nutritionValueMin = diseaseNutritionInfo.value_min;
                     const nutritionValueMax = diseaseNutritionInfo.value_max;
@@ -49,11 +49,11 @@ export default class SearchPetRecipesController {
                         nutritionSummary[nutritionName].maxValue_intersect = Math.min(nutritionSummary[nutritionName].maxValue_intersect, nutritionValueMax);
                     }
                 });
-
+                const sorteddiseasenutrition = diseasenutrition.sort((a, b) => a.nutrition_id.localeCompare(b.nutrition_id));
                 return {
                     petChronicDiseaseId: diseaseInfo.diseasedetailid,
                     petChronicDiseaseName: diseaseInfo.diseasename,
-                    diseaseNutrition: diseaseDetail.map(diseaseNutritionInfo => ({
+                    diseaseNutrition: sorteddiseasenutrition.map(diseaseNutritionInfo => ({
                         diseaseNutritionId: diseaseNutritionInfo.nutrition_id,
                         diseaseNutritionName: diseaseNutritionInfo.nutrient_name,
                         diseaseNutritionmin: diseaseNutritionInfo.value_min,
@@ -61,8 +61,6 @@ export default class SearchPetRecipesController {
                     })),
                 };
             }));
-        
-            const sortedChronicDisease = chronicDisease.sort((a, b) => a.petChronicDiseaseId.localeCompare(b.petChronicDiseaseId));
 
             const petrecipes = await petrecipesRepository.retrieveByPetTypeId(pettype.animaltypeid);
             const petrecipesList = await Promise.all(petrecipes.map(async (petrecipesInfo) => {
@@ -75,7 +73,7 @@ export default class SearchPetRecipesController {
                     ingredientName: recipeIngredientInfo.ingredient_name,
                     amount: recipeIngredientInfo.quantity,
                 }));
-                //TODO เปลี่ยนชื่อคำว่า น้ำเป็นชื่ออื่นตามที่บันทึกดใน database
+                //TODO เปลี่ยนชื่อคำว่า น้ำเป็นชื่ออื่นตามที่บันทึกดใน database หรือไม่ก็ต้องใช้ น้ำรวมที่เกิดจากการบวกน้ำของแต่ละวัตถุดิบ
                 const waterNutrition = recipenutrition.find(recipeNutritionInfo => recipeNutritionInfo.nutrient_name === "น้ำ");
                 const recipeNutritionList = recipenutrition.map(recipeNutritionInfo => {
                     if (recipeNutritionInfo.nutrient_name === "น้ำ") {
@@ -143,6 +141,7 @@ export default class SearchPetRecipesController {
                     )
                 );
             }
+            //TODO ยังไม่แน่ใจว่าต้องมีการเปรียบเทียบน้ำไหม
             const filteredRecipes  = recipesList.filter((recipe:any) => {
                 const recipeNutritionList = recipe.sortedrecipeNutrition.every((recipeNutrition:any) => {
                     const { nutritionName, amount } = recipeNutrition;
@@ -150,16 +149,112 @@ export default class SearchPetRecipesController {
                     if (!summary) {
                         return false;
                     }
+                    /*
+                    if (nutritionName === "น้ำ") {
+                        return amount >= 0 && amount <= 100;
+                    }
+                    */
                     const { minValue_intersect, maxValue_intersect } = summary;
+
                     return minValue_intersect <= amount && amount <= maxValue_intersect;
                 });
                 return recipeNutritionList;
             });
             //TODO มาตกลงว่าจะให้ส่งอะไรกลับไป
+            logging.info(NAMESPACE, "Get all pets recipes success");
             res.status(200).send({
                 recipesList,
                 filteredRecipes,
                 nutritionSummary
+            });
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            res.status(500).send({
+                message: "Some error occurred while get pet recipes."
+            });
+        }
+    }
+
+    async getPetRecipesAlgorithm(req: Request, res: Response) {
+        logging.info(NAMESPACE, "Get all pets recipes algorithm");
+        if (!req.body) {
+            res.status(400).json({
+                message: "Content cannot be empty",
+            });
+            return;
+        }
+        const { petId, petName, recipeType, selectedIngredientList } = req.body; ;
+        if (!petId || !petName || !recipeType || !selectedIngredientList) {
+            res.status(400).json({
+                message: "Please fill in all the fields!",
+            });
+            return;
+        } 
+        try {
+            const pettype = await petRepository.retrieveById(petId);
+            const disease = await diseaseRepository.retrieveByPetId(petId);
+            const nutritionSummary: NutritionSummary = {};
+
+            const chronicDisease = await Promise.all(disease.map(async (diseaseInfo) => {
+                const diseasenutrition = await diseasenutritionRepository.retrieveByDiseaseId(diseaseInfo.diseasedetailid);
+                const sorteddiseasenutrition = diseasenutrition.sort((a, b) => a.nutrition_id.localeCompare(b.nutrition_id));
+                
+                sorteddiseasenutrition.forEach(diseaseNutritionInfo => {
+                    const nutritionName = diseaseNutritionInfo.nutrient_name;
+                    const nutritionValueMin = diseaseNutritionInfo.value_min;
+                    const nutritionValueMax = diseaseNutritionInfo.value_max;
+        
+                    if (!nutritionSummary[nutritionName]) {
+                        nutritionSummary[nutritionName] = {
+                            minValue_intersect: nutritionValueMin,
+                            maxValue_intersect: nutritionValueMax,
+                        };
+                    } else {
+                        nutritionSummary[nutritionName].minValue_intersect = Math.max(nutritionSummary[nutritionName].minValue_intersect, nutritionValueMin);
+                        nutritionSummary[nutritionName].maxValue_intersect = Math.min(nutritionSummary[nutritionName].maxValue_intersect, nutritionValueMax);
+                    }
+                });
+
+                return {
+                    petChronicDiseaseId: diseaseInfo.diseasedetailid,
+                    petChronicDiseaseName: diseaseInfo.diseasename,
+                    diseaseNutrition: sorteddiseasenutrition.map(diseaseNutritionInfo => ({
+                        diseaseNutritionId: diseaseNutritionInfo.nutrition_id,
+                        diseaseNutritionName: diseaseNutritionInfo.nutrient_name,
+                        diseaseNutritionmin: diseaseNutritionInfo.value_min,
+                        diseaseNutritionmax: diseaseNutritionInfo.value_max,
+                    })),
+                };
+            }));
+            //TODO แก้คำที่จะเป็น input ใหม่
+            const limit = [
+                {
+                    "name": "limitmin",
+                    ...Object.entries(nutritionSummary).reduce((acc, [nutrient, values]) => {
+                    acc[nutrient] = values.minValue_intersect;
+                    return acc;
+                    }, {} as Record<string, number>),
+                },
+                {
+                    "name": "limitmax",
+                    ...Object.entries(nutritionSummary).reduce((acc, [nutrient, values]) => {
+                    acc[nutrient] = values.maxValue_intersect;
+                    return acc;
+                    }, {} as Record<string, number>),
+                },
+                {
+                    "name": "limitmean",
+                    ...Object.entries(nutritionSummary).reduce((acc, [nutrient, values]) => {
+                    acc[nutrient] = (values.minValue_intersect+values.maxValue_intersect)/2;
+                    return acc;
+                    }, {} as Record<string, number>),
+                },
+            ];
+            
+            logging.info(NAMESPACE, "Get all pets recipes algorithm success");
+            res.status(200).send({
+                nutritionSummary,
+                limit,
             });
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);

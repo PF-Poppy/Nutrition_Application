@@ -1,5 +1,5 @@
 import { Recipenutrition } from "../entity/recipesnutrition.entity";
-import { Nutrition } from "../entity/nutrition.entity"; 
+import { Nutritionsecondary } from "../entity/nutritionsecondary.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
 
@@ -22,7 +22,7 @@ class RecipeNutritionRepository implements IRecipeNutritionRepository {
         try {
             const connect = AppDataSource.getRepository(Recipenutrition);
             const duplicate = await connect.findOne(
-                { where: { nutrition_nutrition_id: recipeNutrition.nutrition_nutrition_id, petrecipes_recipes_id: recipeNutrition.petrecipes_recipes_id } }
+                { where: { nutritionsecondary_nutrition_id: recipeNutrition.nutritionsecondary_nutrition_id, petrecipes_recipes_id: recipeNutrition.petrecipes_recipes_id } }
             );
             if (duplicate) {
                 logging.error(NAMESPACE, "Duplicate recipe nutrition.");
@@ -55,8 +55,8 @@ class RecipeNutritionRepository implements IRecipeNutritionRepository {
                     .createQueryBuilder()
                     .select()
                     .setLock("pessimistic_write")
-                    .where("nutrition_nutrition_id = :nutrition_nutrition_id AND petrecipes_recipes_id = :petrecipes_recipes_id", {
-                        nutrition_nutrition_id: recipeNutrition.nutrition_nutrition_id,
+                    .where("nutritionsecondary_nutrition_id = :nutritionsecondary_nutrition_id AND petrecipes_recipes_id = :petrecipes_recipes_id", {
+                        nutritionsecondary_nutrition_id: recipeNutrition.nutritionsecondary_nutrition_id,
                         petrecipes_recipes_id: recipeNutrition.petrecipes_recipes_id 
                     })
                     .getOne();
@@ -106,7 +106,7 @@ class RecipeNutritionRepository implements IRecipeNutritionRepository {
         try {
             const result = await AppDataSource.getRepository(Recipenutrition).findOne({
                 where : { recipes_nutrition_id: recipeNutritionId },
-                select: ["recipes_nutrition_id", "nutrition_nutrition_id", "petrecipes_recipes_id", "nutrient_value"]
+                select: ["recipes_nutrition_id", "nutritionsecondary_nutrition_id", "petrecipes_recipes_id", "nutrient_value"]
             });
             if (!result) {
                 logging.error(NAMESPACE, "Recipe nutrition not found.");
@@ -124,14 +124,15 @@ class RecipeNutritionRepository implements IRecipeNutritionRepository {
         try {
             const result = await AppDataSource.getRepository(Recipenutrition)
             .createQueryBuilder("recipenutrition")
-            .innerJoinAndSelect(Nutrition, "nutrition", "nutrition.nutrition_id = recipenutrition.nutrition_nutrition_id")
+            .innerJoinAndSelect(Nutritionsecondary, "nutritionsecondary", "nutritionsecondary.nutrition_id = recipenutrition.nutritionsecondary.nutrition_id")
             .select([
                 "recipenutrition.recipes_nutrition_id AS recipes_nutrition_id",
-                "recipenutrition.nutrition_nutrition_id AS nutrition_nutrition_id",
+                "recipenutrition.nutritionsecondary.nutrition_id AS nutrition_nutrition_id",
                 "recipenutrition.petrecipes_recipes_id AS petrecipes_recipes_id",
                 "recipenutrition.nutrient_value AS nutrient_value",
-                "nutrition.nutrition_id AS nutrition_id",
-                "nutrition.nutrient_name AS nutrient_name",
+                "nutritionsecondary.nutrition_id AS nutrition_id",
+                "nutritionsecondary.nutrient_name AS nutrient_name",
+                "nutritionsecondary.nutrient_unit AS nutrient_unit",
             ])
             .where("recipenutrition.petrecipes_recipes_id = :recipeId", { recipeId: recipeId })
             .getRawMany();

@@ -1,5 +1,5 @@
 import { Ingredientnutrition } from "../entity/ingredientnutrition.entity";
-import { Nutrition } from "../entity/nutrition.entity";
+import { Nutritionprimary } from "../entity/nutritionprimary.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
 
@@ -20,7 +20,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
         try {
             const connect = AppDataSource.getRepository(Ingredientnutrition)
             const duplicate = await connect.findOne(
-                { where: { nutrition_nutrition_id: ingredientnutrition.nutrition_nutrition_id, ingredients_ingredient_id: ingredientnutrition.ingredients_ingredient_id}}
+                { where: { nutritionprimary_nutrition_id: ingredientnutrition.nutritionprimary_nutrition_id, ingredients_ingredient_id: ingredientnutrition.ingredients_ingredient_id}}
             );
 
             if (duplicate) {
@@ -54,8 +54,8 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
                     .createQueryBuilder()
                     .select()
                     .setLock("pessimistic_write")
-                    .where("nutrition_nutrition_id = :nutrition_nutrition_id AND ingredients_ingredient_id = :ingredients_ingredient_id", {
-                        nutrition_nutrition_id: ingredientnutrition.nutrition_nutrition_id,
+                    .where("nutritionprimary_nutrition_id = :nutritionprimary_nutrition_id AND ingredients_ingredient_id = :ingredients_ingredient_id", {
+                        nutritionprimary_nutrition_id: ingredientnutrition.nutritionprimary_nutrition_id,
                         ingredients_ingredient_id: ingredientnutrition.ingredients_ingredient_id,
                     })
                     .getOne();
@@ -143,7 +143,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
         try {
             const result = await AppDataSource.getRepository(Ingredientnutrition).findOne({
                 where: { ingredient_nutrition_id : ingredientnutritionid },
-                select: ["ingredient_nutrition_id","nutrition_nutrition_id","ingredients_ingredient_id","nutrient_value"]
+                select: ["ingredient_nutrition_id","nutritionprimary_nutrition_id","ingredients_ingredient_id","nutrient_value"]
             });
             if (!result) {
                 logging.error(NAMESPACE, "Not found ingredientnutrition with id: " + ingredientnutritionid);
@@ -161,12 +161,13 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
         try {
             const result = await AppDataSource.getRepository(Ingredientnutrition)
             .createQueryBuilder("ingredientnutrition")
-            .innerJoinAndSelect(Nutrition, "nutrition", "nutrition.nutrition_id = ingredientnutrition.nutrition_nutrition_id")
+            .innerJoinAndSelect(Nutritionprimary, "nutritionprimary", "nutritionprimary.nutrition_id = ingredientnutrition.nutritionprimary_nutrition_id")
             .select([
                 "ingredientnutrition.ingredient_nutrition_id AS ingredient_nutrition_id",
-                "ingredientnutrition.nutrition_nutrition_id AS nutrition_id",
+                "ingredientnutrition.nutritionprimary_nutrition_id AS nutrition_id",
                 "ingredientnutrition.ingredients_ingredient_id AS ingredient_id",
-                "nutrition.nutrient_name AS nutrient_name",
+                "nutritionprimary.nutrient_name AS nutrient_name",
+                "nutritionprimary.nutrient_unit AS nutrient_unit",
                 "ingredientnutrition.nutrient_value AS nutrient_value"
             ])
             .where("ingredientnutrition.ingredients_ingredient_id = :ingredientid", { ingredientid: ingredientid })
@@ -198,7 +199,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
     async deleteByNutritionId(nutritionid: string): Promise<number> {
         try {
             const connect = AppDataSource.getRepository(Ingredientnutrition);
-            const result = await connect.delete({ nutrition_nutrition_id: nutritionid });
+            const result = await connect.delete({ nutritionprimary_nutrition_id: nutritionid });
             if (result.affected === 0) {
                 logging.error(NAMESPACE, `No ingredientnutrition found with nutritionid: ${nutritionid}. Nothing to delete.`);
                 return 0;

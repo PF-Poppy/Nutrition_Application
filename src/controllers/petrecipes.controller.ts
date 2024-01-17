@@ -5,7 +5,7 @@ import { Recipeingredients } from "../entity/recipeingredients.entity";
 import { Recipenutrition } from "../entity/recipesnutrition.entity";
 import petrecipesRepository from "../repositories/petrecipes.repository";
 import recipeingredientsRepository from "../repositories/recipeingredients.repository";
-import nutritionRepository from "../repositories/nutrition.repository";
+import nutritionsecondaryRepository from "../repositories/nutritionsecondary.repository";
 import recipenutritionRepository from "../repositories/recipesnutrition.repository";
 import logging from "../config/logging";
 
@@ -64,10 +64,10 @@ export default class PetRecipesController {
                     throw new Error("Please fill in all the fields!");
                 }
                 try {
-                    const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
+                    const nutrient = await nutritionsecondaryRepository.retrieveByName(nutrientInfoData.nutrientName);
 
                     const recipenutrition = new Recipenutrition();
-                    recipenutrition.nutrition_nutrition_id = nutrient.nutrition_id;
+                    recipenutrition.nutritionsecondary_nutrition_id = nutrient.nutrition_id;
                     recipenutrition.petrecipes_recipes_id = addNewPetRecipe.recipes_id;
                     recipenutrition.nutrient_value = nutrientInfoData.amount;
                     recipenutrition.create_by = `${userid}_${username}`;
@@ -154,10 +154,10 @@ export default class PetRecipesController {
                     throw new Error("Please fill in all the fields!");
                 }
                 try {
-                    const nutrient = await nutritionRepository.retrieveByName(nutrientInfoData.nutrientName);
+                    const nutrient = await nutritionsecondaryRepository.retrieveByName(nutrientInfoData.nutrientName);
 
                     const recipenutrition = new Recipenutrition();
-                    recipenutrition.nutrition_nutrition_id = nutrient.nutrition_id;
+                    recipenutrition.nutritionsecondary_nutrition_id = nutrient.nutrition_id;
                     recipenutrition.petrecipes_recipes_id = recipeId;
                     recipenutrition.nutrient_value = nutrientInfoData.amount;
                     recipenutrition.update_by = `${userid}_${username}`;

@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn} from 'typeorm';
 import { Diseasedetail } from "./diseasedetail.entity";
-import { Nutrition } from "./nutrition.entity";
+import { Nutritionsecondary } from "./nutritionsecondary.entity";
 
 @Entity({ name: "diseasenutrition" })
 export class Diseasenutrition {
@@ -12,7 +12,7 @@ export class Diseasenutrition {
   diseasedetail_disease_id!: string
 
   @Column()
-  nutrition_nutrition_id!: string
+  nutritionsecondary_nutrition_id!: string
 
   @Column({type: "double",default: 0.0})
   value_max! : number
@@ -36,7 +36,7 @@ export class Diseasenutrition {
   @JoinColumn({ name: 'diseasedetail_disease_id' })
   diseasedetail!: Diseasedetail;
 
-  @ManyToOne(() => Nutrition, nutrition => nutrition.nutrition_id,{onDelete: 'CASCADE'})
-  @JoinColumn({ name: 'nutrition_nutrition_id' })
-  nutrition!: Nutrition;
+  @ManyToOne(() => Nutritionsecondary, nutritionsecondary => nutritionsecondary.nutrition_id,{onDelete: 'CASCADE'})
+  @JoinColumn({ name: 'nutritionsecondary_nutrition_id' })
+  nutritionsecondary!: Nutritionsecondary;
 }

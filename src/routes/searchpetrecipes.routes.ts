@@ -11,6 +11,7 @@ class SearchPetRecipesRoutes {
 
     initializeRoutes() {
         this.router.get('/getpetrecipes',this.controller.getPetsRecipes);
+        this.router.get('/getpetrecipes/algorithm',this.controller.getPetRecipesAlgorithm);
     }
 }
 

@@ -1,25 +1,25 @@
-import { Nutrition } from "../entity/nutrition.entity";
+import { Nutritionsecondary } from "../entity/nutritionsecondary.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
 
-const NAMESPACE = "Nutrition Repository";
+const NAMESPACE = "Nutritionsecondary Repository";
 
-interface INutritionRepository {
-    save(nutrition:Nutrition): Promise<Nutrition>;
-    update(nutrition:Nutrition): Promise<Nutrition>;
-    retrieveAll(): Promise<Nutrition[]>;
-    retrieveById(nutrientid: string): Promise<Nutrition | undefined>;
-    retrieveByName(nutrientname: string): Promise<Nutrition | undefined>;
+interface INutritionsecondaryRepository {
+    save(nutrition:Nutritionsecondary): Promise<Nutritionsecondary>;
+    update(nutrition:Nutritionsecondary): Promise<Nutritionsecondary>;
+    retrieveAll(): Promise<Nutritionsecondary[]>;
+    retrieveById(nutrientid: string): Promise<Nutritionsecondary | undefined>;
+    retrieveByName(nutrientname: string): Promise<Nutritionsecondary | undefined>;
     deleteById(nutrientid: string): Promise<number>;
     deleteAll(): Promise<number>;
 }
 
-class NutritionRepository implements INutritionRepository {
-    async save(nutrition: Nutrition): Promise<Nutrition> {
+class NutritionsecondaryRepository implements INutritionsecondaryRepository {
+    async save(nutrition: Nutritionsecondary): Promise<Nutritionsecondary> {
         try {
-            const connect = AppDataSource.getRepository(Nutrition)
+            const connect = AppDataSource.getRepository(Nutritionsecondary)
             const duplicate = await connect.findOne(
-                { where: { nutrient_name: nutrition.nutrient_name } }
+                { where: { nutrient_name: nutrition.nutrient_name} }
             );
             if (duplicate) {
                 logging.error(NAMESPACE, "Duplicate nutrition name.");
@@ -41,12 +41,12 @@ class NutritionRepository implements INutritionRepository {
         }
     }
     
-    async update(nutrition: Nutrition): Promise<Nutrition> {
-        let result: Nutrition | undefined;
+    async update(nutrition: Nutritionsecondary): Promise<Nutritionsecondary> {
+        let result: Nutritionsecondary | undefined;
         try {
             await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
                 try {
-                    const connect = transactionalEntityManager.getRepository(Nutrition);
+                    const connect = transactionalEntityManager.getRepository(Nutritionsecondary);
                     await connect.query("BEGIN");
                     const existingNutrition = await connect
                     .createQueryBuilder()
@@ -120,10 +120,10 @@ class NutritionRepository implements INutritionRepository {
         */
     }
 
-    async retrieveAll(): Promise<Nutrition[]> {
+    async retrieveAll(): Promise<Nutritionsecondary[]> {
         try {
-            const result = await AppDataSource.getRepository(Nutrition).find({
-                select: ["nutrition_id","nutrient_name"]
+            const result = await AppDataSource.getRepository(Nutritionsecondary).find({
+                select: ["nutrition_id","nutrient_name","nutrient_unit"]
             });
             logging.info(NAMESPACE, "Get nutrition by name successfully.");
             return result;
@@ -133,11 +133,11 @@ class NutritionRepository implements INutritionRepository {
         }
     }
 
-    async retrieveById(nutrientid: string): Promise<Nutrition>{
+    async retrieveById(nutrientid: string): Promise<Nutritionsecondary>{
         try {
-            const result = await AppDataSource.getRepository(Nutrition).findOne({
+            const result = await AppDataSource.getRepository(Nutritionsecondary).findOne({
                 where: { nutrition_id : nutrientid },
-                select: ["nutrition_id","nutrient_name"]
+                select: ["nutrition_id","nutrient_name","nutrient_unit"]
             });
             if (!result) {
                 logging.error(NAMESPACE, "Not found animal type with id: " + nutrientid);
@@ -151,11 +151,11 @@ class NutritionRepository implements INutritionRepository {
         }
     }
     
-    async retrieveByName(nutrientname: string): Promise<Nutrition>{
+    async retrieveByName(nutrientname: string): Promise<Nutritionsecondary>{
         try {
-            const result = await AppDataSource.getRepository(Nutrition).findOne({
+            const result = await AppDataSource.getRepository(Nutritionsecondary).findOne({
                 where: { nutrient_name : nutrientname },
-                select: ["nutrition_id","nutrient_name"]
+                select: ["nutrition_id","nutrient_name","nutrient_unit"]
             });
             if (!result) {
                 logging.error(NAMESPACE, "Not found nutrition with name: " + nutrientname);
@@ -171,7 +171,7 @@ class NutritionRepository implements INutritionRepository {
 
     async deleteById(nutrientid: string): Promise<number>{
         try {
-            const connect = AppDataSource.getRepository(Nutrition)
+            const connect = AppDataSource.getRepository(Nutritionsecondary)
             const result = await connect.delete({ nutrition_id : nutrientid})
             if (result.affected === 0) {
                 logging.error(NAMESPACE, "Not found nutrition with id: " + nutrientid);
@@ -188,7 +188,7 @@ class NutritionRepository implements INutritionRepository {
 
     async deleteAll(): Promise<number>{
         try {
-            const result = await AppDataSource.getRepository(Nutrition).delete({});
+            const result = await AppDataSource.getRepository(Nutritionsecondary).delete({});
             logging.info(NAMESPACE, "Delete all nutrition successfully.");
             return result.affected!;
         } catch (err) {
@@ -198,4 +198,4 @@ class NutritionRepository implements INutritionRepository {
     }
 }
 
-export default new NutritionRepository();
+export default new NutritionsecondaryRepository();

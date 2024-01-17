@@ -1,7 +1,7 @@
 import { Ingredients } from "../entity/ingredients.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
-import { ca } from "date-fns/locale";
+
 
 const NAMESPACE = "Ingredients Repository";
 
