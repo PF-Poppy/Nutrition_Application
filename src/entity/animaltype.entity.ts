@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, VersionColumn} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, } from 'typeorm';
 import { Pet } from "./pet.entity";
 import { Petrecipes } from "./petrecipes.entity";
 import { Diseasedetail } from "./diseasedetail.entity";
@@ -32,7 +32,4 @@ export class AnimalType {
   
   @OneToMany(() => Petrecipes, petrecipes => petrecipes.animaltype_type_id)
   petrecipes?: Petrecipes[];
-
-  @VersionColumn({default: 0})
-  version!: number;
 }

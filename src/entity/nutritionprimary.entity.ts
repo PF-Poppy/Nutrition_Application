@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, VersionColumn} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, } from 'typeorm';
 import { Ingredientnutrition } from './ingredientnutrition.entity';
 
 @Entity({ name: "nutritionprimary" })
@@ -28,6 +28,5 @@ export class Nutritionprimary {
   @OneToMany(() => Ingredientnutrition, ingredientnutrition => ingredientnutrition.nutritionprimary_nutrition_id)
   ingredientnutrition!: Ingredientnutrition[];
 
-  @VersionColumn({default: 0})
-  version!: number;
+  
 }

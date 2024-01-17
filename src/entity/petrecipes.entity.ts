@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn, VersionColumn} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn, } from 'typeorm';
 import { Favorite } from "./favorite.entity";
 import { AnimalType } from "./animaltype.entity";
 import { Recipeingredients } from "./recipeingredients.entity";
@@ -44,6 +44,5 @@ export class Petrecipes {
   @JoinColumn({ name: 'animaltype_type_id' })
   animaltype!: AnimalType;
 
-  @VersionColumn({default: 0})
-  version!: number;
+  
 }

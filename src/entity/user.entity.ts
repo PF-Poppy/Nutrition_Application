@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, VersionColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany,  } from 'typeorm';
 import { UserRole } from './userrole.entity';
 import { Favorite } from "./favorite.entity";
 import { Pet } from "./pet.entity";
@@ -46,6 +46,5 @@ export class User {
   @OneToMany(() => Usernotification, usernotification => usernotification.user_user_id)
   usernotifications?: Usernotification[];
 
-  @VersionColumn({default: 0})
-  version!: number;
+  
 }

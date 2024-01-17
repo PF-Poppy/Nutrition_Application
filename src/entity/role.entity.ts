@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, VersionColumn} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, } from 'typeorm';
 import { UserRole } from './userrole.entity';
 
 @Entity({ name: "role" })
@@ -25,6 +25,5 @@ export class Role {
   @OneToMany(() => UserRole, userRole => userRole.role_role_id)
   userRole?: UserRole[];
 
-  @VersionColumn({default: 0})
-  version!: number;
+  
 }

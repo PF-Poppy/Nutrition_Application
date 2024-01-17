@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn, VersionColumn} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn, } from 'typeorm';
 import { Pet } from "./pet.entity";
 
 @Entity({ name: "profilepet" })
@@ -41,6 +41,5 @@ export class Profilepet {
   @JoinColumn({ name: "pet_pet_id" }) 
   pet!: Pet;
 
-  @VersionColumn({default: 0})
-  version!: number;
+  
 }

@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, VersionColumn} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, } from 'typeorm';
 import { Questions } from "./questions.entity";
 
 
@@ -30,6 +30,5 @@ export class Choices {
   @JoinColumn({ name: 'questions_question_id' })
   questions!: Questions;
 
-  @VersionColumn({default: 0})
-  version!: number;
+  
 }

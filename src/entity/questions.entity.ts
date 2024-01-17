@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, VersionColumn} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, } from 'typeorm';
 import { Choices } from "./choice.entity";
 
 @Entity({ name: "questions" })
@@ -25,6 +25,5 @@ export class Questions {
   @OneToMany(() => Choices, choices => choices.questions_question_id)
   choices?: Choices[];
 
-  @VersionColumn({default: 0})
-  version!: number;
+  
 }

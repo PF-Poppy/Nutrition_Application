@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, VersionColumn} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, } from 'typeorm';
 import { Ingredients } from "./ingredients.entity";
 import { Petrecipes } from "./petrecipes.entity";
 
@@ -37,6 +37,5 @@ export class Recipeingredients {
   @JoinColumn({ name: 'petrecipes_recipes_id' })
   petrecipes!: Petrecipes;
 
-  @VersionColumn({default: 0})
-  version!: number;
+  
 }

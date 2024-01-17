@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn, VersionColumn} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn, } from 'typeorm';
 import { Disease } from "./disease.entity";
 import { AnimalType } from "./animaltype.entity";
 import { Diseasenutrition } from "./diseasenutrition.entity";
@@ -38,6 +38,5 @@ export class Diseasedetail {
   @JoinColumn({ name: 'animaltype_type_id' })
   animaltype!: AnimalType;
 
-  @VersionColumn({default: 0})
-  version!: number;
+  
 }
