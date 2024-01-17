@@ -9,6 +9,7 @@ import profilepetRepository from '../repositories/profilepet.repository';
 import diseaseRepository from '../repositories/disease.repository';
 import diseasedetailRepository from '../repositories/diseasedetail.repository';
 import logging from '../config/logging';
+import { ca } from 'date-fns/locale';
 
 const NAMESPACE = 'Pet Controller';
 
@@ -168,6 +169,16 @@ export default class PetController {
             });
             return;
         }
+
+        try {
+            const pet = await petRepository.retrieveById(petId);
+        }catch(err){
+            res.status(404).send({
+                message: `Not found pet with id=${petId}.`
+            });
+            return;
+        }
+
         try {
             const pet = new Pet();
             pet.pet_id = petId;

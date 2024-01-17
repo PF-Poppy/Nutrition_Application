@@ -8,6 +8,7 @@ import recipeingredientsRepository from "../repositories/recipeingredients.repos
 import nutritionsecondaryRepository from "../repositories/nutritionsecondary.repository";
 import recipenutritionRepository from "../repositories/recipesnutrition.repository";
 import logging from "../config/logging";
+import { ca } from "date-fns/locale";
 
 const NAMESPACE = "PetRecipes Controller";
 
@@ -122,6 +123,16 @@ export default class PetRecipesController {
             });
             return;
         }
+
+        try{
+            const petrecipes = await petrecipesRepository.retrieveById(recipeId);
+        }catch(err){
+            res.status(404).send( {
+                message: `Not found petrecipes with id=${recipeId}.`
+            });
+            return;
+        }
+        
         try {
             const petrecipes = new Petrecipes();
             petrecipes.recipes_id = recipeId;

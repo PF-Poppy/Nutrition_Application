@@ -7,6 +7,7 @@ import diseaseRepository from "../repositories/disease.repository";
 import diseasenutritionRepository from "../repositories/diseasenutrition.repository";
 import petRepository from "../repositories/pet.repository";
 import logging from "../config/logging";
+import { ca } from "date-fns/locale";
 
 const NAMESPACE = "SearchPetRecipes Controller";
 
@@ -26,6 +27,16 @@ export default class SearchPetRecipesController {
             });
             return;
         }
+
+        try {
+            const pet = await petRepository.retrieveById(petId);
+        }catch(err){
+            res.status(404).send({
+                message: `Not found pet with id=${petId}.`
+            });
+            return;
+        }
+
         try {
             const pettype = await petRepository.retrieveById(petId);
             const disease = await diseaseRepository.retrieveByPetId(petId);
@@ -33,8 +44,9 @@ export default class SearchPetRecipesController {
 
             const chronicDisease = await Promise.all(disease.map(async (diseaseInfo) => {
                 const diseasenutrition = await diseasenutritionRepository.retrieveByDiseaseId(diseaseInfo.diseasedetailid);
-        
-                diseasenutrition.forEach(diseaseNutritionInfo => {
+                const sorteddiseasenutrition = diseasenutrition.sort((a, b) => a.nutrition_id.localeCompare(b.nutrition_id));
+
+                sorteddiseasenutrition.forEach(diseaseNutritionInfo => {
                     const nutritionName = diseaseNutritionInfo.nutrient_name;
                     const nutritionValueMin = diseaseNutritionInfo.value_min;
                     const nutritionValueMax = diseaseNutritionInfo.value_max;
@@ -48,8 +60,8 @@ export default class SearchPetRecipesController {
                         nutritionSummary[nutritionName].minValue_intersect = Math.max(nutritionSummary[nutritionName].minValue_intersect, nutritionValueMin);
                         nutritionSummary[nutritionName].maxValue_intersect = Math.min(nutritionSummary[nutritionName].maxValue_intersect, nutritionValueMax);
                     }
+                    console.log(nutritionSummary);
                 });
-                const sorteddiseasenutrition = diseasenutrition.sort((a, b) => a.nutrition_id.localeCompare(b.nutrition_id));
                 return {
                     petChronicDiseaseId: diseaseInfo.diseasedetailid,
                     petChronicDiseaseName: diseaseInfo.diseasename,
@@ -74,9 +86,9 @@ export default class SearchPetRecipesController {
                     amount: recipeIngredientInfo.quantity,
                 }));
                 //TODO เปลี่ยนชื่อคำว่า น้ำเป็นชื่ออื่นตามที่บันทึกดใน database หรือไม่ก็ต้องใช้ น้ำรวมที่เกิดจากการบวกน้ำของแต่ละวัตถุดิบ
-                const waterNutrition = recipenutrition.find(recipeNutritionInfo => recipeNutritionInfo.nutrient_name === "น้ำ");
+                const waterNutrition = recipenutrition.find(recipeNutritionInfo => recipeNutritionInfo.nutrient_name === "Moisture");
                 const recipeNutritionList = recipenutrition.map(recipeNutritionInfo => {
-                    if (recipeNutritionInfo.nutrient_name === "น้ำ") {
+                    if (recipeNutritionInfo.nutrient_name === "Moisture" || recipeNutritionInfo.nutrient_name === "Price") {
                         return {
                             recipenutritionId: recipeNutritionInfo.recipes_nutrition_id,
                             nutritionId: recipeNutritionInfo.nutrition_id,
@@ -141,7 +153,7 @@ export default class SearchPetRecipesController {
                     )
                 );
             }
-            //TODO ยังไม่แน่ใจว่าต้องมีการเปรียบเทียบน้ำไหม
+            //TODO ยังไม่แน่ใจว่าต้องมีการเปรียบเทียบน้ำกับราคาไหม
             const filteredRecipes  = recipesList.filter((recipe:any) => {
                 const recipeNutritionList = recipe.sortedrecipeNutrition.every((recipeNutrition:any) => {
                     const { nutritionName, amount } = recipeNutrition;
@@ -190,6 +202,17 @@ export default class SearchPetRecipesController {
             });
             return;
         } 
+
+        try {
+            const pet = await petRepository.retrieveById(petId);
+            console.log(pet);
+        }catch(err){
+            res.status(404).send({
+                message: `Not found pet with id=${petId}.`
+            });
+            return;
+        }
+
         try {
             const pettype = await petRepository.retrieveById(petId);
             const disease = await diseaseRepository.retrieveByPetId(petId);

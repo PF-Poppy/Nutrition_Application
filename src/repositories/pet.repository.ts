@@ -197,6 +197,10 @@ class PetRepository implements IPetRepository {
             ])
             .where("pet.pet_id = :petid", { petid: petid })
             .getRawOne();
+            if (!result) {
+                logging.error(NAMESPACE, "Not found pet with id: " + petid);
+                throw 'Not found pet with id: ' + petid;
+            }
             logging.info(NAMESPACE, "Retrieve pet successfully.");
             return result;
         }catch (err) {

@@ -102,6 +102,16 @@ export default class IngredientController {
             });
             return;
         }
+
+        try {
+            const ingredient = await ingredientsRepository.retrieveById(ingredientId);
+        }catch(err){
+            res.status(404).send( {
+                message: `Not found ingredient with id=${ingredientId}.`
+            });
+            return;
+        }
+        
         try {
             const ingredient = new Ingredients();
             ingredient.ingredient_id = ingredientId;

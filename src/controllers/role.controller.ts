@@ -103,6 +103,16 @@ export default class RoleController {
             });
             return;
         }
+
+        try {
+            const role = await roleRespository.retrieveById(roleId);
+        }catch(err){   
+            res.status(404).send({
+                message: `Not found role with id=${roleId}.`
+            });
+            return;
+        }
+        
         try {
             const role = new Role();
             role.role_id = roleId;

@@ -166,7 +166,6 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
                 where: { ingredient_nutrition_id : ingredientnutritionid },
                 select: ["ingredient_nutrition_id","nutritionprimary_nutrition_id","ingredients_ingredient_id","nutrient_value"]
             });
-            console.log(result)
             if (!result) {
                 logging.error(NAMESPACE, "Not found ingredientnutrition with id: " + ingredientnutritionid);
                 throw new Error("Not found ingredientnutrition with id: " + ingredientnutritionid);

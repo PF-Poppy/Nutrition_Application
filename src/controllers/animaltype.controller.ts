@@ -197,6 +197,16 @@ export default class AnimalController {
             });
             return;
         }
+
+        try {
+            const animaltype = await animalRepository.retrieveById(petTypeId);
+        }catch(err){
+            res.status(404).send({
+                message: `Not found animal type with id=${petTypeId}.`
+            });
+            return;
+        }
+        
         try {
 
             const animaltype = new AnimalType();

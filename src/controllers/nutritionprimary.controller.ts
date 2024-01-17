@@ -109,6 +109,16 @@ export default class NutritionprimaryController {
             });
             return;
         }
+
+        try {
+            const nutrition = await NutritionprimaryRepository.retrieveById(nutritionId);
+        }catch(err){
+            res.status(404).send( {
+                message: `Not found nutrition with id=${nutritionId}.`
+            });
+            return;
+        }
+        
         try {
             const nutrient = new Nutritionprimary();
             nutrient.nutrition_id = nutritionId;
