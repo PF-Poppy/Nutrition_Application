@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, OneToOne, JoinColumn} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, OneToOne, JoinColumn, VersionColumn} from 'typeorm';
 import { Disease } from "./disease.entity";
 import { AnimalType } from "./animaltype.entity";
 import { User } from "./user.entity";
@@ -38,4 +38,7 @@ export class Pet {
 
   @OneToOne(() => Profilepet, profilepet => profilepet.pet_pet_id)
   profilepet!: Profilepet;
+
+  @VersionColumn({default: 0})
+  version!: number;
 }

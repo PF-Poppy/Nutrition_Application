@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, VersionColumn} from 'typeorm';
 import { Role } from './role.entity';
 import { User } from './user.entity';
 
@@ -27,4 +27,7 @@ export class UserRole {
   @ManyToOne(() => Role, role => role.role_id,{onDelete: 'CASCADE'})
   @JoinColumn({ name: 'role_role_id' })
   role?: Role;
+
+  @VersionColumn({default: 0})
+  version!: number;
 }

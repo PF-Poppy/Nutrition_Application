@@ -47,7 +47,6 @@ class PetRepository implements IPetRepository {
                     const existingPet = await connect
                     .createQueryBuilder()
                     .select()
-                    .setLock("pessimistic_write")
                     .where("pet_id = :pet_id", { pet_id: pet.pet_id })
                     .getOne();
 
@@ -76,27 +75,6 @@ class PetRepository implements IPetRepository {
             logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
             throw err;
         }
-        /*
-        try {
-            const connect = AppDataSource.getRepository(Pet)
-            const result = await connect.update({ pet_id : pet.pet_id}, pet);
-            if (result.affected === 0) {
-                logging.error(NAMESPACE, "Not found pet with id: " + pet.pet_id);
-                throw 'Not found pet with id: ' + pet.pet_id;
-            }
-            logging.info(NAMESPACE, "Update pet successfully.");
-            try {
-                const res = await this.retrieveById(pet.pet_id);
-                return res;
-            }catch (err) {
-                logging.error(NAMESPACE, 'Error call retrieveById from update pet');
-                throw err;
-            }
-        } catch (err) {
-            logging.error(NAMESPACE, (err as Error).message, err);
-            throw err;
-        }
-        */
     }
 
     async retrieveAll(): Promise<Pet[]> {

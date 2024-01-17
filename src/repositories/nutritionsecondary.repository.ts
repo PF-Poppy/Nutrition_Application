@@ -51,7 +51,6 @@ class NutritionsecondaryRepository implements INutritionsecondaryRepository {
                     const existingNutrition = await connect
                     .createQueryBuilder()
                     .select()
-                    .setLock("pessimistic_write")
                     .where("nutrition_id = :nutrition_id", { nutrition_id: nutrition.nutrition_id })
                     .getOne();
                     console.log(existingNutrition?.nutrition_id);
@@ -86,38 +85,6 @@ class NutritionsecondaryRepository implements INutritionsecondaryRepository {
             logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
             throw err;
         }
-        /*
-        try {
-            const connect = AppDataSource.getRepository(Nutrition)
-            const nutrient = await connect.find({
-                where: { nutrient_name: nutrition.nutrient_name}
-            });
-            if (nutrient.length > 0) {
-                for (let i = 0; i < nutrient.length; i++) {
-                    if (nutrient[i].nutrition_id !== nutrition.nutrition_id) {
-                        logging.error(NAMESPACE, "Duplicate nutrition name.");
-                        throw 'Duplicate nutrition name.';
-                    }
-                }
-            }
-            const result = await connect.update({ nutrition_id : nutrition.nutrition_id}, nutrition);
-            if (result.affected === 0) {
-                logging.error(NAMESPACE, "Not found nutrition with id: " + nutrition.nutrition_id);
-                throw new Error("Not found nutrition with id: " + nutrition.nutrition_id);
-            }
-            logging.info(NAMESPACE, "Update nutrition successfully.");
-            try {
-                const res = await this.retrieveById(nutrition.nutrition_id);
-                return res;
-            }catch (err) {
-                logging.error(NAMESPACE, 'Error call retrieveById from update nutrition');
-                throw err;
-            }
-        } catch (err) {
-            logging.error(NAMESPACE, (err as Error).message, err);
-            throw err;
-        }
-        */
     }
 
     async retrieveAll(): Promise<Nutritionsecondary[]> {

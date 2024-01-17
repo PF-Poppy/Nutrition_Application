@@ -49,7 +49,6 @@ class PetRecipesRepository implements IPetRecipesRepository {
                 const existingData = await connect
                 .createQueryBuilder()
                 .select()
-                .setLock("pessimistic_write")
                 .where("recipes_id = :recipes_id", { recipes_id: petrecipes.recipes_id })
                 .getOne();
 

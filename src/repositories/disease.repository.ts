@@ -53,7 +53,6 @@ class DiseaseRepository implements IdiseaseRepository {
                     const existingDisease = await connect
                     .createQueryBuilder()
                     .select()
-                    .setLock("pessimistic_write")
                     .where("pet_pet_id = :pet_pet_id AND diseasedetail_disease_id = :diseasedetail_disease_id", {
                         pet_pet_id: disease.pet_pet_id,
                         diseasedetail_disease_id: disease.diseasedetail_disease_id,
@@ -89,44 +88,6 @@ class DiseaseRepository implements IdiseaseRepository {
             logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
             throw err;
         }
-        
-        /*
-        try {
-            const connect = AppDataSource.getRepository(Disease);
-            const diseaseinfo = await connect.findOne({
-                where: { pet_pet_id: disease.pet_pet_id , diseasedetail_disease_id: disease.diseasedetail_disease_id},
-            });
-            if (!diseaseinfo) {
-                try {
-                    const result = await connect.save(disease);
-                    logging.info(NAMESPACE, "Update disease successfully.");
-                    try {
-                        const res = await this.retrieveById(result.id);
-                        return res;
-                    }catch (err) {
-                        logging.error(NAMESPACE, 'Error call retrieveById from update disease');
-                        throw err;
-                    }
-                }catch (err) {
-                    logging.error(NAMESPACE, 'Error call retrieveById from update disease');
-                    throw err;
-                }
-            }else {
-                const result = await connect.update({ id : diseaseinfo.id }, disease);
-                logging.info(NAMESPACE, "Update disease successfully.");
-                try {
-                    const res = await this.retrieveById(diseaseinfo.id);
-                    return res;
-                }catch (err) {
-                    logging.error(NAMESPACE, 'Error call retrieveById from update disease');
-                    throw err;
-                }
-            }
-        }catch (err) {
-            logging.error(NAMESPACE, (err as Error).message, err);
-            throw err;
-        }
-        */
     }
 
     async retrieveById(diseaseid: string): Promise<Disease>{

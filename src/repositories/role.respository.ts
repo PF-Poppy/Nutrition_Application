@@ -52,7 +52,6 @@ class ROleRepository implements IROleRepository {
                     const existingRole = await connect
                     .createQueryBuilder()
                     .select()
-                    .setLock("pessimistic_write")
                     .where("role_id = :role_id", { role_id: role.role_id })
                     .getOne();
 
@@ -87,38 +86,6 @@ class ROleRepository implements IROleRepository {
             logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
             throw err;
         }
-        /*
-        try { 
-            const connect = AppDataSource.getRepository(Role)
-            const roletype = await connect.find({
-                where: { role_name: role.role_name}
-            });
-            if (roletype.length > 0) {
-                for (let i = 0; i < roletype.length; i++) {
-                    if (roletype[i].role_id !== role.role_id) {
-                        logging.error(NAMESPACE, "Duplicate role name.");
-                        throw 'Duplicate role name.';
-                    }
-                }
-            }
-            const result = await connect.update({ role_id : role.role_id}, role);
-            if (result.affected === 0) {
-                logging.error(NAMESPACE, "Not found role with id: " + role.role_id);
-                throw 'Not found role with id: ' + role.role_id;
-            }
-            logging.info(NAMESPACE, "Update role successfully.");
-            try {
-                const res = await this.retrieveById(role.role_id);
-                return res;
-            }catch (err) {
-                logging.error(NAMESPACE, 'Error call retrieveById from update role');
-                throw err;
-            }
-        }catch (err) {
-            logging.error(NAMESPACE, (err as Error).message, err);
-            throw err;
-        }
-        */
     }
 
     async retrieveAll():Promise<Role[]>{

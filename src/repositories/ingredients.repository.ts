@@ -51,7 +51,6 @@ class IngredientsRepository implements IIngredientsRepository {
                     const existingIngredient = await connect
                     .createQueryBuilder()
                     .select()
-                    .setLock("pessimistic_write")
                     .where("ingredient_id = :ingredient_id", { ingredient_id: ingredient.ingredient_id })
                     .getOne();
 
@@ -86,40 +85,6 @@ class IngredientsRepository implements IIngredientsRepository {
             logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
             throw err;
         }
-        /*
-        try {
-            const connect = AppDataSource.getRepository(Ingredients)
-            const info = await connect.find(
-                { where: { ingredient_name: ingredient.ingredient_name } }
-            );
-            
-            if (info.length > 0){
-                for (let i = 0; i < info.length; i++) {
-                    if (info[i].ingredient_id !== ingredient.ingredient_id) {
-                        logging.error(NAMESPACE, "Duplicate ingredients name.");
-                        throw 'Duplicate ingredients name.';
-                    }
-                }
-            }
-
-            const result = await connect.update({ ingredient_id : ingredient.ingredient_id}, ingredient);
-            if (result.affected === 0) {
-                logging.error(NAMESPACE, "Not found ingredients with id: " + ingredient.ingredient_id);
-                throw new Error("Not found ingredients with id: " + ingredient.ingredient_id);
-            }
-            logging.info(NAMESPACE, "Update ingredients successfully.");
-            try {
-                const res = await this.retrieveById(ingredient.ingredient_id);
-                return res;
-            }catch(err){
-                logging.error(NAMESPACE, 'Error call retrieveById from update ingredients');
-                throw err;
-            }
-        }catch(err){
-            logging.error(NAMESPACE, (err as Error).message, err);
-            throw err;
-        }
-        */
     }
 
     async retrieveAll(): Promise<Ingredients[]>{

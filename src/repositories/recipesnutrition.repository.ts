@@ -54,7 +54,6 @@ class RecipeNutritionRepository implements IRecipeNutritionRepository {
                     const existingData = await connect
                     .createQueryBuilder()
                     .select()
-                    .setLock("pessimistic_write")
                     .where("nutritionsecondary_nutrition_id = :nutritionsecondary_nutrition_id AND petrecipes_recipes_id = :petrecipes_recipes_id", {
                         nutritionsecondary_nutrition_id: recipeNutrition.nutritionsecondary_nutrition_id,
                         petrecipes_recipes_id: recipeNutrition.petrecipes_recipes_id 

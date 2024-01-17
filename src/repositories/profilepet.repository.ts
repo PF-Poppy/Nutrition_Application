@@ -42,7 +42,6 @@ class ProfilepetRepository implements IProfilepetRepository {
                     const existingPetprofile = await connect
                     .createQueryBuilder()
                     .select()
-                    .setLock("pessimistic_write")
                     .where("pet_pet_id = :pet_pet_id", { pet_pet_id: profilepet.pet_pet_id })
                     .getOne();
 
@@ -71,27 +70,6 @@ class ProfilepetRepository implements IProfilepetRepository {
             logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
             throw err;
         }
-        /*
-        try {
-            const connect = AppDataSource.getRepository(Profilepet)
-            const result = await connect.update({ profile_id : profilepet.profile_id}, profilepet);
-            if (result.affected === 0) {    
-                logging.error(NAMESPACE, "Not found profilepet with id: " + profilepet.profile_id);
-                throw 'Not found profilepet with id: ' + profilepet.profile_id;
-            }
-            logging.info(NAMESPACE, "Update profilepet successfully.");
-            try {
-                const res = await this.retrieveById(profilepet.profile_id);
-                return res;
-            }catch (err) {
-                logging.error(NAMESPACE, 'Error call retrieveById from update profilepet');
-                throw err;
-            }
-        }catch (err) {
-            logging.error(NAMESPACE, (err as Error).message, err);
-            throw err;
-        }
-        */
     }
 
     async retrieveByPetId(petid: string): Promise<Profilepet> {

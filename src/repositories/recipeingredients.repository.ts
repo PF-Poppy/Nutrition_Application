@@ -51,7 +51,6 @@ class RecipeIngredientsRepository implements IRecipeIngredientsRepository {
                     const existingData = await connect
                     .createQueryBuilder()
                     .select()
-                    .setLock("pessimistic_write")
                     .where("ingredients_ingredient_id = :ingredients_ingredient_id AND petrecipes_recipes_id = :petrecipes_recipes_id", {
                         ingredients_ingredient_id: recipeIngredients.ingredients_ingredient_id,
                         petrecipes_recipes_id: recipeIngredients.petrecipes_recipes_id 

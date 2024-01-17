@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, VersionColumn} from 'typeorm';
 import { User } from "./user.entity";
 import { Notification } from "./notification.entity";
 
@@ -27,4 +27,7 @@ export class Usernotification {
   @ManyToOne(() => Notification, notification => notification.notification_id,{onDelete: 'CASCADE'})
   @JoinColumn({ name: 'notification_notification_id' })
   notification!: Notification;
+
+  @VersionColumn({default: 0})
+  version!: number;
 }

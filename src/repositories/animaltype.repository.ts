@@ -51,7 +51,6 @@ class AnimalRepository implements IAnimalRepository {
                     const existingType = await connect
                     .createQueryBuilder()
                     .select()
-                    .setLock("pessimistic_write")
                     .where("type_id = :type_id", { type_id: animal.type_id })
                     .getOne();
 
@@ -87,35 +86,6 @@ class AnimalRepository implements IAnimalRepository {
             logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
             throw err;
         }
-        /*
-        try {
-
-
-            const type = await connect.find(
-                { where: { type_name: animal.type_name } }
-            );
-            if (type.length > 0) {
-                for (let i = 0; i < type.length; i++) {
-                    if (type[i].type_id !== animal.type_id) {
-                        logging.error(NAMESPACE, "Duplicate animal type name.");
-                        throw 'Duplicate animal type name.';
-                    }
-                }
-            } 
-            await connect.update({ type_id : animal.type_id}, animal);
-            logging.info(NAMESPACE, "Update animal type successfully.");
-            try {
-                const res = await this.retrieveById(animal.type_id);
-                return res;
-            }catch(err){
-                logging.error(NAMESPACE, 'Error call retrieveById from update animal type');
-                throw err;
-            }
-        } catch (err) {
-            logging.error(NAMESPACE, (err as Error).message, err);
-            throw err;
-        }
-        */
     }
 
     async retrieveAll(): Promise<AnimalType[]>{

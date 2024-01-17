@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, VersionColumn} from 'typeorm';
 import { Petrecipes } from "./petrecipes.entity";
 import { User } from "./user.entity";
 
@@ -27,4 +27,7 @@ export class Favorite {
   @ManyToOne(() => Petrecipes, petrecipes => petrecipes.recipes_id,{onDelete: 'CASCADE'})
   @JoinColumn({ name: 'petrecipes_recipes_id' })
   petrecipes!: Petrecipes;
+
+  @VersionColumn({default: 0})
+  version!: number;
 }

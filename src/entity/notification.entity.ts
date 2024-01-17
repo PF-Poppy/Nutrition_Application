@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, DeleteDateColumn, OneToMany} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, DeleteDateColumn, OneToMany, VersionColumn} from 'typeorm';
 import { Usernotification } from "./usernotification.entity";
 
 @Entity({ name: "notification" })
@@ -21,4 +21,7 @@ export class Notification {
 
   @OneToMany(() => Usernotification, usernotification => usernotification.notification_notification_id)
   usernotification?: Usernotification[];
+
+  @VersionColumn({default: 0})
+  version!: number;
 }

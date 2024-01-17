@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, VersionColumn} from 'typeorm';
 import { Questions } from "./questions.entity";
 
 
@@ -29,4 +29,7 @@ export class Choices {
   @ManyToOne(() => Questions, questions => questions.question_id,{onDelete: 'CASCADE'})
   @JoinColumn({ name: 'questions_question_id' })
   questions!: Questions;
+
+  @VersionColumn({default: 0})
+  version!: number;
 }

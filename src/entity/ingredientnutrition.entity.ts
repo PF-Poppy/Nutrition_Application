@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, VersionColumn} from 'typeorm';
 import { Nutritionprimary } from "./nutritionprimary.entity";
 import { Ingredients } from './ingredients.entity';
 
@@ -36,4 +36,7 @@ export class Ingredientnutrition {
   @ManyToOne(() => Ingredients, ingredients => ingredients.ingredient_id,{onDelete: 'CASCADE'})
   @JoinColumn({name: "ingredients_ingredient_id"})
   ingredients!: Ingredients;
+
+  @VersionColumn({default: 0})
+  version!: number;
 }
