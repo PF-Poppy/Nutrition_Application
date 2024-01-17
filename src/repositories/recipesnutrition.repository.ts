@@ -47,6 +47,48 @@ class RecipeNutritionRepository implements IRecipeNutritionRepository {
     async update(recipeNutrition: Recipenutrition): Promise<Recipenutrition> {
         let result: Recipenutrition | undefined;
         try {
+            const connect = AppDataSource.getRepository(Recipenutrition);
+            const existingData = await connect.findOne({
+                where: { nutritionsecondary_nutrition_id: recipeNutrition.nutritionsecondary_nutrition_id,petrecipes_recipes_id: recipeNutrition.petrecipes_recipes_id  }
+            });
+
+            if (!existingData) {
+                recipeNutrition.create_by = `${recipeNutrition.update_by}`;
+                try {
+                    const res = await connect.save(recipeNutrition);
+                    logging.info(NAMESPACE, "Save recipe nutrition successfully.");
+                    try {
+                        result = await this.retrieveById(res.recipes_nutrition_id);
+                        return result;
+                    }catch (err) {
+                        logging.error(NAMESPACE, 'Error call retrieveById from insert recipe nutrition');
+                        throw err;
+                    }
+                }catch (err) {
+                    logging.error(NAMESPACE, 'Error save new recipe nutrition');
+                    throw err;
+                }
+            }else {
+                await connect.update({ recipes_nutrition_id: existingData.recipes_nutrition_id }, recipeNutrition);
+                logging.info(NAMESPACE, "Update recipe nutrition successfully.");
+                try {
+                    result = await this.retrieveById(existingData.recipes_nutrition_id);
+                    return result;
+                }catch (err) {
+                    logging.error(NAMESPACE, 'Error call retrieveById from update recipe nutrition');
+                    throw err;
+                }
+            }
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    /*
+    async update(recipeNutrition: Recipenutrition): Promise<Recipenutrition> {
+        let result: Recipenutrition | undefined;
+        try {
             await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
                 try {
                     const connect = transactionalEntityManager.getRepository(Recipenutrition);
@@ -54,6 +96,7 @@ class RecipeNutritionRepository implements IRecipeNutritionRepository {
                     const existingData = await connect
                     .createQueryBuilder()
                     .select()
+                    .setLock("pessimistic_write")
                     .where("nutritionsecondary_nutrition_id = :nutritionsecondary_nutrition_id AND petrecipes_recipes_id = :petrecipes_recipes_id", {
                         nutritionsecondary_nutrition_id: recipeNutrition.nutritionsecondary_nutrition_id,
                         petrecipes_recipes_id: recipeNutrition.petrecipes_recipes_id 
@@ -100,6 +143,7 @@ class RecipeNutritionRepository implements IRecipeNutritionRepository {
             throw err;
         }
     }
+    */
 
     async retrieveById(recipeNutritionId: string): Promise<Recipenutrition> {
         try {

@@ -131,7 +131,7 @@ export default class IngredientController {
                     nutrientInfo.nutrient_value = nutrientInfoData.amount;
                     nutrientInfo.update_by = `${userid}_${username}`;
                     nutrientInfo.update_date = new Date();
-
+                    console.log(nutrientInfoData.nutrientName);
                     const updateingredientnutrition = await ingredientnutritionRepository.update(nutrientInfo);
                     return;
                 }catch(err){

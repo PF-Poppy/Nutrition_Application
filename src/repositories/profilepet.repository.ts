@@ -35,6 +35,36 @@ class ProfilepetRepository implements IProfilepetRepository {
     async update(profilepet: Profilepet): Promise<Profilepet> {
         let result: Profilepet | undefined;
         try {
+            const connect = AppDataSource.getRepository(Profilepet);
+            const existingPetprofile = await connect.findOne({
+                where: { pet_pet_id: profilepet.pet_pet_id }
+            });
+
+            if (!existingPetprofile) {
+                logging.error(NAMESPACE, "Not found profilepet with petid: " + profilepet.pet_pet_id);
+                throw new Error("Not found profilepet with petid: " + profilepet.pet_pet_id);
+            }
+
+            await connect.update({ pet_pet_id: profilepet.pet_pet_id }, profilepet);
+            logging.info(NAMESPACE, "Update profilepet successfully.");
+
+            try {
+                result = await this.retrieveByPetId(profilepet.pet_pet_id);
+                return result;
+            }catch (err) {
+                logging.error(NAMESPACE, 'Error call retrieveById from update profilepet');
+                throw err;
+            }
+        }catch (err) {
+            logging.error(NAMESPACE, 'Error call retrieveById from update animal type');
+            throw err;
+        }
+    }
+
+    /*
+    async update(profilepet: Profilepet): Promise<Profilepet> {
+        let result: Profilepet | undefined;
+        try {
             await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
                 try {
                     const connect = transactionalEntityManager.getRepository(Profilepet);
@@ -42,6 +72,7 @@ class ProfilepetRepository implements IProfilepetRepository {
                     const existingPetprofile = await connect
                     .createQueryBuilder()
                     .select()
+                    .setLock("pessimistic_write")
                     .where("pet_pet_id = :pet_pet_id", { pet_pet_id: profilepet.pet_pet_id })
                     .getOne();
 
@@ -71,6 +102,7 @@ class ProfilepetRepository implements IProfilepetRepository {
             throw err;
         }
     }
+    */
 
     async retrieveByPetId(petid: string): Promise<Profilepet> {
         try {

@@ -44,6 +44,50 @@ class RecipeIngredientsRepository implements IRecipeIngredientsRepository {
     async update(recipeIngredients: Recipeingredients): Promise<Recipeingredients> {
         let result: Recipeingredients | undefined;
         try {
+            const connect = AppDataSource.getRepository(Recipeingredients);
+            const existingData = await connect.findOne({
+                where: { ingredients_ingredient_id: recipeIngredients.ingredients_ingredient_id, petrecipes_recipes_id: recipeIngredients.petrecipes_recipes_id }
+            });
+
+            if (!existingData) {
+                recipeIngredients.create_by = `${recipeIngredients.update_by}`;
+                try {
+                    const res = await this.save(recipeIngredients);
+                    logging.info(NAMESPACE, "Insert new recipe ingredients successfully.");
+
+                    try {
+                        result = await this.retrieveById(res.recipe_ingredient_id);
+                        return result;
+                    }catch (err) {
+                        logging.error(NAMESPACE, 'Error call retrieveById from insert recipe ingredients');
+                        throw err;
+                    }
+                }catch (err) {
+                    logging.error(NAMESPACE, 'Error save new recipe ingredients');
+                    throw err;
+                }
+            }else {
+                await connect.update({ recipe_ingredient_id: existingData.recipe_ingredient_id }, recipeIngredients);
+                logging.info(NAMESPACE, "Update recipe ingredients successfully.");
+
+                try {
+                    result = await this.retrieveById(existingData.recipe_ingredient_id);
+                    return result;
+                }catch (err) {
+                    logging.error(NAMESPACE, 'Error call retrieveById from update recipe ingredients');
+                    throw err;
+                }
+            }
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    /*
+    async update(recipeIngredients: Recipeingredients): Promise<Recipeingredients> {
+        let result: Recipeingredients | undefined;
+        try {
             await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
                 try {
                     const connect = transactionalEntityManager.getRepository(Recipeingredients);
@@ -51,6 +95,7 @@ class RecipeIngredientsRepository implements IRecipeIngredientsRepository {
                     const existingData = await connect
                     .createQueryBuilder()
                     .select()
+                    .setlock("pessimistic_write")
                     .where("ingredients_ingredient_id = :ingredients_ingredient_id AND petrecipes_recipes_id = :petrecipes_recipes_id", {
                         ingredients_ingredient_id: recipeIngredients.ingredients_ingredient_id,
                         petrecipes_recipes_id: recipeIngredients.petrecipes_recipes_id 
@@ -97,6 +142,7 @@ class RecipeIngredientsRepository implements IRecipeIngredientsRepository {
             throw err;
         }
     }
+    */
 
     async retrieveById(recipeIngredientId: string): Promise<Recipeingredients> {
         try {

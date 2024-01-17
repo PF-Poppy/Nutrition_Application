@@ -43,12 +43,51 @@ class PetRecipesRepository implements IPetRecipesRepository {
     async update(petrecipes:Petrecipes): Promise<Petrecipes> {
         let result: Petrecipes | undefined;
         try {
+            const connect = AppDataSource.getRepository(Petrecipes);
+            const existingData = await connect.findOne({
+                where: { recipes_id: petrecipes.recipes_id }
+            });
+
+            if (!existingData) {
+                logging.error(NAMESPACE, "Not found pet recipes with id: " + petrecipes.recipes_id);
+                throw new Error("Not found pet recipes with id: " + petrecipes.recipes_id);
+            }
+
+            const duplicatedata = await connect.findOne(
+                { where: { recipes_name: petrecipes.recipes_name, animaltype_type_id: petrecipes.animaltype_type_id } }
+            );
+            if (duplicatedata && duplicatedata.recipes_id !== petrecipes.recipes_id) {
+                logging.error(NAMESPACE, "Duplicate pet recipes.");
+                throw new Error('Duplicate pet recipes.');
+            }
+
+            await connect.update({ recipes_id: petrecipes.recipes_id }, petrecipes);
+            logging.info(NAMESPACE, "Update pet recipes successfully.");
+
+            try {
+                result = await this.retrieveById(petrecipes.recipes_id);
+                return result;
+            }catch (err) {
+                logging.error(NAMESPACE, 'Error call retrieveById from update pet recipes');
+                throw err;
+            }
+        }catch (err) {
+            logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    /*
+    async update(petrecipes:Petrecipes): Promise<Petrecipes> {
+        let result: Petrecipes | undefined;
+        try {
             await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
                 const connect = transactionalEntityManager.getRepository(Petrecipes);
                 await connect.query("BEGIN");
                 const existingData = await connect
                 .createQueryBuilder()
                 .select()
+                .setLock("pessimistic_write")
                 .where("recipes_id = :recipes_id", { recipes_id: petrecipes.recipes_id })
                 .getOne();
 
@@ -82,6 +121,7 @@ class PetRecipesRepository implements IPetRecipesRepository {
             throw err;
         }
     }
+    */
 
     async retrieveById(recipesid: string): Promise<Petrecipes> {
         try {

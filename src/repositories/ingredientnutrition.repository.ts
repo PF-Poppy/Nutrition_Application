@@ -42,16 +42,67 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
             throw err;
         }
     }
-
+    
+    async update(ingredientnutrition: Ingredientnutrition): Promise<Ingredientnutrition> {
+        let result: Ingredientnutrition | undefined;
+        try {
+            const connect = AppDataSource.getRepository(Ingredientnutrition);
+            const existingIngredientnutrition = await connect.findOne(
+                { where: { nutritionprimary_nutrition_id: ingredientnutrition.nutritionprimary_nutrition_id, ingredients_ingredient_id: ingredientnutrition.ingredients_ingredient_id}}
+            );
+        
+            if (!existingIngredientnutrition) {
+                ingredientnutrition.create_by = `${ingredientnutrition.update_by}`;
+                try {
+                    const res = await connect.save(ingredientnutrition);
+                    logging.info(NAMESPACE, "Update ingredientnutrition successfully.");
+                    try {
+                        result = await this.retrieveById(res.ingredient_nutrition_id);
+                        return result;
+                    } catch(err) {
+                        logging.error(NAMESPACE, 'Error call retrieveById from insert ingredientnutrition');
+                        throw err;
+                    }
+                } catch (err) {
+                    logging.error(NAMESPACE, 'Error saving new ingredientnutrition');
+                    throw err;
+                }
+            } else if (existingIngredientnutrition) {
+                try {
+                    await connect.update({ ingredient_nutrition_id: existingIngredientnutrition.ingredient_nutrition_id }, ingredientnutrition);
+                    logging.info(NAMESPACE, "Update ingredientnutrition successfully.");
+                    try {
+                        result = await this.retrieveById(existingIngredientnutrition.ingredient_nutrition_id);
+                        return result;
+                    } catch(err) {
+                        logging.error(NAMESPACE, 'Error call retrieveById from insert ingredientnutrition');
+                        throw err;
+                    }
+                } catch (err) {
+                    logging.error(NAMESPACE, 'Error saving new ingredientnutrition');
+                    throw err;
+                }
+            } 
+            return result!;
+        } catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+    
+    
+    /*
     async update(ingredientnutrition: Ingredientnutrition): Promise<Ingredientnutrition> {
         let result: Ingredientnutrition | undefined;
         try {
             await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
                 try {
                     const connect = transactionalEntityManager.getRepository(Ingredientnutrition);
+                    await connect.query("BEGIN");
                     const existingIngredientnutrition = await connect
                     .createQueryBuilder()
                     .select()
+                    .setLock("pessimistic_write")
                     .where("nutritionprimary_nutrition_id = :nutritionprimary_nutrition_id AND ingredients_ingredient_id = :ingredients_ingredient_id", {
                         nutritionprimary_nutrition_id: ingredientnutrition.nutritionprimary_nutrition_id,
                         ingredients_ingredient_id: ingredientnutrition.ingredients_ingredient_id,
@@ -63,7 +114,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
                         try {
                             const res = await connect.save(ingredientnutrition);
                             logging.info(NAMESPACE, "Update ingredientnutrition successfully.");
-                            await transactionalEntityManager.query("COMMIT");
+                            await connect.query("COMMIT");
                             try {
                                 result = await this.retrieveById(res.ingredient_nutrition_id);
                                 return result;
@@ -72,7 +123,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
                                 throw err;
                             }
                         } catch (err) {
-                            await transactionalEntityManager.query("ROLLBACK");
+                            await connect.query("ROLLBACK");
                             logging.error(NAMESPACE, 'Error saving new ingredientnutrition');
                             throw err;
                         }
@@ -80,7 +131,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
                         try {
                             await connect.update({ ingredient_nutrition_id: existingIngredientnutrition.ingredient_nutrition_id }, ingredientnutrition);
                             logging.info(NAMESPACE, "Update ingredientnutrition successfully.");
-                            await transactionalEntityManager.query("COMMIT");
+                            await connect.query("COMMIT");
                             try {
                                 result = await this.retrieveById(existingIngredientnutrition.ingredient_nutrition_id);
                                 return result;
@@ -89,7 +140,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
                                 throw err;
                             }
                         } catch (err) {
-                            await transactionalEntityManager.query("ROLLBACK");
+                            await connect.query("ROLLBACK");
                             logging.error(NAMESPACE, 'Error saving new ingredientnutrition');
                             throw err;
                         }
@@ -105,6 +156,8 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
             throw err;
         }
     }
+    */
+    
 
     async retrieveById(ingredientnutritionid: string): Promise<Ingredientnutrition> {
         try {
@@ -119,7 +172,6 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
                 throw new Error("Not found ingredientnutrition with id: " + ingredientnutritionid);
             }
             logging.info(NAMESPACE, "Get ingredientnutrition by id successfully.");
-            console.log(result)
             return result;
         }catch(err){   
             logging.error(NAMESPACE, (err as Error).message, err);
