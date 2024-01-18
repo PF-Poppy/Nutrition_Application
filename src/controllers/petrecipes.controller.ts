@@ -3,12 +3,13 @@ import { JwtPayload } from "jsonwebtoken";
 import { Petrecipes } from "../entity/petrecipes.entity";
 import { Recipeingredients } from "../entity/recipeingredients.entity";
 import { Recipenutrition } from "../entity/recipesnutrition.entity";
+import { Nutritionsecondary } from "../entity/nutritionsecondary.entity";
 import petrecipesRepository from "../repositories/petrecipes.repository";
 import recipeingredientsRepository from "../repositories/recipeingredients.repository";
 import nutritionsecondaryRepository from "../repositories/nutritionsecondary.repository";
 import recipenutritionRepository from "../repositories/recipesnutrition.repository";
 import logging from "../config/logging";
-import { ca } from "date-fns/locale";
+
 
 const NAMESPACE = "PetRecipes Controller";
 
@@ -58,14 +59,22 @@ export default class PetRecipesController {
                 }
                 return;
             }));
-
-            petrecipes.recipenutrition = await Promise.all(freshNutrientList.map(async (nutrientInfoData: any) => {
+            
+            let order_value: number = 0;
+            petrecipes.recipenutrition = [];
+            for (const nutrientInfoData of freshNutrientList) {
                 if (!nutrientInfoData.nutrientName || !nutrientInfoData.amount) {
                     await petrecipesRepository.deleteById(addNewPetRecipe.recipes_id);
                     throw new Error("Please fill in all the fields!");
                 }
                 try {
                     const nutrient = await nutritionsecondaryRepository.retrieveByName(nutrientInfoData.nutrientName);
+
+                    const nutrientorder_value = new Nutritionsecondary();
+                    nutrientorder_value.order_value = order_value;
+                    nutrientorder_value.nutrient_name = nutrientInfoData.nutrientName;
+                    await nutritionsecondaryRepository.updatenutritionorder_value(nutrientorder_value);
+                    order_value++;
 
                     const recipenutrition = new Recipenutrition();
                     recipenutrition.nutritionsecondary_nutrition_id = nutrient.nutrition_id;
@@ -75,12 +84,12 @@ export default class PetRecipesController {
                     recipenutrition.update_by = `${userid}_${username}`;
                     recipenutrition.update_date = new Date();
                     const addNewRecipeNutrient = await recipenutritionRepository.save(recipenutrition);
+                    petrecipes.recipenutrition.push(addNewRecipeNutrient);
                 }catch (err) {
                     await petrecipesRepository.deleteById(addNewPetRecipe.recipes_id);
                     throw err;
                 }
-                return;
-            }));
+            };
             logging.info(NAMESPACE, "Add new pet recipe successfully.");
             res.status(200).send({
                 message: "Add new pet recipe successfully.",
@@ -160,12 +169,20 @@ export default class PetRecipesController {
                 return;
             }));
 
-            petrecipes.recipenutrition = await Promise.all(freshNutrientList.map(async (nutrientInfoData: any) => {
+            let order_value: number = 0;
+            petrecipes.recipenutrition = [];
+            for (const nutrientInfoData of freshNutrientList) {
                 if (!nutrientInfoData.nutrientName || !nutrientInfoData.amount) {
                     throw new Error("Please fill in all the fields!");
                 }
                 try {
                     const nutrient = await nutritionsecondaryRepository.retrieveByName(nutrientInfoData.nutrientName);
+                    console.log(nutrientInfoData.nutrientName);
+                    const nutrientorder_value = new Nutritionsecondary();
+                    nutrientorder_value.order_value = order_value;
+                    nutrientorder_value.nutrient_name = nutrientInfoData.nutrientName;
+                    await nutritionsecondaryRepository.updatenutritionorder_value(nutrientorder_value);
+                    order_value++;
 
                     const recipenutrition = new Recipenutrition();
                     recipenutrition.nutritionsecondary_nutrition_id = nutrient.nutrition_id;
@@ -174,11 +191,11 @@ export default class PetRecipesController {
                     recipenutrition.update_by = `${userid}_${username}`;
                     recipenutrition.update_date = new Date();
                     const addNewRecipeNutrient = await recipenutritionRepository.update(recipenutrition);
+                    petrecipes.recipenutrition.push(addNewRecipeNutrient);
                 }catch (err) {
                     throw err;
                 }
-                return;
-            }));
+            };
             logging.info(NAMESPACE, "Update pet recipe successfully.");
             res.status(200).send({
                 message: "Update pet recipe successfully.",

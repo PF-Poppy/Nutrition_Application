@@ -155,6 +155,7 @@ class DiseasenutritionRepository implements IdiseasenutritionRepository {
                 "diseasenutrition.diseasedetail_disease_id AS diseasedetail_disease_id",
                 "nutritionsecondary.nutrition_id AS nutrition_id",
                 "nutritionsecondary.nutrient_name AS nutrient_name",
+                "nutritionsecondary.order_value AS order_value",
                 "nutritionsecondary.nutrient_unit AS nutrient_unit",
                 "diseasenutrition.value_max AS value_max",
                 "diseasenutrition.value_min AS value_min"

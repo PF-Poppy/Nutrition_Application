@@ -188,6 +188,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
                 "ingredientnutrition.nutritionprimary_nutrition_id AS nutrition_id",
                 "ingredientnutrition.ingredients_ingredient_id AS ingredient_id",
                 "nutritionprimary.nutrient_name AS nutrient_name",
+                "nutritionprimary.order_value AS order_value",
                 "nutritionprimary.nutrient_unit AS nutrient_unit",
                 "ingredientnutrition.nutrient_value AS nutrient_value"
             ])

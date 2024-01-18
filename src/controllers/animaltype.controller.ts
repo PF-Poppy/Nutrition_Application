@@ -3,6 +3,7 @@ import { JwtPayload } from 'jsonwebtoken';
 import { AnimalType } from "../entity/animaltype.entity";
 import { Diseasedetail } from "../entity/diseasedetail.entity";
 import { Diseasenutrition } from "../entity/diseasenutrition.entity";
+import { Nutritionsecondary } from "../entity/nutritionsecondary.entity";
 import petRepository from "../repositories/pet.repository";
 import nutritionsecondaryRepository from "../repositories/nutritionsecondary.repository";
 import animalRepository from "../repositories/animaltype.repository";
@@ -24,8 +25,9 @@ export default class AnimalController {
 
                 const chronicDisease = await Promise.all(diseasedetail.map(async (diseasedetailData: Diseasedetail) => {
                     const diseasenutrition = await diseasenutritionRepository.retrieveByDiseaseId(diseasedetailData.disease_id);
+                    const sortdiseasenutrition = diseasenutrition.sort((a, b) => a.order_value - b.order_value);
 
-                    const nutrientlimitinfo = await Promise.all(diseasenutrition.map(async (diseasenutritionData: any) => {
+                    const nutrientlimitinfo = await Promise.all(sortdiseasenutrition.map(async (diseasenutritionData: any) => {
                         return {
                             nutrientName: diseasenutritionData.nutrient_name,
                             min: diseasenutritionData.value_min,
@@ -124,12 +126,21 @@ export default class AnimalController {
                     chronicDisease.update_date = new Date();
                     const addnewdiseasedetail = await diseasedetailRepository.save(chronicDisease);
                     
-                    chronicDisease.diseasenutrition = await Promise.all(diseaseData.NutrientLimitInfo.map(async (nutrientInfoData: any) => {
+                    let order_value: number = 0;
+                    chronicDisease.diseasenutrition = [];
+                    for (const nutrientInfoData of diseaseData.NutrientLimitInfo) {
                         if (!nutrientInfoData.nutrientName || !nutrientInfoData.min || !nutrientInfoData.max) {
                             throw new Error("Please fill in all the fields!");
                         }
+                        
                         try {
                             const nutrient = await nutritionsecondaryRepository.retrieveByName(nutrientInfoData.nutrientName);
+
+                            const nutrientorder_value = new Nutritionsecondary();
+                            nutrientorder_value.order_value = order_value;
+                            nutrientorder_value.nutrient_name = nutrientInfoData.nutrientName;
+                            await nutritionsecondaryRepository.updatenutritionorder_value(nutrientorder_value);
+                            order_value++;
 
                             const nutrientInfo = new Diseasenutrition();
                             nutrientInfo.diseasedetail_disease_id = addnewdiseasedetail.disease_id;
@@ -141,14 +152,14 @@ export default class AnimalController {
                             nutrientInfo.update_date = new Date();
                             try {
                                 const addnewdiseasenutrition = await diseasenutritionRepository.save(nutrientInfo);
-                                return;
+                                chronicDisease.diseasenutrition.push(addnewdiseasenutrition);
                             }catch(err){
                                 throw err;
                             }
                         }catch(err){
                             throw err;
                         }
-                    }));
+                    }
                 }catch(err){
                     await animalRepository.deleteById(addanimaltype.type_id);
                     throw err;
@@ -254,9 +265,17 @@ export default class AnimalController {
                         updatediseasedetail = await diseasedetailRepository.update(chronicDisease);
                     }
                     
-                    chronicDisease.diseasenutrition = await Promise.all(diseaseData.NutrientLimitInfo.map(async (nutrientInfoData: any) => {
+                    let order_value: number = 0;
+                    chronicDisease.diseasenutrition = [];
+                    for (const nutrientInfoData of diseaseData.NutrientLimitInfo) {
                         try {
                             const nutrient = await nutritionsecondaryRepository.retrieveByName(nutrientInfoData.nutrientName);
+
+                            const nutrientorder_value = new Nutritionsecondary();
+                            nutrientorder_value.order_value = order_value;
+                            nutrientorder_value.nutrient_name = nutrientInfoData.nutrientName;
+                            await nutritionsecondaryRepository.updatenutritionorder_value(nutrientorder_value);
+                            order_value++;
 
                             const nutrientInfo = new Diseasenutrition();
                             nutrientInfo.diseasedetail_disease_id = updatediseasedetail.disease_id;
@@ -267,11 +286,11 @@ export default class AnimalController {
                             nutrientInfo.update_date = new Date();
 
                             const updatediseasenutrition = await diseasenutritionRepository.update(nutrientInfo);
-                            return;
-                        }catch(err){
+                            chronicDisease.diseasenutrition.push(updatediseasenutrition);
+                        } catch (err) {
                             throw err;
                         }
-                    }));
+                    }
                 }catch(err){
                     throw err;
                 }

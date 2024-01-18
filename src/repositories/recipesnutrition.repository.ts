@@ -174,6 +174,7 @@ class RecipeNutritionRepository implements IRecipeNutritionRepository {
                 "recipenutrition.petrecipes_recipes_id AS petrecipes_recipes_id",
                 "recipenutrition.nutrient_value AS nutrient_value",
                 "nutritionsecondary.nutrition_id AS nutrition_id",
+                "nutritionsecondary.order_value AS order_value",
                 "nutritionsecondary.nutrient_name AS nutrient_name",
                 "nutritionsecondary.nutrient_unit AS nutrient_unit",
             ])

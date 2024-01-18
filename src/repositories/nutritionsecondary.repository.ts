@@ -6,6 +6,7 @@ const NAMESPACE = "Nutritionsecondary Repository";
 
 interface INutritionsecondaryRepository {
     save(nutrition:Nutritionsecondary): Promise<Nutritionsecondary>;
+    updatenutritionorder_value(nutrient: Nutritionsecondary): Promise<Nutritionsecondary>;
     update(nutrition:Nutritionsecondary): Promise<Nutritionsecondary>;
     retrieveAll(): Promise<Nutritionsecondary[]>;
     retrieveById(nutrientid: string): Promise<Nutritionsecondary | undefined>;
@@ -30,6 +31,25 @@ class NutritionsecondaryRepository implements INutritionsecondaryRepository {
             logging.info(NAMESPACE, "Save nutrition successfully.");
             try {
                 const res = await this.retrieveById(result.nutrition_id);
+                return res;
+            }catch(err){
+                logging.error(NAMESPACE, 'Error call retrieveById from insert nutrition');
+                throw err;
+            }
+        } catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async updatenutritionorder_value(nutrient: Nutritionsecondary): Promise<Nutritionsecondary> {
+        try {
+            const connect = AppDataSource.getRepository(Nutritionsecondary)
+
+            await connect.update({ nutrient_name: nutrient.nutrient_name }, nutrient);
+            logging.info(NAMESPACE, "Save nutrition successfully.");
+            try {
+                const res = await this.retrieveByName(nutrient.nutrient_name);
                 return res;
             }catch(err){
                 logging.error(NAMESPACE, 'Error call retrieveById from insert nutrition');
@@ -129,7 +149,7 @@ class NutritionsecondaryRepository implements INutritionsecondaryRepository {
     async retrieveAll(): Promise<Nutritionsecondary[]> {
         try {
             const result = await AppDataSource.getRepository(Nutritionsecondary).find({
-                select: ["nutrition_id","nutrient_name","nutrient_unit"]
+                select: ["nutrition_id","nutrient_name","nutrient_unit","order_value"]
             });
             logging.info(NAMESPACE, "Get nutrition by name successfully.");
             return result;
@@ -143,7 +163,7 @@ class NutritionsecondaryRepository implements INutritionsecondaryRepository {
         try {
             const result = await AppDataSource.getRepository(Nutritionsecondary).findOne({
                 where: { nutrition_id : nutrientid },
-                select: ["nutrition_id","nutrient_name","nutrient_unit"]
+                select: ["nutrition_id","nutrient_name","nutrient_unit","order_value"]
             });
             if (!result) {
                 logging.error(NAMESPACE, "Not found animal type with id: " + nutrientid);
@@ -161,7 +181,7 @@ class NutritionsecondaryRepository implements INutritionsecondaryRepository {
         try {
             const result = await AppDataSource.getRepository(Nutritionsecondary).findOne({
                 where: { nutrient_name : nutrientname },
-                select: ["nutrition_id","nutrient_name","nutrient_unit"]
+                select: ["nutrition_id","nutrient_name","nutrient_unit","order_value"]
             });
             if (!result) {
                 logging.error(NAMESPACE, "Not found nutrition with name: " + nutrientname);

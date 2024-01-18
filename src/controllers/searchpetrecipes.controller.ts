@@ -5,9 +5,11 @@ import recipeingredientsRepository from "../repositories/recipeingredients.repos
 import recipenutritionRepository from "../repositories/recipesnutrition.repository";
 import diseaseRepository from "../repositories/disease.repository";
 import diseasenutritionRepository from "../repositories/diseasenutrition.repository";
+import ingredientnutritionRepository from "../repositories/ingredientnutrition.repository";
 import petRepository from "../repositories/pet.repository";
+import axios from "axios";
 import logging from "../config/logging";
-import { ca } from "date-fns/locale";
+
 
 const NAMESPACE = "SearchPetRecipes Controller";
 
@@ -44,7 +46,7 @@ export default class SearchPetRecipesController {
 
             const chronicDisease = await Promise.all(disease.map(async (diseaseInfo) => {
                 const diseasenutrition = await diseasenutritionRepository.retrieveByDiseaseId(diseaseInfo.diseasedetailid);
-                const sorteddiseasenutrition = diseasenutrition.sort((a, b) => a.nutrition_id.localeCompare(b.nutrition_id));
+                const sorteddiseasenutrition = diseasenutrition.sort((a, b) => a.order_value - b.order_value);
 
                 sorteddiseasenutrition.forEach(diseaseNutritionInfo => {
                     const nutritionName = diseaseNutritionInfo.nutrient_name;
@@ -60,7 +62,6 @@ export default class SearchPetRecipesController {
                         nutritionSummary[nutritionName].minValue_intersect = Math.max(nutritionSummary[nutritionName].minValue_intersect, nutritionValueMin);
                         nutritionSummary[nutritionName].maxValue_intersect = Math.min(nutritionSummary[nutritionName].maxValue_intersect, nutritionValueMax);
                     }
-                    console.log(nutritionSummary);
                 });
                 return {
                     petChronicDiseaseId: diseaseInfo.diseasedetailid,
@@ -78,6 +79,7 @@ export default class SearchPetRecipesController {
             const petrecipesList = await Promise.all(petrecipes.map(async (petrecipesInfo) => {
                 const recipeingredients = await recipeingredientsRepository.retrieveByRecipeId(petrecipesInfo.recipes_id);
                 const recipenutrition = await recipenutritionRepository.retrieveByRecipeId(petrecipesInfo.recipes_id);
+                const sortedrecipeNutrition = recipenutrition.sort((a, b) => a.order_value - b.order_value);
 
                 const recipeIngredientList = recipeingredients.map(recipeIngredientInfo => ({
                     recipeingredientsId: recipeIngredientInfo.recipe_ingredient_id,
@@ -87,7 +89,7 @@ export default class SearchPetRecipesController {
                 }));
                 //TODO เปลี่ยนชื่อคำว่า น้ำเป็นชื่ออื่นตามที่บันทึกดใน database หรือไม่ก็ต้องใช้ น้ำรวมที่เกิดจากการบวกน้ำของแต่ละวัตถุดิบ
                 const waterNutrition = recipenutrition.find(recipeNutritionInfo => recipeNutritionInfo.nutrient_name === "Moisture");
-                const recipeNutritionList = recipenutrition.map(recipeNutritionInfo => {
+                const recipeNutritionList = sortedrecipeNutrition.map(recipeNutritionInfo => {
                     if (recipeNutritionInfo.nutrient_name === "Moisture" || recipeNutritionInfo.nutrient_name === "Price") {
                         return {
                             recipenutritionId: recipeNutritionInfo.recipes_nutrition_id,
@@ -106,19 +108,18 @@ export default class SearchPetRecipesController {
                     }
                 });
                 const sortedrecipeIngrediente = recipeIngredientList.sort((a, b) => a.ingredientId.localeCompare(b.ingredientId));
-                const sortedrecipeNutrition = recipeNutritionList.sort((a, b) => a.nutritionId.localeCompare(b.nutritionId));
-
                 return {
                     recipeId: petrecipesInfo.recipes_id,
                     recipeName: petrecipesInfo.recipes_name,
                     sortedrecipeIngrediente,
-                    sortedrecipeNutrition,
+                    recipeNutritionList,
                 }
             }));
             //TODO แก้คำ ตอนนี้ algorithmA === เอาสูตรอาหารเท่าที่มีวัตถุดิบตรงตามที่เลือกไว้
             let recipesList: any = [];
             const countSelectedIngredient = selectedIngredientList.length;
             const sortedSelectedIngredient = selectedIngredientList.sort(((a:any, b:any) => a.ingredientId.localeCompare(b.ingredientId)));
+
             if (recipeType == "algorithmA") {
                 const recipes = petrecipesList
                 .filter(petrecipesInfo => petrecipesInfo.sortedrecipeIngrediente.length === countSelectedIngredient)
@@ -155,7 +156,7 @@ export default class SearchPetRecipesController {
             }
             //TODO ยังไม่แน่ใจว่าต้องมีการเปรียบเทียบน้ำกับราคาไหม
             const filteredRecipes  = recipesList.filter((recipe:any) => {
-                const recipeNutritionList = recipe.sortedrecipeNutrition.every((recipeNutrition:any) => {
+                const recipeNutritionlist = recipe.recipeNutritionList.every((recipeNutrition:any) => {
                     const { nutritionName, amount } = recipeNutrition;
                     const summary = nutritionSummary[nutritionName];
                     if (!summary) {
@@ -170,7 +171,7 @@ export default class SearchPetRecipesController {
 
                     return minValue_intersect <= amount && amount <= maxValue_intersect;
                 });
-                return recipeNutritionList;
+                return recipeNutritionlist;
             });
             //TODO มาตกลงว่าจะให้ส่งอะไรกลับไป
             logging.info(NAMESPACE, "Get all pets recipes success");
@@ -205,7 +206,6 @@ export default class SearchPetRecipesController {
 
         try {
             const pet = await petRepository.retrieveById(petId);
-            console.log(pet);
         }catch(err){
             res.status(404).send({
                 message: `Not found pet with id=${petId}.`
@@ -220,7 +220,7 @@ export default class SearchPetRecipesController {
 
             const chronicDisease = await Promise.all(disease.map(async (diseaseInfo) => {
                 const diseasenutrition = await diseasenutritionRepository.retrieveByDiseaseId(diseaseInfo.diseasedetailid);
-                const sorteddiseasenutrition = diseasenutrition.sort((a, b) => a.nutrition_id.localeCompare(b.nutrition_id));
+                const sorteddiseasenutrition = diseasenutrition.sort((a, b) => a.order_value - b.order_value);
                 
                 sorteddiseasenutrition.forEach(diseaseNutritionInfo => {
                     const nutritionName = diseaseNutritionInfo.nutrient_name;
@@ -249,36 +249,60 @@ export default class SearchPetRecipesController {
                     })),
                 };
             }));
-            //TODO แก้คำที่จะเป็น input ใหม่
+            //TODO แก้คำที่จะเป็น input ใหม่ (limit)
             const limit = [
                 {
                     "name": "limitmin",
                     ...Object.entries(nutritionSummary).reduce((acc, [nutrient, values]) => {
-                    acc[nutrient] = values.minValue_intersect;
-                    return acc;
+                        acc[nutrient] = values.minValue_intersect;
+                        return acc;
                     }, {} as Record<string, number>),
                 },
                 {
                     "name": "limitmax",
                     ...Object.entries(nutritionSummary).reduce((acc, [nutrient, values]) => {
-                    acc[nutrient] = values.maxValue_intersect;
-                    return acc;
+                        acc[nutrient] = values.maxValue_intersect;
+                        return acc;
                     }, {} as Record<string, number>),
                 },
                 {
                     "name": "limitmean",
                     ...Object.entries(nutritionSummary).reduce((acc, [nutrient, values]) => {
-                    acc[nutrient] = (values.minValue_intersect+values.maxValue_intersect)/2;
-                    return acc;
+                        acc[nutrient] = (values.minValue_intersect+values.maxValue_intersect)/2;
+                        return acc;
                     }, {} as Record<string, number>),
                 },
             ];
-            
-            logging.info(NAMESPACE, "Get all pets recipes algorithm success");
-            res.status(200).send({
-                nutritionSummary,
-                limit,
-            });
+
+            const ingredients = await Promise.all(selectedIngredientList.map(async (IngredientInfo:any) => {
+                const ingredientNutrition = await ingredientnutritionRepository.retrieveByIngredientId(IngredientInfo.ingredientId);
+                const sortedingredientNutrition = ingredientNutrition.sort((a, b) => a.order_value - b.order_value);
+
+                return {
+                    name: IngredientInfo.ingredientName,
+                    ...sortedingredientNutrition.reduce((acc, nutrientInfo) => {
+                        acc[nutrientInfo.nutrient_name] = nutrientInfo.nutrient_value;
+                        return acc;
+                    }, {} as Record<string, number>),
+                };
+            }));
+            try {
+                //TODO แก้ url ให้ตรงกับ api ที่เราจะเรียกใช้
+                if (recipeType == "algorithmA") {
+                    const algorithmResponse  = await axios.post('http://127.0.0.1:3000/algorithmA', {
+                        ingredients,
+                        limit,
+                    });
+                    //res.json(algorithmResponse.data);
+                }else if (recipeType == "geneticAlgorithm") {
+                    res.status(200).send({
+                        ingredients,
+                        limit,
+                    });
+                }
+            }catch(err){
+                throw err;
+            }
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             res.status(500).send({

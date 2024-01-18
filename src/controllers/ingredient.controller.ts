@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import { Ingredients } from '../entity/ingredients.entity';
 import { Ingredientnutrition } from '../entity/ingredientnutrition.entity';
+import { Nutritionprimary } from '../entity/nutritionprimary.entity';
 import ingredientsRepository from '../repositories/ingredients.repository';
 import ingredientnutritionRepository from '../repositories/ingredientnutrition.repository';
 import nutritionprimaryRepository from '../repositories/nutritionprimary.repository';
@@ -34,13 +35,20 @@ export default class IngredientController {
             ingredient.update_by = `${userid}_${username}`;
             const addingredient = await ingredientsRepository.save(ingredient);
             
-            ingredient.ingredientnutrition = await Promise.all(nutrient.map(async (nutrientInfoData: any) => {
+            let order_value: number = 0;
+            ingredient.ingredientnutrition = [];
+            for (const nutrientInfoData of nutrient) {
                 if (!nutrientInfoData.nutrientName || !nutrientInfoData.amount) {
                     await ingredientsRepository.deleteById(addingredient.ingredient_id);
                     throw new Error("Please fill in all the fields!");
                 }
                 try {
                     const nutrient = await nutritionprimaryRepository.retrieveByName(nutrientInfoData.nutrientName);
+                    const nutrientorder_value = new Nutritionprimary();
+                    nutrientorder_value.order_value = order_value;
+                    nutrientorder_value.nutrient_name = nutrientInfoData.nutrientName;
+                    await nutritionprimaryRepository.updatenutritionorder_value(nutrientorder_value);
+                    order_value++;
 
                     const nutrientInfo = new Ingredientnutrition();
                     nutrientInfo.nutritionprimary_nutrition_id = nutrient.nutrition_id;
@@ -51,7 +59,7 @@ export default class IngredientController {
                     nutrientInfo.update_by = `${userid}_${username}`;
                     try {
                         const addnewngredientnutrition = await ingredientnutritionRepository.save(nutrientInfo);
-                        return;
+                        ingredient.ingredientnutrition.push(addnewngredientnutrition);
                     }catch(err){
                         throw err;
                     }
@@ -59,7 +67,7 @@ export default class IngredientController {
                     await ingredientsRepository.deleteById(addingredient.ingredient_id);
                     throw err;
                 }
-            }));
+            }
             logging.info(NAMESPACE, 'Add new ingredient successfully');
             return res.status(200).send({
                 message: 'Add new ingredient successfully'
@@ -131,23 +139,30 @@ export default class IngredientController {
                 }
             }));
 
-            ingredient.ingredientnutrition = await Promise.all(nutrient.map(async (nutrientInfoData: any) => {
+            let order_value: number = 0;
+            ingredient.ingredientnutrition = [];
+            for (const nutrientInfoData of nutrient) {
                 try {
-                    const nutrient = await nutritionprimaryRepository.retrieveByName(nutrientInfoData.nutrientName);
+                    const nutrients = await nutritionprimaryRepository.retrieveByName(nutrientInfoData.nutrientName);
+                    const nutrientorder_value = new Nutritionprimary();
+                    nutrientorder_value.order_value = order_value;
+                    nutrientorder_value.nutrient_name = nutrientInfoData.nutrientName;
+                    await nutritionprimaryRepository.updatenutritionorder_value(nutrientorder_value);
+                    order_value++;
 
                     const nutrientInfo = new Ingredientnutrition();
-                    nutrientInfo.nutritionprimary_nutrition_id = nutrient.nutrition_id;
+                    nutrientInfo.nutritionprimary_nutrition_id = nutrients.nutrition_id;
                     nutrientInfo.ingredients_ingredient_id = ingredientId;
                     nutrientInfo.nutrient_value = nutrientInfoData.amount;
                     nutrientInfo.update_by = `${userid}_${username}`;
                     nutrientInfo.update_date = new Date();
-                    console.log(nutrientInfoData.nutrientName);
+
                     const updateingredientnutrition = await ingredientnutritionRepository.update(nutrientInfo);
-                    return;
+                    ingredient.ingredientnutrition.push(updateingredientnutrition);
                 }catch(err){
                     throw err;
                 }
-            }));
+            }
             logging.info(NAMESPACE, 'Update ingredient successfully');
             return res.status(200).send({
                 message: 'Update ingredient successfully'
@@ -174,8 +189,9 @@ export default class IngredientController {
 
             const result = await Promise.all(ingredient.map(async (ingredientInfo: Ingredients) => {
                 const ingredientnutrition = await ingredientnutritionRepository.retrieveByIngredientId(ingredientInfo.ingredient_id);
+                const sortingredientnutrition = ingredientnutrition.sort((a, b) => a.order_value - b.order_value);
 
-                const nutrientlimitinfo = await Promise.all(ingredientnutrition.map(async (ingredientnutritionInfo: any) => {
+                const nutrientlimitinfo = await Promise.all(sortingredientnutrition.map(async (ingredientnutritionInfo: any) => {
                     return {
                         nutrientName: ingredientnutritionInfo.nutrient_name,
                         amount: ingredientnutritionInfo.nutrient_value

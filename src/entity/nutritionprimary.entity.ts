@@ -7,6 +7,9 @@ export class Nutritionprimary {
   @PrimaryGeneratedColumn("uuid")
   nutrition_id!: string
 
+  @Column({nullable: true})
+  order_value!: Number
+
   @Column({type: "varchar", length: 255})
   nutrient_name!: string
 
