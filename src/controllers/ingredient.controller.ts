@@ -194,6 +194,7 @@ export default class IngredientController {
                 const nutrientlimitinfo = await Promise.all(sortingredientnutrition.map(async (ingredientnutritionInfo: any) => {
                     return {
                         nutrientName: ingredientnutritionInfo.nutrient_name,
+                        unit: ingredientnutritionInfo.nutrient_unit,    
                         amount: ingredientnutritionInfo.nutrient_value
                     }
                 }));

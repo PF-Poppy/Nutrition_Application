@@ -30,6 +30,7 @@ export default class AnimalController {
                     const nutrientlimitinfo = await Promise.all(sortdiseasenutrition.map(async (diseasenutritionData: any) => {
                         return {
                             nutrientName: diseasenutritionData.nutrient_name,
+                            unit: diseasenutritionData.nutrient_unit,
                             min: diseasenutritionData.value_min,
                             max: diseasenutritionData.value_max
                         };
