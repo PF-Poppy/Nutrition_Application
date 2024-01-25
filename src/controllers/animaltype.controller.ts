@@ -4,11 +4,13 @@ import { AnimalType } from "../entity/animaltype.entity";
 import { Diseasedetail } from "../entity/diseasedetail.entity";
 import { Diseasenutrition } from "../entity/diseasenutrition.entity";
 import { Nutritionsecondary } from "../entity/nutritionsecondary.entity";
+import { Defaultnutrition } from "../entity/defaultnutrition.entity";
 import petRepository from "../repositories/pet.repository";
 import nutritionsecondaryRepository from "../repositories/nutritionsecondary.repository";
 import animalRepository from "../repositories/animaltype.repository";
 import diseasedetailRepository from "../repositories/diseasedetail.repository";
 import diseasenutritionRepository from "../repositories/diseasenutrition.repository";
+import defaultnutritionRepository from "../repositories/defaultnutrition.repository";
 import logging from "../config/logging";
 
 
@@ -22,6 +24,16 @@ export default class AnimalController {
 
             const result = await Promise.all(animaltype.map(async (animaltypeData: AnimalType) => {
                 const diseasedetail = await diseasedetailRepository.retrieveByAnimalTypeId(animaltypeData.type_id);
+                const defaultnutrition = await defaultnutritionRepository.retrieveByAnimalId(animaltypeData.type_id);
+                const sortdefaultnutrition = defaultnutrition.sort((a, b) => a.order_value - b.order_value);
+                const defaultnutritionlimitinfo = await Promise.all(sortdefaultnutrition.map(async (diseasenutritionData: any) => {
+                    return {
+                        nutrientName: diseasenutritionData.nutrient_name,
+                        unit: diseasenutritionData.nutrient_unit,
+                        min: diseasenutritionData.value_min,
+                        max: diseasenutritionData.value_max
+                    };
+                }));
 
                 const chronicDisease = await Promise.all(diseasedetail.map(async (diseasedetailData: Diseasedetail) => {
                     const diseasenutrition = await diseasenutritionRepository.retrieveByDiseaseId(diseasedetailData.disease_id);
@@ -46,6 +58,7 @@ export default class AnimalController {
                 return {
                     petTypeId: animaltypeData.type_id,
                     petTypeName: animaltypeData.type_name,
+                    defaultNutrientLimitList: defaultnutritionlimitinfo,
                     petChronicDisease: chronicDisease
                 };
             }));
@@ -98,8 +111,8 @@ export default class AnimalController {
             return;
         }
         const { userid, username } = (req as JwtPayload).jwtPayload;
-        const { petTypeName, petChronicDisease} = req.body;
-        if (!petTypeName || !petChronicDisease) {
+        const { petTypeName,defaultNutrientLimitList, petChronicDisease} = req.body;
+        if (!petTypeName || !petChronicDisease || !defaultNutrientLimitList) {
             res.status(400).send({
                 message: "Please fill in all the fields!"
             });
@@ -112,6 +125,45 @@ export default class AnimalController {
             animaltype.update_date = new Date();
             animaltype.update_by = `${userid}_${username}`;
             const addanimaltype = await animalRepository.save(animaltype);
+
+            let order_value: number = 0;
+            animaltype.defaultnutrition = [];
+            try {
+                for (const nutrientInfoData of defaultNutrientLimitList) {
+                    if (!nutrientInfoData.nutrientName || !nutrientInfoData.min || !nutrientInfoData.max) {
+                        throw new Error("Please fill in all the fields!");
+                    }
+                    try {
+                        const nutrient = await nutritionsecondaryRepository.retrieveByName(nutrientInfoData.nutrientName);
+
+                        const nutrientorder_value = new Nutritionsecondary();
+                        nutrientorder_value.order_value = order_value;
+                        nutrientorder_value.nutrient_name = nutrientInfoData.nutrientName;
+                        await nutritionsecondaryRepository.updatenutritionorder_value(nutrientorder_value);
+                        order_value++;
+
+                        const nutrientInfo = new Defaultnutrition();
+                        nutrientInfo.animaltype_type_id = addanimaltype.type_id;
+                        nutrientInfo.nutritionsecondary_nutrition_id = nutrient!.nutrition_id;
+                        nutrientInfo.value_min = nutrientInfoData.min;
+                        nutrientInfo.value_max = nutrientInfoData.max;
+                        nutrientInfo.create_by = `${userid}_${username}`;
+                        nutrientInfo.update_by = `${userid}_${username}`;
+                        nutrientInfo.update_date = new Date();
+                        try {
+                            const addnewdefaultnutrition = await defaultnutritionRepository.save(nutrientInfo);
+                            animaltype.defaultnutrition.push(addnewdefaultnutrition);
+                        }catch(err){
+                            throw err;
+                        }
+                    }catch(err){
+                        throw err;
+                    }
+                }
+            }catch(err){
+                await animalRepository.deleteById(addanimaltype.type_id);
+                throw err;
+            }
 
             animaltype.diseasedetail = await Promise.all(petChronicDisease.map(async (diseaseData: any) => {
                 if (!diseaseData.petChronicDiseaseName || !diseaseData.NutrientLimitInfo) {
@@ -196,14 +248,14 @@ export default class AnimalController {
             });
             return;
         }
-        const { petTypeId, petTypeName, petChronicDisease} = req.body;
+        const { petTypeId, petTypeName, defaultNutrientLimitList, petChronicDisease} = req.body;
         if (petTypeId === "" || petTypeId === null || petTypeId === undefined) {
             res.status(400).send({
               message: "Pet type id can not be empty!"
             });
             return;
         }
-        if (!petTypeName || !petChronicDisease) {
+        if (!petTypeName || !petChronicDisease || !defaultNutrientLimitList) {
             res.status(400).send({
                 message: "Please fill in all the fields!"
             });
@@ -228,6 +280,17 @@ export default class AnimalController {
             animaltype.update_by = `${userid}_${username}`;
             const updateanimaltype = await animalRepository.update(animaltype);
 
+            animaltype.defaultnutrition = await Promise.all(defaultNutrientLimitList.map(async (nutrientInfoData: any) => {
+                if (!nutrientInfoData.nutrientName || !nutrientInfoData.min || !nutrientInfoData.max) {
+                    throw new Error("Please fill in all the fields!");
+                }
+                try {
+                    const nutrient = await nutritionsecondaryRepository.retrieveByName(nutrientInfoData.nutrientName);
+                }catch(err){
+                    throw err;
+                }
+            }));
+
             animaltype.diseasedetail = await Promise.all(petChronicDisease.map(async (diseaseData: any) => {
                 if (diseaseData.petChronicDiseaseId === "") {
                     if (!diseaseData.petChronicDiseaseName || !diseaseData.NutrientLimitInfo) {
@@ -249,6 +312,39 @@ export default class AnimalController {
                     }
                 }));
             }));
+
+            let order_value: number = 0;
+            animaltype.defaultnutrition = [];
+            for (const nutrientInfoData of defaultNutrientLimitList) {
+                if (!nutrientInfoData.nutrientName || !nutrientInfoData.min || !nutrientInfoData.max) {
+                    throw new Error("Please fill in all the fields!");
+                }
+                try {
+                    const nutrient = await nutritionsecondaryRepository.retrieveByName(nutrientInfoData.nutrientName);
+
+                    const nutrientorder_value = new Nutritionsecondary();
+                    nutrientorder_value.order_value = order_value;
+                    nutrientorder_value.nutrient_name = nutrientInfoData.nutrientName;
+                    await nutritionsecondaryRepository.updatenutritionorder_value(nutrientorder_value);
+                    order_value++;
+
+                    const nutrientInfo = new Defaultnutrition();
+                    nutrientInfo.animaltype_type_id = petTypeId;
+                    nutrientInfo.nutritionsecondary_nutrition_id = nutrient!.nutrition_id;
+                    nutrientInfo.value_min = nutrientInfoData.min;
+                    nutrientInfo.value_max = nutrientInfoData.max;
+                    nutrientInfo.update_by = `${userid}_${username}`;
+                    nutrientInfo.update_date = new Date();
+                    try {
+                        const updatedefaultnutrition = await defaultnutritionRepository.update(nutrientInfo);
+                        animaltype.defaultnutrition.push(updatedefaultnutrition);
+                    }catch(err){
+                        throw err;
+                    }
+                }catch(err){
+                    throw err;
+                }
+            }
 
             animaltype.diseasedetail = await Promise.all(petChronicDisease.map(async (diseaseData: any) => {
                 const chronicDisease = new Diseasedetail();

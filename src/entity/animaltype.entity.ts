@@ -3,6 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { Pet } from "./pet.entity";
 import { Petrecipes } from "./petrecipes.entity";
 import { Diseasedetail } from "./diseasedetail.entity";
+import { Defaultnutrition } from "./defaultnutrition.entity";
 
 @Entity({ name: "animaltype" })
 export class AnimalType {
@@ -32,4 +33,7 @@ export class AnimalType {
   
   @OneToMany(() => Petrecipes, petrecipes => petrecipes.animaltype_type_id)
   petrecipes?: Petrecipes[];
+
+  @OneToMany(() => Defaultnutrition, defaultnutrition => defaultnutrition.animaltype_type_id)
+  defaultnutrition?: Defaultnutrition[];
 }
