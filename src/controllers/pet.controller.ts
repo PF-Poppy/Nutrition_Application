@@ -9,7 +9,7 @@ import profilepetRepository from '../repositories/profilepet.repository';
 import diseaseRepository from '../repositories/disease.repository';
 import diseasedetailRepository from '../repositories/diseasedetail.repository';
 import logging from '../config/logging';
-import { ca } from 'date-fns/locale';
+
 
 const NAMESPACE = 'Pet Controller';
 
@@ -54,10 +54,10 @@ export default class PetController {
             }
 
             logging.info(NAMESPACE, 'Get pet profile successfully');
-            res.status(200).send(result);
+            res.status(200).json(result);
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
                 message: "Some error occurred while get pet profile."
             });
         }
@@ -68,14 +68,14 @@ export default class PetController {
         logging.info(NAMESPACE, 'Add new pet');
         const { userid } = (req as JwtPayload).jwtPayload;
         if (!req.body) {
-            res.status(400).send({
+            res.status(400).json({
                 message: 'Content can not be empty!'
             });
             return;
         }
         const { petName, petTypeId, factorType, petFactorNumber, petWeight, petNeuteringStatus, petBirthDate, petPhysiologyStatus, petChronicDiseaseForUser, petActivityType} = req.body;
         if (!petName || !petTypeId || !factorType || !petFactorNumber || !petWeight || !petNeuteringStatus || !petBirthDate || !petPhysiologyStatus || !petChronicDiseaseForUser || !petActivityType) {
-            res.status(400).send({
+            res.status(400).json({
                 message: "Please fill in all the fields!"
             });
             return;
@@ -128,18 +128,18 @@ export default class PetController {
                 }
             }));
             logging.info(NAMESPACE, 'Add new pet successfully');
-            res.status(200).send({
+            res.status(200).json({
                 message: 'Add new pet successfully',
             });
         } catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             if ( (err as Error).message === "Please fill in all the fields!" ) {
-                res.status(400).send({
+                res.status(400).json({
                     message: (err as Error).message
                 });
                 return;
             }else {
-                res.status(500).send({
+                res.status(500).json({
                     message: "Some error occurred while creating animal."
                 });
                 return;
@@ -151,20 +151,20 @@ export default class PetController {
         logging.info(NAMESPACE, 'Update pet');
         const { userid } = (req as JwtPayload).jwtPayload;
         if (!req.body) {
-            res.status(400).send({
+            res.status(400).json({
                 message: 'Content can not be empty!'
             });
             return;
         }
         const { petId, petName, petTypeId, factorType, petFactorNumber, petWeight, petNeuteringStatus, petBirthDate, petPhysiologyStatus, petChronicDiseaseForUser, petActivityType} = req.body;
         if (petId === "" || petId === undefined || petId === null) {
-            res.status(400).send({
+            res.status(400).json({
                 message: 'Pet Id can not be empty!'
             });
             return;
         }
         if (!petName || !petTypeId || !factorType || !petFactorNumber || !petWeight || !petNeuteringStatus || !petBirthDate || !petPhysiologyStatus || !petChronicDiseaseForUser || !petActivityType) {
-            res.status(400).send({
+            res.status(400).json({
                 message: "Please fill in all the fields!"
             });
             return;
@@ -173,7 +173,7 @@ export default class PetController {
         try {
             const pet = await petRepository.retrieveById(petId);
         }catch(err){
-            res.status(404).send({
+            res.status(404).json({
                 message: `Not found pet with id=${petId}.`
             });
             return;
@@ -231,12 +231,12 @@ export default class PetController {
                 }
             }));
             logging.info(NAMESPACE, 'Update pet successfully');
-            res.status(200).send({
+            res.status(200).json({
                 message: 'Update pet successfully',
             });
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
                 message: "Some error occurred while update the pet."
             });
         }
@@ -245,7 +245,7 @@ export default class PetController {
     async deletePet(req: Request, res: Response) {
         logging.info(NAMESPACE, 'Delete pet');
         if (req.params.petProfileId === ":petProfileId" || !req.params.petProfileId) {
-            res.status(400).send({
+            res.status(400).json({
                 message: 'Pet Id can not be empty!'
             });
             return;
@@ -255,7 +255,7 @@ export default class PetController {
         try {
             const pet = await petRepository.retrieveById(petId);
         }catch(err){
-            res.status(404).send({
+            res.status(404).json({
                 message: `Not found pet with id=${petId}.`
             });
             return;
@@ -264,12 +264,12 @@ export default class PetController {
         try {
             await petRepository.deleteById(petId);
             logging.info(NAMESPACE, 'Delete pet successfully');
-            res.status(200).send({
+            res.status(200).json({
                 message: 'Delete pet successfully',
             });
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
                 message: `Could not delete pet with id=${petId}.`
             });
         }

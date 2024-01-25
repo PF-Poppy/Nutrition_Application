@@ -10,14 +10,14 @@ export default class AnimalController {
         const id:string = req.params.id;
         try {
             const result = await userRespository.retrieveById(id);
-            if (result) res.status(200).send(result);
+            if (result) res.status(200).json(result);
             else
-                res.status(404).send({
+                res.status(404).json({
                 message: `Cannot find User with id=${id}.`
             });
         } catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
             message: `Error retrieving User with id=${id}.`
             });
         }

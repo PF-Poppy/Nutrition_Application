@@ -15,14 +15,14 @@ export default class Routes {
     constructor(app: Application) {
         app.use('/', defaultRoutes);
         app.use('/api/auth', authRoutes);
-        app.use('/api/animaltype', animalRoutes);
+        app.use('/api/animalType', animalRoutes);
         app.use('/api/pets', petRoutes);
         app.use('/api/ingredients', ingredientRoutes);
-        app.use('/api/nutritionsecondary', nutritionsecondaryRoutes);
-        app.use('/api/nutritionprimary', nutritionprimaryRoutes);
+        app.use('/api/nutritionSecondary', nutritionsecondaryRoutes);
+        app.use('/api/nutritionPrimary', nutritionprimaryRoutes);
         app.use('/api/role', roleRoutes);
-        app.use('/api/userrole', userroleRoutes);
-        app.use('/api/petrecipes', petrecipesRoutes);
-        app.use('/api/searchpetrecipes', searchpetrecipesRoutes);
+        app.use('/api/userRole', userroleRoutes);
+        app.use('/api/petRecipes', petrecipesRoutes);
+        app.use('/api/searchPetRecipes', searchpetrecipesRoutes);
     }
 }

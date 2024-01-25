@@ -29,7 +29,7 @@ const validateToken = (req: Request, res: Response, next: NextFunction) => {
           res.setHeader('token', `Bearer ${newToken}`);
         } catch (err) {
           logging.error(NAMESPACE, (err as Error).message, err);
-          return res.status(403).send({
+          return res.status(403).json({
             message: "Token can't be created"
           });
         }
@@ -38,12 +38,12 @@ const validateToken = (req: Request, res: Response, next: NextFunction) => {
       next();
     } catch (err) { 
       logging.error(NAMESPACE, (err as Error).message, err);
-      return res.status(401).send({
+      return res.status(401).json({
         message: "Unauthorized!"
       });
     }
   } else {    
-    res.status(402).send({
+    res.status(402).json({
       message: "No token provided!"
     });
   }
@@ -59,7 +59,7 @@ const isUserManagementAdmin = async (req: Request, res: Response, next: NextFunc
       return;
   }else {
     logging.error(NAMESPACE, 'User is not User Management Admin');
-    res.status(404).send({
+    res.status(404).json({
         message: "Require User Management Admin Role!"
     });
     return;
@@ -75,7 +75,7 @@ const isPetFoodManagementAdmin = async (req: Request, res: Response, next: NextF
       return;
   }else {
     logging.error(NAMESPACE, 'User is not Pet Food Management Admin');
-    res.status(404).send({
+    res.status(404).json({
         message: "Require Pet Food Management Admin Role!"
     });
     return;

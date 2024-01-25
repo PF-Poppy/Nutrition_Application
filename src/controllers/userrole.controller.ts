@@ -22,13 +22,13 @@ export default class UserRoleController {
                             rolename: userrole.role_name
                         }
                     }));
-                    res.status(200).send({
+                    res.status(200).json({
                         username: user.username,
                         userId: user.user_id,
                         userRole: role
                     });
                 }else{
-                    res.status(404).send({
+                    res.status(404).json({
                     message: `The userrole of ${name} was not found.`
                     });
                 }
@@ -37,7 +37,7 @@ export default class UserRoleController {
             }
         } catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
             message: (err as Error).message
             });
         }
@@ -46,13 +46,13 @@ export default class UserRoleController {
     async createUserRolefirsttime(req: Request, res: Response) {
         logging.info(NAMESPACE, 'Create userrole');
         if (!req.body) {
-            return res.status(400).send({
+            return res.status(400).json({
                 message: "Content can not be empty!"
             });
         }
         const { username, rolename } = req.body;
         if (!username || !rolename) {
-            res.status(400).send({
+            res.status(400).json({
                 message: "Please fill in all the fields!"
             });
             return;
@@ -70,7 +70,7 @@ export default class UserRoleController {
                     try {
                         const addnewuserrole = await userroleRepository.save(userrole);
                         logging.info(NAMESPACE, 'Insert UserRole successfully.');
-                        res.status(200).send({
+                        res.status(200).json({
                             message: 'Insert UserRole successfully.',
                         });
                     }catch (err) {
@@ -84,7 +84,7 @@ export default class UserRoleController {
             } 
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
                 message: (err as Error).message
             });
         }

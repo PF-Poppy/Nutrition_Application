@@ -17,10 +17,10 @@ export default class RoleController {
                 }
             }));
             logging.info(NAMESPACE, "Get all role successfully.");
-            res.status(200).send(result);
+            res.status(200).json(result);
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
                 message: (err as Error).message
             })
         }
@@ -30,7 +30,7 @@ export default class RoleController {
         logging.info(NAMESPACE, "Add new role first time");
         const { roleName } = req.body;
         if (!roleName) {
-            res.status(400).send({
+            res.status(400).json({
                 message: "Please fill in all the fields!"
             });
             return;
@@ -41,12 +41,12 @@ export default class RoleController {
             role.update_date = new Date();
             const addeole = await roleRespository.save(role);
             logging.info(NAMESPACE, "Add new role successfully.");
-            res.status(200).send({
+            res.status(200).json({
                 message: "Add new role successfully."
             });
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
                 message: (err as Error).message
             });
         }
@@ -58,7 +58,7 @@ export default class RoleController {
         const { userid, username } = (req as any).jwtPayload;
         const { roleName } = req.body;
         if (!roleName) {
-            res.status(400).send({
+            res.status(400).json({
                 message: "Please fill in all the fields!"
             });
             return;
@@ -71,12 +71,12 @@ export default class RoleController {
             role.update_by = `${userid}_${username}`;
             const addeole = await roleRespository.save(role);
             logging.info(NAMESPACE, "Add new role successfully.");
-            res.status(200).send({
+            res.status(200).json({
                 message: "Add new role successfully."
             });
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
                 message: (err as Error).message
             });
         }
@@ -86,19 +86,19 @@ export default class RoleController {
         logging.info(NAMESPACE, "Update role");
         const { userid, username } = (req as any).jwtPayload;
         if (!req.body) {
-            res.status(400).send({
+            res.status(400).json({
                 message: 'Content can not be empty!'
             });
             return;
         }
         const { roleId, roleName } = req.body;
         if (roleId == "" || roleId == null || roleId == undefined) {
-            res.status(400).send({
+            res.status(400).json({
                 message: "Role Id can not be empty!"
             });
         }
         if (!roleName) {
-            res.status(400).send({
+            res.status(400).json({
                 message: "Please fill in all the fields!"
             });
             return;
@@ -107,7 +107,7 @@ export default class RoleController {
         try {
             const role = await roleRespository.retrieveById(roleId);
         }catch(err){   
-            res.status(404).send({
+            res.status(404).json({
                 message: `Not found role with id=${roleId}.`
             });
             return;
@@ -121,12 +121,12 @@ export default class RoleController {
             role.update_by = `${userid}_${username}`;
             const updaterole = await roleRespository.update(role);
             logging.info(NAMESPACE, "Update role successfully.");
-            res.status(200).send({
+            res.status(200).json({
                 message: "Update role successfully."
             });
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
                 message: (err as Error).message
             });
         }
@@ -135,7 +135,7 @@ export default class RoleController {
     async deleteRole(req: Request, res: Response) {
         logging.info(NAMESPACE, "Delete role");
         if (req.params.roleId == ":roleId" || !req.params.roleId) {
-            res.status(400).send({
+            res.status(400).json({
                 message: "Role Id can not be empty!"
             });
             return;
@@ -145,7 +145,7 @@ export default class RoleController {
         try {
             const role = await roleRespository.retrieveById(roleId);
         }catch(err){
-            res.status(404).send({
+            res.status(404).json({
                 message: `Not found role with id=${roleId}.`
             });
             return;
@@ -154,12 +154,12 @@ export default class RoleController {
         try {
             await roleRespository.deleteById(roleId);
             logging.info(NAMESPACE, "Delete role successfully.");
-            res.status(200).send({
+            res.status(200).json({
                 message: "Delete role successfully."
             });
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
                 message: (err as Error).message
             });
         }

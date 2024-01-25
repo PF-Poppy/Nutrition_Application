@@ -15,14 +15,14 @@ export default class IngredientController {
         logging.info(NAMESPACE, 'Add new ingredientnutrition');
         const { userid, username } = (req as JwtPayload).jwtPayload;
         if (!req.body) {
-            res.status(400).send({
+            res.status(400).json({
                 message: 'Content can not be empty!'
             });
             return;
         }
         const { ingredientName, nutrient} = req.body;
         if (!ingredientName || !nutrient) {
-            res.status(400).send({
+            res.status(400).json({
                 message: "Please fill in all the fields!"
             });
             return;
@@ -38,7 +38,7 @@ export default class IngredientController {
             let order_value: number = 0;
             ingredient.ingredientnutrition = [];
             for (const nutrientInfoData of nutrient) {
-                if (!nutrientInfoData.nutrientName || !nutrientInfoData.amount) {
+                if (!nutrientInfoData.nutrientName || nutrientInfoData.amount == undefined) {
                     await ingredientsRepository.deleteById(addingredient.ingredient_id);
                     throw new Error("Please fill in all the fields!");
                 }
@@ -69,18 +69,18 @@ export default class IngredientController {
                 }
             }
             logging.info(NAMESPACE, 'Add new ingredient successfully');
-            return res.status(200).send({
+            return res.status(200).json({
                 message: 'Add new ingredient successfully'
             });
         }catch(err){
             logging.error(NAMESPACE, (err as Error).message, err);
             if ( (err as Error).message === "Please fill in all the fields!" ) {
-                res.status(400).send({
+                res.status(400).json({
                     message: (err as Error).message
                 });
                 return;
             }else {
-                res.status(500).send({
+                res.status(500).json({
                     message: "Some error occurred while creating ingredient."
                 });
                 return;
@@ -92,20 +92,20 @@ export default class IngredientController {
         logging.info(NAMESPACE, 'Update ingredientnutrition');
         const { userid, username } = (req as JwtPayload).jwtPayload;
         if (!req.body) {
-            res.status(400).send({
+            res.status(400).json({
                 message: 'Content can not be empty!'
             });
             return;
         }
         const { ingredientId, ingredientName, nutrient} = req.body;
         if ( ingredientId === "" || ingredientId === undefined || ingredientId === null) {
-            res.status(400).send({
+            res.status(400).json({
                 message: 'Ingredient Id can not be empty!'
             });
             return;
         }
         if (!ingredientName || !nutrient) {
-            res.status(400).send({
+            res.status(400).json({
                 message: "Please fill in all the fields!"
             });
             return;
@@ -114,7 +114,7 @@ export default class IngredientController {
         try {
             const ingredient = await ingredientsRepository.retrieveById(ingredientId);
         }catch(err){
-            res.status(404).send( {
+            res.status(404).json( {
                 message: `Not found ingredient with id=${ingredientId}.`
             });
             return;
@@ -129,7 +129,7 @@ export default class IngredientController {
             const updateingredient = await ingredientsRepository.update(ingredient);
 
             await Promise.all(nutrient.map(async (nutrientInfoData: any) => {
-                if (!nutrientInfoData.nutrientName || !nutrientInfoData.amount) {
+                if (!nutrientInfoData.nutrientName || nutrientInfoData.amount == undefined) {
                     throw new Error("Please fill in all the fields!");
                 }
                 try {
@@ -164,17 +164,17 @@ export default class IngredientController {
                 }
             }
             logging.info(NAMESPACE, 'Update ingredient successfully');
-            return res.status(200).send({
+            return res.status(200).json({
                 message: 'Update ingredient successfully'
             });
         }catch(err){
             if ( (err as Error).message === "Please fill in all the fields!" ) {
-                res.status(400).send({
+                res.status(400).json({
                     message: (err as Error).message
                 });
                 return;
             }else {
-                res.status(500).send({
+                res.status(500).json({
                     message: "Some error occurred while creating ingredient."
                 });
                 return;
@@ -205,10 +205,10 @@ export default class IngredientController {
                 };
             }));
             logging.info(NAMESPACE, 'Get all ingredientnutrition successfully');
-            res.status(200).send(result);
+            res.status(200).json(result);
         }catch(err){
             logging.error(NAMESPACE, (err as Error).message, err);
-            return res.status(500).send({
+            return res.status(500).json({
                 message: 'Error while getting all ingredientnutrition'
             });
         }
@@ -217,7 +217,7 @@ export default class IngredientController {
     async deleleIngredient(req: Request, res: Response) {
         logging.info(NAMESPACE, 'Delete ingredientnutrition');
         if (req.params.ingredientId == ":ingredientId" || !req.params.ingredientId) {
-            res.status(400).send({
+            res.status(400).json({
                 message: 'Ingredient Id can not be empty!'
             });
             return;
@@ -227,7 +227,7 @@ export default class IngredientController {
         try {
             const ingredient = await ingredientsRepository.retrieveById(ingredientId);
         }catch(err){
-            res.status(404).send( {
+            res.status(404).json( {
                 message: `Not found ingredient with id=${ingredientId}.`
             });
             return;
@@ -238,17 +238,17 @@ export default class IngredientController {
                 await ingredientsRepository.deleteById(ingredientId);
             }catch (err) {
                 logging.error(NAMESPACE, (err as Error).message, err);
-                return res.status(500).send({
+                return res.status(500).json({
                     message: 'Error while deleting ingredientnutrition'
                 });
             }
             logging.info(NAMESPACE, 'Delete ingredientnutrition successfully');
-            return res.status(200).send({
+            return res.status(200).json({
                 message: 'Delete ingredientnutrition successfully'
             });
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            return res.status(500).send({
+            return res.status(500).json({
                 message: 'Error while deleting ingredientnutrition'
             });
         }

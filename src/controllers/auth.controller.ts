@@ -17,7 +17,7 @@ export default class AuthController {
     async signup(req: Request, res: Response) {
         logging.info(NAMESPACE, 'User signup');
         if (!req.body.username || !req.body.password) {
-            res.status(400).send({
+            res.status(400).json({
                 message: "Requires a username password.!"
             });
             return;
@@ -28,7 +28,7 @@ export default class AuthController {
         bcrypt.hash(password, 10, async (err, hash) => {
             if (err) {
                 logging.error(NAMESPACE, (err as Error).message, err);
-                res.status(500).send({
+                res.status(500).json({
                     message: (err as Error).message
                 });
             }
@@ -54,7 +54,7 @@ export default class AuthController {
                     try {
                         const result = await userRoleRepository.save(userrole);
                         logging.info(NAMESPACE, "User registered successfully!");
-                        res.status(200).send({
+                        res.status(200).json({
                             message: "User registered successfully!"
                         });
                     }catch (err) {
@@ -66,7 +66,7 @@ export default class AuthController {
                 }
             }catch (err) {
                 logging.error(NAMESPACE, (err as Error).message, err);
-                res.status(500).send({
+                res.status(500).json({
                     message: (err as Error).message
                 });
             }
@@ -76,7 +76,7 @@ export default class AuthController {
     async signin(req: Request, res: Response) {
         logging.info(NAMESPACE, 'User signin');
         if (!req.body.username || !req.body.password) {
-            res.status(400).send({
+            res.status(400).json({
                 message: "Requires a username password.!"
             });
             return;
@@ -87,7 +87,7 @@ export default class AuthController {
             const user = await userRepository.retrieveByName(username);
             if (!user) {
                 logging.error(NAMESPACE, "User Not found!");
-                res.status(404).send({
+                res.status(404).json({
                     accessToken: null,
                     message: "User Not found!"
                 });
@@ -99,7 +99,7 @@ export default class AuthController {
             );
             if (!passwordIsValid) {
                 logging.error(NAMESPACE, "Invalid Password!");
-                res.status(401).send({
+                res.status(401).json({
                     accessToken: null,
                     message: "Invalid Password!"
                 });
@@ -112,13 +112,13 @@ export default class AuthController {
             const isPetFoodManagementAdmin = await checkuserAdminrole.checkPetFoodManagementAdmin(user.user_id);
             const isUserManagementAdmin = await checkuserAdminrole.checkUserManagementAdmin(user.user_id);
             const roleResult = {
-                isUserManagementAmin: isUserManagementAdmin,
-                isPetFoodManagementAmin: isPetFoodManagementAdmin
+                isUserManagementAdmin: isUserManagementAdmin,
+                isPetFoodManagementAdmin: isPetFoodManagementAdmin
             };
 
             try {
                 const token = createJwtToken.SignJWT(jwtPayload);
-                res.status(200).send({
+                res.status(200).json({
                     accessToken: (await token).valueOf(),
                     username: user.username,
                     userId: user.user_id,
@@ -126,7 +126,7 @@ export default class AuthController {
                 });
             }catch (err) {
                 logging.error(NAMESPACE, (err as Error).message, err);
-                res.status(403).send({
+                res.status(403).json({
                     accessToken: null,
                     message: "Token can't be created"
                 });
@@ -134,7 +134,7 @@ export default class AuthController {
 
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
                 message: (err as Error).message
             });
         }

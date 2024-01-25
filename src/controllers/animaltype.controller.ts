@@ -63,10 +63,10 @@ export default class AnimalController {
                 };
             }));
             logging.info(NAMESPACE, "Get all animal type successfully.");
-            res.status(200).send(result);
+            res.status(200).json(result);
         } catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
                 message: "Some error occurred while retrieving animal."
             });
         }
@@ -93,10 +93,10 @@ export default class AnimalController {
                 }
             }));
             logging.info(NAMESPACE, "Get all animal type for normal user successfully.");
-            res.status(200).send(result);
+            res.status(200).json(result);
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
                 message: "Some error occurred while retrieving animal."
             });
         }
@@ -104,8 +104,9 @@ export default class AnimalController {
 
     async addNewAnimalType(req: Request, res: Response) {
         logging.info(NAMESPACE, 'Add new animal type');
+        console.log(req.body);
         if (!req.body) {
-            res.status(400).send({
+            res.status(400).json({
                 message: 'Content can not be empty!'
             });
             return;
@@ -113,7 +114,7 @@ export default class AnimalController {
         const { userid, username } = (req as JwtPayload).jwtPayload;
         const { petTypeName,defaultNutrientLimitList, petChronicDisease} = req.body;
         if (!petTypeName || !petChronicDisease || !defaultNutrientLimitList) {
-            res.status(400).send({
+            res.status(400).json({
                 message: "Please fill in all the fields!"
             });
             return;
@@ -130,7 +131,7 @@ export default class AnimalController {
             animaltype.defaultnutrition = [];
             try {
                 for (const nutrientInfoData of defaultNutrientLimitList) {
-                    if (!nutrientInfoData.nutrientName || !nutrientInfoData.min || !nutrientInfoData.max) {
+                    if (!nutrientInfoData.nutrientName || nutrientInfoData.min == undefined || nutrientInfoData.max == undefined) {
                         throw new Error("Please fill in all the fields!");
                     }
                     try {
@@ -164,7 +165,6 @@ export default class AnimalController {
                 await animalRepository.deleteById(addanimaltype.type_id);
                 throw err;
             }
-
             animaltype.diseasedetail = await Promise.all(petChronicDisease.map(async (diseaseData: any) => {
                 if (!diseaseData.petChronicDiseaseName || !diseaseData.NutrientLimitInfo) {
                     await animalRepository.deleteById(addanimaltype.type_id);
@@ -220,18 +220,18 @@ export default class AnimalController {
                 return;
             }));
             logging.info(NAMESPACE, "Create animal type successfully.");
-            res.status(200).send({
+            res.status(200).json({
                 message: "Add Animal successfully!"
             });
         } catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             if ( (err as Error).message === "Please fill in all the fields!" ) {
-                res.status(400).send({
+                res.status(400).json({
                     message: (err as Error).message
                 });
                 return;
             }else {
-                res.status(500).send({
+                res.status(500).json({
                     message: "Some error occurred while creating animal."
                 });
                 return;
@@ -243,20 +243,20 @@ export default class AnimalController {
         logging.info(NAMESPACE, 'Update animal type');
         const { userid, username } = (req as JwtPayload).jwtPayload;
         if (!req.body) {
-            res.status(400).send({
+            res.status(400).json({
               message: "Content can not be empty!"
             });
             return;
         }
         const { petTypeId, petTypeName, defaultNutrientLimitList, petChronicDisease} = req.body;
         if (petTypeId === "" || petTypeId === null || petTypeId === undefined) {
-            res.status(400).send({
+            res.status(400).json({
               message: "Pet type id can not be empty!"
             });
             return;
         }
         if (!petTypeName || !petChronicDisease || !defaultNutrientLimitList) {
-            res.status(400).send({
+            res.status(400).json({
                 message: "Please fill in all the fields!"
             });
             return;
@@ -265,7 +265,7 @@ export default class AnimalController {
         try {
             const animaltype = await animalRepository.retrieveById(petTypeId);
         }catch(err){
-            res.status(404).send({
+            res.status(404).json({
                 message: `Not found animal type with id=${petTypeId}.`
             });
             return;
@@ -302,7 +302,7 @@ export default class AnimalController {
                     }
                 }
                 await Promise.all(diseaseData.NutrientLimitInfo.map(async (nutrientInfoData: any) => {
-                    if (!nutrientInfoData.nutrientName || !nutrientInfoData.min || !nutrientInfoData.max) {
+                    if (!nutrientInfoData.nutrientName || nutrientInfoData.min == undefined || nutrientInfoData.max == undefined) {
                         throw new Error("Please fill in all the fields!");
                     }
                     try {
@@ -316,9 +316,6 @@ export default class AnimalController {
             let order_value: number = 0;
             animaltype.defaultnutrition = [];
             for (const nutrientInfoData of defaultNutrientLimitList) {
-                if (!nutrientInfoData.nutrientName || !nutrientInfoData.min || !nutrientInfoData.max) {
-                    throw new Error("Please fill in all the fields!");
-                }
                 try {
                     const nutrient = await nutritionsecondaryRepository.retrieveByName(nutrientInfoData.nutrientName);
 
@@ -394,18 +391,18 @@ export default class AnimalController {
                 return;
             }));
             logging.info(NAMESPACE, "Update animal type successfully.");
-            res.status(200).send({
+            res.status(200).json({
                 message: "Update Animal successfully!"
             });
         }catch(err){
             logging.error(NAMESPACE, (err as Error).message, err);
             if ( (err as Error).message === "Please fill in all the fields!" ) {
-                res.status(400).send({
+                res.status(400).json({
                     message: (err as Error).message
                 });
                 return;
             }else {
-                res.status(500).send({
+                res.status(500).json({
                     message: "Some error occurred while update animal."
                 });
                 return;
@@ -416,7 +413,7 @@ export default class AnimalController {
     async deleteAnimalType(req: Request, res: Response) {
         logging.info(NAMESPACE, 'Delete animal type');
         if (req.params.petTypeInfoId === ":petTypeInfoId" || !req.params.petTypeInfoId) {
-            res.status(400).send({
+            res.status(400).json({
                 message: "Pet type id can not be empty!"
             });
             return;
@@ -426,7 +423,7 @@ export default class AnimalController {
         try {
             const animaltype = await animalRepository.retrieveById(typeid);
         }catch(err){
-            res.status(404).send({
+            res.status(404).json({
                 message: `Not found animal type with id=${typeid}.`
             });
             return;
@@ -442,12 +439,12 @@ export default class AnimalController {
                 throw err;
             }
             logging.info(NAMESPACE, "Delete animal type successfully.");
-            res.status(200).send({
+            res.status(200).json({
                 message: "Delete animal type successfully!"
             });
         } catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
                 message: `Could not delete animal type with id=${typeid}.`
             });
         }

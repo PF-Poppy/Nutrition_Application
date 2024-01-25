@@ -40,7 +40,7 @@ export default class PetRecipesController {
             const addNewPetRecipe = await petrecipesRepository.save(petrecipes);
 
             petrecipes.recipeingredients = await Promise.all(ingredientInRecipeList.map(async (ingredient: any) => {
-                if (!ingredient.ingredeintId || !ingredient.ingredientName || !ingredient.amount) {
+                if (!ingredient.ingredeintId || !ingredient.ingredientName || ingredient.amount == undefined) {
                     await petrecipesRepository.deleteById(addNewPetRecipe.recipes_id);
                     throw new Error("Please fill in all the fields!");
                 }
@@ -63,7 +63,7 @@ export default class PetRecipesController {
             let order_value: number = 0;
             petrecipes.recipenutrition = [];
             for (const nutrientInfoData of freshNutrientList) {
-                if (!nutrientInfoData.nutrientName || !nutrientInfoData.amount) {
+                if (!nutrientInfoData.nutrientName || nutrientInfoData.amount == undefined) {
                     await petrecipesRepository.deleteById(addNewPetRecipe.recipes_id);
                     throw new Error("Please fill in all the fields!");
                 }
@@ -91,18 +91,18 @@ export default class PetRecipesController {
                 }
             };
             logging.info(NAMESPACE, "Add new pet recipe successfully.");
-            res.status(200).send({
+            res.status(200).json({
                 message: "Add new pet recipe successfully.",
             });
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             if ( (err as Error).message === "Please fill in all the fields!" ) {
-                res.status(400).send({
+                res.status(400).json({
                     message: (err as Error).message
                 });
                 return;
             }else {
-                res.status(500).send({
+                res.status(500).json({
                     message: "Some error occurred while creating pet recipe."
                 });
                 return;
@@ -136,7 +136,7 @@ export default class PetRecipesController {
         try{
             const petrecipes = await petrecipesRepository.retrieveById(recipeId);
         }catch(err){
-            res.status(404).send( {
+            res.status(404).json( {
                 message: `Not found petrecipes with id=${recipeId}.`
             });
             return;
@@ -152,7 +152,7 @@ export default class PetRecipesController {
             const updatePetRecipe = await petrecipesRepository.update(petrecipes);
 
             petrecipes.recipeingredients = await Promise.all(ingredientInRecipeList.map(async (ingredient: any) => {
-                if (!ingredient.ingredeintId || !ingredient.ingredientName || !ingredient.amount) {
+                if (!ingredient.ingredeintId || !ingredient.ingredientName || ingredient.amount == undefined) {
                     throw new Error("Please fill in all the fields!");
                 }
                 try {
@@ -172,7 +172,7 @@ export default class PetRecipesController {
             let order_value: number = 0;
             petrecipes.recipenutrition = [];
             for (const nutrientInfoData of freshNutrientList) {
-                if (!nutrientInfoData.nutrientName || !nutrientInfoData.amount) {
+                if (!nutrientInfoData.nutrientName || nutrientInfoData.amount == undefined) {
                     throw new Error("Please fill in all the fields!");
                 }
                 try {
@@ -197,18 +197,18 @@ export default class PetRecipesController {
                 }
             };
             logging.info(NAMESPACE, "Update pet recipe successfully.");
-            res.status(200).send({
+            res.status(200).json({
                 message: "Update pet recipe successfully.",
             });
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             if ( (err as Error).message === "Please fill in all the fields!" ) {
-                res.status(400).send({
+                res.status(400).json({
                     message: (err as Error).message
                 });
                 return;
             }else {
-                res.status(500).send({
+                res.status(500).json({
                     message: "Some error occurred while creating pet recipe."
                 });
                 return;
@@ -229,7 +229,7 @@ export default class PetRecipesController {
         try {
             const petrecipes = await petrecipesRepository.retrieveById(recipeId);
         }catch(err){
-            res.status(404).send( {
+            res.status(404).json( {
                 message: `Not found petrecipes with id=${recipeId}.`
             });
             return;
@@ -238,12 +238,12 @@ export default class PetRecipesController {
         try {
             await petrecipesRepository.deleteById(recipeId);
             logging.info(NAMESPACE, "Delete pet recipe successfully.");
-            res.status(200).send({
+            res.status(200).json({
                 message: "Delete pet recipe successfully.",
             });
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
                 message: "Some error occurred while deleting pet recipe."
             });
             return;

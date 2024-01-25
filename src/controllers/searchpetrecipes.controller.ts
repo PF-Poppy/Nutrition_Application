@@ -8,6 +8,7 @@ import diseasenutritionRepository from "../repositories/diseasenutrition.reposit
 import ingredientnutritionRepository from "../repositories/ingredientnutrition.repository";
 import petRepository from "../repositories/pet.repository";
 import nutritionsecondaryRepository from "../repositories/nutritionsecondary.repository";
+import defaultnutritionRepository from "../repositories/defaultnutrition.repository";
 import axios from "axios";
 import logging from "../config/logging";
 
@@ -34,7 +35,7 @@ export default class SearchPetRecipesController {
         try {
             const pet = await petRepository.retrieveById(petId);
         }catch(err){
-            res.status(404).send({
+            res.status(404).json({
                 message: `Not found pet with id=${petId}.`
             });
             return;
@@ -43,28 +44,30 @@ export default class SearchPetRecipesController {
         try {
             const pettype = await petRepository.retrieveById(petId);
             const disease = await diseaseRepository.retrieveByPetId(petId);
-            const nutritionSummary: NutritionSummary = {};
-            //TODO ต้องดูเพราะมันต้องมีค่า default อยู่แล้ว แต่ไม่รู้ว่ามันเป็นอะไร
-            if (disease.length === 0) {
-                const nutritionsecondary = await nutritionsecondaryRepository.retrieveAll();
-                const sortednutritionsecondary = nutritionsecondary.sort((a:any, b:any) => a.order_value - b.order_value);
+            const defaultnutrition = await defaultnutritionRepository.retrieveByAnimalId(petId);
+            const sortdefaultnutrition = defaultnutrition.sort((a, b) => a.order_value - b.order_value);
 
-                sortednutritionsecondary.forEach(nutritionInfo => {
-                    const nutritionName = nutritionInfo.nutrient_name;
-                    const nutritionValueMin = -999999;
-                    const nutritionValueMax = 999999;
-        
-                    if (!nutritionSummary[nutritionName]) {
-                        nutritionSummary[nutritionName] = {
-                            minValue_intersect: nutritionValueMin,
-                            maxValue_intersect: nutritionValueMax,
-                        };
-                    } else {
-                        nutritionSummary[nutritionName].minValue_intersect = Math.max(nutritionSummary[nutritionName].minValue_intersect, nutritionValueMin);
-                        nutritionSummary[nutritionName].maxValue_intersect = Math.min(nutritionSummary[nutritionName].maxValue_intersect, nutritionValueMax);
+            const nutritionSummary: NutritionSummary = {};
+            sortdefaultnutrition.forEach(nutritionInfo => {
+                const nutritionName = nutritionInfo.nutrient_name;
+                const nutritionValueMin = nutritionInfo.value_min;
+                const nutritionValueMax = nutritionInfo.value_max;
+
+                if (!nutritionSummary[nutritionName]) {
+                    nutritionSummary[nutritionName] = {
+                        minValue_intersect: nutritionValueMin,
+                        maxValue_intersect: nutritionValueMax,
+                    };
+                } else {
+                    nutritionSummary[nutritionName].minValue_intersect = Math.max(nutritionSummary[nutritionName].minValue_intersect, nutritionValueMin);
+                    nutritionSummary[nutritionName].maxValue_intersect = Math.min(nutritionSummary[nutritionName].maxValue_intersect, nutritionValueMax);
+                    const { minValue_intersect, maxValue_intersect } = nutritionSummary[nutritionName];
+                    if (nutritionSummary[nutritionName].minValue_intersect > nutritionSummary[nutritionName].maxValue_intersect) {
+                        nutritionSummary[nutritionName].minValue_intersect = maxValue_intersect;
+                        nutritionSummary[nutritionName].maxValue_intersect = minValue_intersect;
                     }
-                });
-            }
+                }
+            });
 
             const chronicDisease = await Promise.all(disease.map(async (diseaseInfo) => {
                 const diseasenutrition = await diseasenutritionRepository.retrieveByDiseaseId(diseaseInfo.diseasedetailid);
@@ -218,12 +221,12 @@ export default class SearchPetRecipesController {
             });
 
             logging.info(NAMESPACE, "Get all pets recipes success");
-            res.status(200).send({
+            res.status(200).json({
                 searchPetRecipesList: filteredRecipesList,
             });
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
                 message: "Some error occurred while get pet recipes."
             });
         }
@@ -248,7 +251,7 @@ export default class SearchPetRecipesController {
         try {
             const pet = await petRepository.retrieveById(petId);
         }catch(err){
-            res.status(404).send({
+            res.status(404).json({
                 message: `Not found pet with id=${petId}.`
             });
             return;
@@ -378,11 +381,11 @@ export default class SearchPetRecipesController {
                         
                     }));
 
-                    res.status(200).send({
+                    res.status(200).json({
                         searchPetRecipesList
                     });
                 }else if (recipeType == "geneticAlgorithm") {
-                    res.status(200).send({
+                    res.status(200).json({
                         "ingredients": ingredients,
                         "limit": limit,
                     });
@@ -392,7 +395,7 @@ export default class SearchPetRecipesController {
             }
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
-            res.status(500).send({
+            res.status(500).json({
                 message: "Some error occurred while get pet recipes."
             });
         }
