@@ -5,8 +5,10 @@ import logging from "../config/logging";
 const NAMESPACE = "PetRecipes Repositor";
 
 interface IPetRecipesRepository {
+    
     save(petrecipes:Petrecipes): Promise<Petrecipes>;
     update(petrecipes:Petrecipes): Promise<Petrecipes>;
+    retrieveAll(): Promise<Petrecipes[]>;
     retrieveById(recipesid: string): Promise<Petrecipes | undefined>;
     retrieveByPetTypeId(animaltypeid: string): Promise<Petrecipes[]>;
     deleteById(recipesid: string): Promise<number>;
@@ -122,6 +124,18 @@ class PetRecipesRepository implements IPetRecipesRepository {
         }
     }
     */
+    async retrieveAll(): Promise<Petrecipes[]> {
+        try {
+            const result = await AppDataSource.getRepository(Petrecipes).find({
+                select: ["recipes_id", "recipes_name", "animaltype_type_id", "description"]
+            });
+            logging.info(NAMESPACE, "Retrieve pet recipes successfully.");
+            return result;
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
 
     async retrieveById(recipesid: string): Promise<Petrecipes> {
         try {

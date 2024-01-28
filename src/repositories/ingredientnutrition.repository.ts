@@ -50,7 +50,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
             const existingIngredientnutrition = await connect.findOne(
                 { where: { nutritionprimary_nutrition_id: ingredientnutrition.nutritionprimary_nutrition_id, ingredients_ingredient_id: ingredientnutrition.ingredients_ingredient_id}}
             );
-        
+       
             if (!existingIngredientnutrition) {
                 ingredientnutrition.create_by = `${ingredientnutrition.update_by}`;
                 try {

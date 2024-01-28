@@ -104,7 +104,6 @@ export default class AnimalController {
 
     async addNewAnimalType(req: Request, res: Response) {
         logging.info(NAMESPACE, 'Add new animal type');
-        console.log(req.body);
         if (!req.body) {
             res.status(400).json({
                 message: 'Content can not be empty!'
@@ -182,7 +181,7 @@ export default class AnimalController {
                     let order_value: number = 0;
                     chronicDisease.diseasenutrition = [];
                     for (const nutrientInfoData of diseaseData.NutrientLimitInfo) {
-                        if (!nutrientInfoData.nutrientName || !nutrientInfoData.min || !nutrientInfoData.max) {
+                        if (!nutrientInfoData.nutrientName || nutrientInfoData.min == undefined || !nutrientInfoData.max == undefined) {
                             throw new Error("Please fill in all the fields!");
                         }
                         
@@ -248,25 +247,31 @@ export default class AnimalController {
             });
             return;
         }
-        const { petTypeId, petTypeName, defaultNutrientLimitList, petChronicDisease} = req.body;
-        if (petTypeId === "" || petTypeId === null || petTypeId === undefined) {
+
+        const { deletedPetChronicDiseaseList, petTypeInfo} = req.body;
+        await Promise.all(deletedPetChronicDiseaseList.map(async (nutrientInfoData: any) => {
+            await diseasedetailRepository.deleteById(nutrientInfoData);
+        }));
+        
+        if (petTypeInfo.petTypeId === "" || petTypeInfo.petTypeId === null || petTypeInfo.petTypeId === undefined) {
             res.status(400).json({
               message: "Pet type id can not be empty!"
             });
             return;
         }
-        if (!petTypeName || !petChronicDisease || !defaultNutrientLimitList) {
+        if (!petTypeInfo.petTypeName || !petTypeInfo.petChronicDisease || !petTypeInfo.defaultNutrientLimitList) {
             res.status(400).json({
                 message: "Please fill in all the fields!"
             });
             return;
         }
-
+        
+    
         try {
-            const animaltype = await animalRepository.retrieveById(petTypeId);
+            const animaltype = await animalRepository.retrieveById(petTypeInfo.petTypeId);
         }catch(err){
             res.status(404).json({
-                message: `Not found animal type with id=${petTypeId}.`
+                message: `Not found animal type with id=${petTypeInfo.petTypeId}.`
             });
             return;
         }
@@ -274,14 +279,14 @@ export default class AnimalController {
         try {
 
             const animaltype = new AnimalType();
-            animaltype.type_id = petTypeId;
-            animaltype.type_name = petTypeName;
+            animaltype.type_id = petTypeInfo.petTypeId;
+            animaltype.type_name = petTypeInfo.petTypeName;
             animaltype.update_date = new Date();
             animaltype.update_by = `${userid}_${username}`;
             const updateanimaltype = await animalRepository.update(animaltype);
 
-            animaltype.defaultnutrition = await Promise.all(defaultNutrientLimitList.map(async (nutrientInfoData: any) => {
-                if (!nutrientInfoData.nutrientName || !nutrientInfoData.min || !nutrientInfoData.max) {
+            animaltype.defaultnutrition = await Promise.all(petTypeInfo.defaultNutrientLimitList.map(async (nutrientInfoData: any) => {
+                if (!nutrientInfoData.nutrientName || nutrientInfoData.min == undefined || nutrientInfoData.max == undefined) {
                     throw new Error("Please fill in all the fields!");
                 }
                 try {
@@ -291,7 +296,7 @@ export default class AnimalController {
                 }
             }));
 
-            animaltype.diseasedetail = await Promise.all(petChronicDisease.map(async (diseaseData: any) => {
+            animaltype.diseasedetail = await Promise.all(petTypeInfo.petChronicDisease.map(async (diseaseData: any) => {
                 if (diseaseData.petChronicDiseaseId === "") {
                     if (!diseaseData.petChronicDiseaseName || !diseaseData.NutrientLimitInfo) {
                         throw new Error("Please fill in all the fields!");
@@ -315,7 +320,7 @@ export default class AnimalController {
 
             let order_value: number = 0;
             animaltype.defaultnutrition = [];
-            for (const nutrientInfoData of defaultNutrientLimitList) {
+            for (const nutrientInfoData of petTypeInfo.defaultNutrientLimitList) {
                 try {
                     const nutrient = await nutritionsecondaryRepository.retrieveByName(nutrientInfoData.nutrientName);
 
@@ -326,7 +331,7 @@ export default class AnimalController {
                     order_value++;
 
                     const nutrientInfo = new Defaultnutrition();
-                    nutrientInfo.animaltype_type_id = petTypeId;
+                    nutrientInfo.animaltype_type_id = petTypeInfo.petTypeId;
                     nutrientInfo.nutritionsecondary_nutrition_id = nutrient!.nutrition_id;
                     nutrientInfo.value_min = nutrientInfoData.min;
                     nutrientInfo.value_max = nutrientInfoData.max;
@@ -343,10 +348,10 @@ export default class AnimalController {
                 }
             }
 
-            animaltype.diseasedetail = await Promise.all(petChronicDisease.map(async (diseaseData: any) => {
+            animaltype.diseasedetail = await Promise.all(petTypeInfo.petChronicDisease.map(async (diseaseData: any) => {
                 const chronicDisease = new Diseasedetail();
                 chronicDisease.disease_name = diseaseData.petChronicDiseaseName;
-                chronicDisease.animaltype_type_id = petTypeId;
+                chronicDisease.animaltype_type_id = petTypeInfo.petTypeId;
                 chronicDisease.update_by = `${userid}_${username}`;
                 chronicDisease.update_date = new Date();
                 try {

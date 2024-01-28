@@ -8,12 +8,68 @@ import petrecipesRepository from "../repositories/petrecipes.repository";
 import recipeingredientsRepository from "../repositories/recipeingredients.repository";
 import nutritionsecondaryRepository from "../repositories/nutritionsecondary.repository";
 import recipenutritionRepository from "../repositories/recipesnutrition.repository";
+import ingredientnutritionRepository from "../repositories/ingredientnutrition.repository";
+import animaltypeRepository from "../repositories/animaltype.repository";
 import logging from "../config/logging";
-
 
 const NAMESPACE = "PetRecipes Controller";
 
 export default class PetRecipesController {
+    async getAllPetRecipes(req: Request, res: Response) {
+        logging.info(NAMESPACE, "Get all pet recipes");
+        try {
+            const petrecipes = await petrecipesRepository.retrieveAll();
+
+            const petrecipesList = await Promise.all(petrecipes.map(async (petrecipe: any) => {
+                const pettype = await animaltypeRepository.retrieveById(petrecipe.animaltype_type_id);
+                const recipeingredients = await recipeingredientsRepository.retrieveByRecipeId(petrecipe.recipes_id);
+                const recipenutrition = await recipenutritionRepository.retrieveByRecipeId(petrecipe.recipes_id);
+                const sortedrecipeNutrition = recipenutrition.sort((a: any, b: any) => a.order_value - b.order_value);
+
+                const recipeIngredientList = await Promise.all(recipeingredients.map(async recipeingredient => {
+                    const ingredientNutritionInfo = await ingredientnutritionRepository.retrieveByIngredientId(recipeingredient.ingredient_id);
+                    const sortedingredientNutrition = ingredientNutritionInfo.sort((a: any, b: any) => a.order_value - b.order_value);
+                    const ingredientNutritionList = sortedingredientNutrition.map(ingredientNutritionInfo => ({
+                        nutrientName: ingredientNutritionInfo.nutrient_name,
+                        unit: ingredientNutritionInfo.nutrient_unit,
+                        amount: ingredientNutritionInfo.nutrient_value,
+                    }));
+                    return { 
+                        ingredient:{
+                            ingredientId: recipeingredient.ingredient_id,
+                            ingredientName: recipeingredient.ingredient_name,
+                            nutrient: ingredientNutritionList,
+                        },
+                        amount: recipeingredient.quantity,
+                    }
+                }));
+
+                const nutritionList = sortedrecipeNutrition.map(recipeNutritionInfo => ({
+                    nutrientName: recipeNutritionInfo.nutrient_name,
+                    unit: recipeNutritionInfo.nutrient_unit,
+                    amount: recipeNutritionInfo.nutrient_value,
+                }));
+
+                const sortedrecipeIngrediente = recipeIngredientList.sort((a:any, b:any) => a.ingredientId.localeCompare(b.ingredientId));
+                return {
+                    recipeId: petrecipe.recipes_id,
+                    recipeName: petrecipe.recipes_name,
+                    petTypeId: pettype.type_id,
+                    petTypeName: pettype.type_name,
+                    ingredientInRecipeList :sortedrecipeIngrediente,
+                    freshNutrientList: nutritionList,
+                };
+            }));
+
+            logging.info(NAMESPACE, "Get all pet recipes successfully.");
+            res.status(200).json(petrecipesList);
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            res.status(500).json({
+                message: "Some error occurred while retrieving pet recipes."
+            });
+        }
+    }
     async addNewPetRecipe(req: Request, res: Response) {
         logging.info(NAMESPACE, "Add new pet recipe");
         if (!req.body) {
@@ -40,13 +96,13 @@ export default class PetRecipesController {
             const addNewPetRecipe = await petrecipesRepository.save(petrecipes);
 
             petrecipes.recipeingredients = await Promise.all(ingredientInRecipeList.map(async (ingredient: any) => {
-                if (!ingredient.ingredeintId || !ingredient.ingredientName || ingredient.amount == undefined) {
+                if (!ingredient.ingredientId || !ingredient.ingredientName || ingredient.amount == undefined) {
                     await petrecipesRepository.deleteById(addNewPetRecipe.recipes_id);
                     throw new Error("Please fill in all the fields!");
                 }
                 try {
                     const recipeingredients = new Recipeingredients();
-                    recipeingredients.ingredients_ingredient_id = ingredient.ingredeintId;
+                    recipeingredients.ingredients_ingredient_id = ingredient.ingredientId;
                     recipeingredients.petrecipes_recipes_id = addNewPetRecipe.recipes_id;
                     recipeingredients.quantity = ingredient.amount;
                     recipeingredients.create_by = `${userid}_${username}`;
@@ -152,12 +208,12 @@ export default class PetRecipesController {
             const updatePetRecipe = await petrecipesRepository.update(petrecipes);
 
             petrecipes.recipeingredients = await Promise.all(ingredientInRecipeList.map(async (ingredient: any) => {
-                if (!ingredient.ingredeintId || !ingredient.ingredientName || ingredient.amount == undefined) {
+                if (!ingredient.ingredientId || !ingredient.ingredientName || ingredient.amount == undefined) {
                     throw new Error("Please fill in all the fields!");
                 }
                 try {
                     const recipeingredients = new Recipeingredients();
-                    recipeingredients.ingredients_ingredient_id = ingredient.ingredeintId;
+                    recipeingredients.ingredients_ingredient_id = ingredient.ingredientId;
                     recipeingredients.petrecipes_recipes_id = recipeId;
                     recipeingredients.quantity = ingredient.amount;
                     recipeingredients.update_by = `${userid}_${username}`;
