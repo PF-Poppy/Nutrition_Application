@@ -13,6 +13,7 @@ const NAMESPACE = 'Ingredient Controller';
 export default class IngredientController {
     async addNewIngredient(req: Request, res: Response){
         logging.info(NAMESPACE, 'Add new ingredientnutrition');
+        console.log(req.body);
         const { userid, username } = (req as JwtPayload).jwtPayload;
         if (!req.body) {
             res.status(400).json({
@@ -57,6 +58,7 @@ export default class IngredientController {
                     nutrientInfo.create_by = `${userid}_${username}`;
                     nutrientInfo.update_date = new Date();
                     nutrientInfo.update_by = `${userid}_${username}`;
+
                     try {
                         const addnewngredientnutrition = await ingredientnutritionRepository.save(nutrientInfo);
                         ingredient.ingredientnutrition.push(addnewngredientnutrition);
@@ -199,9 +201,9 @@ export default class IngredientController {
                     }
                 }));
                 return {
-                    ingredientId: ingredientInfo.ingredient_id,
-                    ingredientName: ingredientInfo.ingredient_name,
-                    nutrient: nutrientlimitinfo
+                        ingredientId: ingredientInfo.ingredient_id,
+                        ingredientName: ingredientInfo.ingredient_name,
+                        nutrient: nutrientlimitinfo
                 };
             }));
             logging.info(NAMESPACE, 'Get all ingredientnutrition successfully');

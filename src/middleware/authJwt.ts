@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import e, { Request, Response, NextFunction } from "express";
 import jwt, {JwtPayload} from "jsonwebtoken";
 import config from "../config/auth.config";
 import checkuserAdminrole from "./checkuser.adminrole";
@@ -82,11 +82,29 @@ const isPetFoodManagementAdmin = async (req: Request, res: Response, next: NextF
   }
 }
 
+const isAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  logging.info(NAMESPACE, 'Check Admin Role');
+  const { userid } = (req as JwtPayload).jwtPayload;
+  const isPetFoodManagementAdmin = await checkuserAdminrole.checkPetFoodManagementAdmin(userid);
+  const isUserManagementAdmin = await checkuserAdminrole.checkUserManagementAdmin(userid);
+  if (isPetFoodManagementAdmin || isUserManagementAdmin) {
+      next();
+      return; 
+  }else {
+    logging.error(NAMESPACE, 'User is not Admin');
+    res.status(404).json({
+        message: "Require Admin Role!"
+    });
+    return;
+  }
+}
+
 
 const authJwt = {
     validateToken,
     isUserManagementAdmin,
-    isPetFoodManagementAdmin
+    isPetFoodManagementAdmin,
+    isAdmin
 };
 
 export default authJwt;

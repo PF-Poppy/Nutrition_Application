@@ -50,7 +50,7 @@ export default class PetRecipesController {
                     amount: recipeNutritionInfo.nutrient_value,
                 }));
 
-                const sortedrecipeIngrediente = recipeIngredientList.sort((a:any, b:any) => a.ingredientId.localeCompare(b.ingredientId));
+                const sortedrecipeIngrediente = recipeIngredientList.sort((a:any, b:any) => a.ingredient.ingredientId.localeCompare(b.ingredient.ingredientId));
                 return {
                     recipeId: petrecipe.recipes_id,
                     recipeName: petrecipe.recipes_name,
@@ -79,6 +79,7 @@ export default class PetRecipesController {
             return;
         }
         const { userid, username} = (req as JwtPayload).jwtPayload;
+        /*
         const { recipeName, petTypeId, petTypeName, ingredientInRecipeList, freshNutrientList } = req.body;
         if (!recipeName || !petTypeId || !petTypeName || !ingredientInRecipeList || !freshNutrientList) {
             res.status(400).json({
@@ -86,25 +87,39 @@ export default class PetRecipesController {
             });
             return;
         }
+        */
+        const { recipeName, petTypeName, ingredientInRecipeList, freshNutrientList } = req.body;
+        if (!recipeName  || !petTypeName || !ingredientInRecipeList || !freshNutrientList) {
+            res.status(400).json({
+                message: "Please fill in all the fields!",
+            });
+            return;
+        }
         try {
+            const pettype = await animaltypeRepository.retrieveByName(petTypeName);
+
             const petrecipes = new Petrecipes();
             petrecipes.recipes_name = recipeName;
-            petrecipes.animaltype_type_id = petTypeId;
+            petrecipes.animaltype_type_id = pettype.type_id;
             petrecipes.create_by = `${userid}_${username}`;
             petrecipes.update_by = `${userid}_${username}`;
             petrecipes.update_date = new Date();
             const addNewPetRecipe = await petrecipesRepository.save(petrecipes);
 
-            petrecipes.recipeingredients = await Promise.all(ingredientInRecipeList.map(async (ingredient: any) => {
-                if (!ingredient.ingredientId || !ingredient.ingredientName || ingredient.amount == undefined) {
+            petrecipes.recipeingredients = await Promise.all(ingredientInRecipeList.map(async (ingredientinfo: any) => {
+                if (!ingredientinfo.ingredient || ingredientinfo.amount == undefined) {
+                    await petrecipesRepository.deleteById(addNewPetRecipe.recipes_id);
+                    throw new Error("Please fill in all the fields!");
+                }
+                if (!ingredientinfo.ingredient.ingredientId || !ingredientinfo.ingredient.ingredientName) {
                     await petrecipesRepository.deleteById(addNewPetRecipe.recipes_id);
                     throw new Error("Please fill in all the fields!");
                 }
                 try {
                     const recipeingredients = new Recipeingredients();
-                    recipeingredients.ingredients_ingredient_id = ingredient.ingredientId;
+                    recipeingredients.ingredients_ingredient_id = ingredientinfo.ingredient.ingredientId;
                     recipeingredients.petrecipes_recipes_id = addNewPetRecipe.recipes_id;
-                    recipeingredients.quantity = ingredient.amount;
+                    recipeingredients.quantity = ingredientinfo.amount;
                     recipeingredients.create_by = `${userid}_${username}`;
                     recipeingredients.update_by = `${userid}_${username}`;
                     recipeingredients.update_date = new Date();
@@ -175,6 +190,7 @@ export default class PetRecipesController {
             });
             return;
         }
+        /*
         const { recipeId,recipeName, petTypeId, petTypeName, ingredientInRecipeList, freshNutrientList } = req.body;
         if (recipeId === "" || recipeId === undefined || recipeId === null) {
             res.status(400).json({
@@ -188,7 +204,20 @@ export default class PetRecipesController {
             });
             return;
         }
-
+        */
+        const { recipeId,recipeName, petTypeName, ingredientInRecipeList, freshNutrientList } = req.body;
+        if (recipeId === "" || recipeId === undefined || recipeId === null) {
+            res.status(400).json({
+                message: "Pet recipe id cannot be empty",
+            });
+            return;
+        }
+        if (!recipeName || !petTypeName || !ingredientInRecipeList || !freshNutrientList) {
+            res.status(400).json({
+                message: "Please fill in all the fields!",
+            });
+            return;
+        }
         try{
             const petrecipes = await petrecipesRepository.retrieveById(recipeId);
         }catch(err){
@@ -197,32 +226,35 @@ export default class PetRecipesController {
             });
             return;
         }
-        
         try {
+            const pettype = await animaltypeRepository.retrieveByName(petTypeName);
+
             const petrecipes = new Petrecipes();
             petrecipes.recipes_id = recipeId;
             petrecipes.recipes_name = recipeName;
-            petrecipes.animaltype_type_id = petTypeId;
+            petrecipes.animaltype_type_id = pettype.type_id;
             petrecipes.update_by = `${userid}_${username}`;
             petrecipes.update_date = new Date();
             const updatePetRecipe = await petrecipesRepository.update(petrecipes);
 
-            petrecipes.recipeingredients = await Promise.all(ingredientInRecipeList.map(async (ingredient: any) => {
-                if (!ingredient.ingredientId || !ingredient.ingredientName || ingredient.amount == undefined) {
+            petrecipes.recipeingredients = await Promise.all(ingredientInRecipeList.map(async (ingredientinfo: any) => {
+                if (!ingredientinfo.ingredient || ingredientinfo.amount == undefined) {
+                    throw new Error("Please fill in all the fields!");
+                }
+                if (!ingredientinfo.ingredient.ingredientId || !ingredientinfo.ingredient.ingredientName) {
                     throw new Error("Please fill in all the fields!");
                 }
                 try {
                     const recipeingredients = new Recipeingredients();
-                    recipeingredients.ingredients_ingredient_id = ingredient.ingredientId;
+                    recipeingredients.ingredients_ingredient_id = ingredientinfo.ingredient.ingredientId;
                     recipeingredients.petrecipes_recipes_id = recipeId;
-                    recipeingredients.quantity = ingredient.amount;
+                    recipeingredients.quantity = ingredientinfo.amount;
                     recipeingredients.update_by = `${userid}_${username}`;
                     recipeingredients.update_date = new Date();
                     const updateRecipeIngredient = await recipeingredientsRepository.update(recipeingredients);
                 }catch (err) {
                     throw err;
                 }
-                return;
             }));
 
             let order_value: number = 0;
@@ -233,7 +265,6 @@ export default class PetRecipesController {
                 }
                 try {
                     const nutrient = await nutritionsecondaryRepository.retrieveByName(nutrientInfoData.nutrientName);
-                    console.log(nutrientInfoData.nutrientName);
                     const nutrientorder_value = new Nutritionsecondary();
                     nutrientorder_value.order_value = order_value;
                     nutrientorder_value.nutrient_name = nutrientInfoData.nutrientName;

@@ -6,12 +6,25 @@ import logging from "../config/logging";
 const NAMESPACE = "User Repository";
 
 interface IUserRepository {
+    retrieveAll(): Promise<User[]>;
     retrieveById(userid:string): Promise<User | undefined>;
     retrieveByName(userid:string): Promise<User | undefined>;
     deleteById(userid:string): Promise<number>;
 }
 
 class UserRepository implements IUserRepository {
+    async retrieveAll() : Promise<User[]>{
+        try {
+            const result = await AppDataSource.getRepository(User).find({
+                select: ["user_id","firstname","lastname","age","username","password"]
+            });
+            logging.info(NAMESPACE, "Get all users successfully.");
+            return result;
+        } catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
     async retrieveById(userid:string) : Promise<User>{
         try {
             const result = await AppDataSource.getRepository(User).findOne({

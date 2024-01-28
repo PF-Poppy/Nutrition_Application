@@ -10,6 +10,7 @@ import roleRoutes from "./role.routes";
 import userroleRoutes from "./userrole.routes";
 import petrecipesRoutes from "./petrecipes.routes";
 import searchpetrecipesRoutes from "./searchpetrecipes.routes";
+import adminhomeRoutes from "./adminhome.routes";
 
 export default class Routes {
     constructor(app: Application) {
@@ -24,5 +25,6 @@ export default class Routes {
         app.use('/api/userRole', userroleRoutes);
         app.use('/api/petRecipes', petrecipesRoutes);
         app.use('/api/searchPetRecipes', searchpetrecipesRoutes);
+        app.use('/api/adminHome', adminhomeRoutes);
     }
 }

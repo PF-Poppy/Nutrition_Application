@@ -112,10 +112,22 @@ export default class SearchPetRecipesController {
                 const recipenutrition = await recipenutritionRepository.retrieveByRecipeId(petrecipesInfo.recipes_id);
                 const sortedrecipeNutrition = recipenutrition.sort((a, b) => a.order_value - b.order_value);
 
-                const recipeIngredientList = recipeingredients.map(recipeIngredientInfo => ({
-                    ingredientId: recipeIngredientInfo.ingredient_id,
-                    ingredientName: recipeIngredientInfo.ingredient_name,
-                    amount: recipeIngredientInfo.quantity,
+                const recipeIngredientList = await Promise.all(recipeingredients.map(async recipeIngredientInfo => {
+                    const ingredientNutrition = await ingredientnutritionRepository.retrieveByIngredientId(recipeIngredientInfo.ingredient_id);
+                    const sortedingredientNutrition = ingredientNutrition.sort((a, b) => a.order_value - b.order_value);
+                    const ingredientNutritionList = sortedingredientNutrition.map(ingredientNutritionInfo => ({
+                        nutritionName: ingredientNutritionInfo.nutrient_name,
+                        unit: ingredientNutritionInfo.nutrient_unit,
+                        amount: ingredientNutritionInfo.nutrient_value,
+                    }));
+                    return {
+                        ingredient:{
+                            ingredientId: recipeIngredientInfo.ingredient_id,
+                            ingredientName: recipeIngredientInfo.ingredient_name,
+                            nutrient: ingredientNutritionList,
+                        },
+                        amount: recipeIngredientInfo.quantity,
+                    }
                 }));
                 const waterNutrition = recipenutrition.find(recipeNutritionInfo => recipeNutritionInfo.nutrient_name === "Moisture");
                 const recipeNutritionList = sortedrecipeNutrition.map(recipeNutritionInfo => {
@@ -142,7 +154,7 @@ export default class SearchPetRecipesController {
                     };
 
                 });
-                const sortedrecipeIngrediente = recipeIngredientList.sort((a, b) => a.ingredientId.localeCompare(b.ingredientId));
+                const sortedrecipeIngrediente = recipeIngredientList.sort((a, b) => a.ingredient.ingredientId.localeCompare(b.ingredient.ingredientId));
                 return {
                     recipeId: petrecipesInfo.recipes_id,
                     recipeName: petrecipesInfo.recipes_name,
@@ -167,7 +179,7 @@ export default class SearchPetRecipesController {
                 recipesList = recipes.filter(recipe => {
                     return recipe.ingredientInRecipeList.every(recipeIngredien => {
                         return sortedSelectedIngredient.some((selectedIngredient:any) => {
-                            return recipeIngredien.ingredientId === selectedIngredient.ingredientId;
+                            return recipeIngredien.ingredient.ingredientId === selectedIngredient.ingredientId;
                         });
                     });
                 });
@@ -180,13 +192,13 @@ export default class SearchPetRecipesController {
                 recipesList = recipes.filter(recipe =>
                     selectedIngredientList.every((selectedIngredient:any) =>
                         recipe.ingredientInRecipeList.some(recipeIngredient =>
-                            recipeIngredient.ingredientId === selectedIngredient.ingredientId
+                            recipeIngredient.ingredient.ingredientId === selectedIngredient.ingredientId
                         )
                     ) &&
                     selectedIngredientList.every((selectedIngredient:any) =>
                         recipe.ingredientInRecipeList.some(recipeIngredient =>
                             selectedIngredientList.some((selectedIngredient:any) =>
-                                recipeIngredient.ingredientId === selectedIngredient.ingredientId
+                                recipeIngredient.ingredient.ingredientId === selectedIngredient.ingredientId
                             )
                         )
                     )
@@ -363,15 +375,27 @@ export default class SearchPetRecipesController {
                         "limit": limit,
                     });
                     
-                    const searchPetRecipesList = (algorithmResponse.data.petrecipes).map((recipeInfo:any) => ({
+                    const searchPetRecipesList = await Promise.all((algorithmResponse.data.petrecipes).map(async (recipeInfo:any) => ({
                         recipeId: "1",
                         recipeName: "petrecipes_algorithmA",
                         petTypeId: pettype.animaltypeid,
                         petTypeName: pettype.animaltypename,
-                        ingredientInRecipeList: recipeInfo.ingredientList.map((ingredientInfo:any) => ({
-                            ingredientId: selectedIngredientList.find((ingredient:any) => ingredient.ingredientName === ingredientInfo.name).ingredientId,
-                            ingredientName: ingredientInfo.name,
-                            amount: ingredientInfo.amount,
+                        ingredientInRecipeList: await Promise.all(recipeInfo.ingredientList.map(async (ingredientInfo:any) => {
+                            const ingredientNutrition = await ingredientnutritionRepository.retrieveByIngredientId(selectedIngredientList.find((ingredient:any) => ingredient.ingredientName === ingredientInfo.name).ingredientId);
+                            const sortedingredientNutrition = ingredientNutrition.sort((a, b) => a.order_value - b.order_value);
+                            const ingredientNutritionList = sortedingredientNutrition.map(ingredientNutritionInfo => ({
+                                nutritionName: ingredientNutritionInfo.nutrient_name,
+                                unit: ingredientNutritionInfo.nutrient_unit,
+                                amount: ingredientNutritionInfo.nutrient_value,
+                            }));
+                            return {
+                                ingredient:{
+                                    ingredientId: selectedIngredientList.find((ingredient:any) => ingredient.ingredientName === ingredientInfo.name).ingredientId,
+                                    ingredientName: ingredientInfo.name,
+                                    nutrient: ingredientNutritionList,
+                                },
+                                amount: ingredientInfo.amount,
+                            }
                         })),
                         freshNutrientList: sortdefaultnutrition.map((nutrientInfo:any) => ({
                             nutritionName: nutrientInfo.nutrient_name,
@@ -379,7 +403,7 @@ export default class SearchPetRecipesController {
                             amount: (recipeInfo.freshNutrient).find((nutrients:any) => nutrients.nutrientname === nutrientInfo.nutrient_name).amount,
                         })),
                         
-                    }));
+                    })));
 
                     res.status(200).json({
                         searchPetRecipesList
