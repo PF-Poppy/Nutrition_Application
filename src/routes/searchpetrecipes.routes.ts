@@ -10,8 +10,9 @@ class SearchPetRecipesRoutes {
     }
 
     initializeRoutes() {
-        this.router.get('/getPetRecipes',this.controller.getPetsRecipes);
-        this.router.get('/getPetRecipes/algorithm',this.controller.getPetRecipesAlgorithm);
+        this.router.get('/test',this.controller.testgetPetsRecipes);
+        this.router.post('/getPetRecipes',this.controller.getPetsRecipes);
+        this.router.post('/getPetRecipes/algorithm',this.controller.getPetRecipesAlgorithm);
     }
 }
 

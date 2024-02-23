@@ -14,7 +14,7 @@ export class Recipeingredients {
   @Column()
   petrecipes_recipes_id!: string 
 
-  @Column()
+  @Column({type: "double",default: 0.0})
   quantity!: number
 
   @CreateDateColumn()
