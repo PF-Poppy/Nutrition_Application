@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import { Ingredients } from '../entity/ingredients.entity';
-import { Ingredientnutrition } from '../entity/ingredientnutrition.entity';
+import { Ingredientnutritionprimary } from '../entity/ingredientnutritionprimary.entity';
 import { Nutritionprimary } from '../entity/nutritionprimary.entity';
 import ingredientsRepository from '../repositories/ingredients.repository';
 import ingredientnutritionRepository from '../repositories/ingredientnutrition.repository';
@@ -37,7 +37,7 @@ export default class IngredientController {
             const addingredient = await ingredientsRepository.save(ingredient);
             
             let order_value: number = 0;
-            ingredient.ingredientnutrition = [];
+            ingredient.ingredientnutritionprimary = [];
             for (const nutrientInfoData of nutrient) {
                 if (!nutrientInfoData.nutrientName || nutrientInfoData.amount == undefined) {
                     await ingredientsRepository.deleteById(addingredient.ingredient_id);
@@ -51,7 +51,7 @@ export default class IngredientController {
                     await nutritionprimaryRepository.updatenutritionorder_value(nutrientorder_value);
                     order_value++;
 
-                    const nutrientInfo = new Ingredientnutrition();
+                    const nutrientInfo = new Ingredientnutritionprimary();
                     nutrientInfo.nutritionprimary_nutrition_id = nutrient.nutrition_id;
                     nutrientInfo.ingredients_ingredient_id = addingredient.ingredient_id;
                     nutrientInfo.nutrient_value = nutrientInfoData.amount;
@@ -61,7 +61,7 @@ export default class IngredientController {
 
                     try {
                         const addnewngredientnutrition = await ingredientnutritionRepository.save(nutrientInfo);
-                        ingredient.ingredientnutrition.push(addnewngredientnutrition);
+                        ingredient.ingredientnutritionprimary.push(addnewngredientnutrition);
                     }catch(err){
                         throw err;
                     }
@@ -142,7 +142,7 @@ export default class IngredientController {
             }));
 
             let order_value: number = 0;
-            ingredient.ingredientnutrition = [];
+            ingredient.ingredientnutritionprimary = [];
             for (const nutrientInfoData of nutrient) {
                 try {
                     const nutrients = await nutritionprimaryRepository.retrieveByName(nutrientInfoData.nutrientName);
@@ -152,7 +152,7 @@ export default class IngredientController {
                     await nutritionprimaryRepository.updatenutritionorder_value(nutrientorder_value);
                     order_value++;
 
-                    const nutrientInfo = new Ingredientnutrition();
+                    const nutrientInfo = new Ingredientnutritionprimary();
                     nutrientInfo.nutritionprimary_nutrition_id = nutrients.nutrition_id;
                     nutrientInfo.ingredients_ingredient_id = ingredientId;
                     nutrientInfo.nutrient_value = nutrientInfoData.amount;
@@ -160,7 +160,7 @@ export default class IngredientController {
                     nutrientInfo.update_date = new Date();
 
                     const updateingredientnutrition = await ingredientnutritionRepository.update(nutrientInfo);
-                    ingredient.ingredientnutrition.push(updateingredientnutrition);
+                    ingredient.ingredientnutritionprimary.push(updateingredientnutrition);
                 }catch(err){
                     throw err;
                 }

@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn, } from 'typeorm';
-import { Ingredientnutrition } from './ingredientnutrition.entity';
+import { Ingredientnutritionprimary } from "./ingredientnutritionprimary.entity";
+import { Ingredientnutritionsecondary } from "./ingredientnutritionsecondary.entity";
 import { Recipeingredients } from "./recipeingredients.entity";
 //import { Ingredienttypes } from './ingredienttypes.entity';
 
@@ -28,8 +29,11 @@ export class Ingredients {
   @Column({type: "varchar", length: 255, nullable: true})
   update_by?: string
 
-  @OneToMany(() => Ingredientnutrition, ingredientnutrition => ingredientnutrition.ingredients_ingredient_id)
-  ingredientnutrition?: Ingredientnutrition[];
+  @OneToMany(() => Ingredientnutritionprimary, ingredientnutritionprimary => ingredientnutritionprimary.ingredients_ingredient_id)
+  ingredientnutritionprimary?: Ingredientnutritionprimary[];
+
+  @OneToMany(() => Ingredientnutritionsecondary, ingredientnutritionsecondary => ingredientnutritionsecondary.ingredients_ingredient_id)
+  ingredientnutritionsecondary?: Ingredientnutritionsecondary[];
 
   @OneToMany(() => Recipeingredients, recipeingredients => recipeingredients.ingredients_ingredient_id)
   recipeingredients?: Recipeingredients[];
@@ -37,6 +41,4 @@ export class Ingredients {
   //@ManyToOne(() => Ingredienttypes, ingredienttypes => ingredienttypes.ingredienttypes_id)
   //@JoinColumn({ name: "ingredienttypes_ingredienttypes_id" })
   //ingredienttypes!: Ingredienttypes;
-
-  
 }

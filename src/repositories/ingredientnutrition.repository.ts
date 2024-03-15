@@ -1,4 +1,4 @@
-import { Ingredientnutrition } from "../entity/ingredientnutrition.entity";
+import { Ingredientnutritionprimary } from "../entity/ingredientnutritionprimary.entity";
 import { Nutritionprimary } from "../entity/nutritionprimary.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";
@@ -6,9 +6,9 @@ import logging from "../config/logging";
 const NAMESPACE = "Ingredientnutrition Repository";
 
 interface IIngredientnutritionRepository {
-    save(ingredientnutrition:Ingredientnutrition): Promise<Ingredientnutrition>;
-    update(ingredientnutrition:Ingredientnutrition): Promise<Ingredientnutrition>; 
-    retrieveById(ingredientnutritionid: string): Promise<Ingredientnutrition | undefined>;
+    save(ingredientnutrition:Ingredientnutritionprimary): Promise<Ingredientnutritionprimary>;
+    update(ingredientnutrition:Ingredientnutritionprimary): Promise<Ingredientnutritionprimary>; 
+    retrieveById(ingredientnutritionid: string): Promise<Ingredientnutritionprimary | undefined>;
     retrieveByIngredientId(ingredientid: string): Promise<any[]>;
     deleteByIngredientId(ingredientid: string): Promise<number>
     deleteByNutritionId(nutritionid: string): Promise<number>
@@ -16,9 +16,9 @@ interface IIngredientnutritionRepository {
 }
 
 class IngredientnutritionRepository implements IIngredientnutritionRepository {
-    async save(ingredientnutrition:Ingredientnutrition): Promise<Ingredientnutrition> {
+    async save(ingredientnutrition:Ingredientnutritionprimary): Promise<Ingredientnutritionprimary> {
         try {
-            const connect = AppDataSource.getRepository(Ingredientnutrition)
+            const connect = AppDataSource.getRepository(Ingredientnutritionprimary)
             const duplicate = await connect.findOne(
                 { where: { nutritionprimary_nutrition_id: ingredientnutrition.nutritionprimary_nutrition_id, ingredients_ingredient_id: ingredientnutrition.ingredients_ingredient_id}}
             );
@@ -31,7 +31,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
             const result = await connect.save(ingredientnutrition);
             logging.info(NAMESPACE, "Save ingredientnutrition successfully.");
             try {
-                const res = await this.retrieveById(result.ingredient_nutrition_id);
+                const res = await this.retrieveById(result.ingredient_nutritionprimary_id);
                 return res;
             }catch(err){
                 logging.error(NAMESPACE, 'Error call retrieveById from insert ingredientnutrition');
@@ -43,10 +43,10 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
         }
     }
     
-    async update(ingredientnutrition: Ingredientnutrition): Promise<Ingredientnutrition> {
-        let result: Ingredientnutrition | undefined;
+    async update(ingredientnutrition: Ingredientnutritionprimary): Promise<Ingredientnutritionprimary> {
+        let result: Ingredientnutritionprimary | undefined;
         try {
-            const connect = AppDataSource.getRepository(Ingredientnutrition);
+            const connect = AppDataSource.getRepository(Ingredientnutritionprimary);
             const existingIngredientnutrition = await connect.findOne(
                 { where: { nutritionprimary_nutrition_id: ingredientnutrition.nutritionprimary_nutrition_id, ingredients_ingredient_id: ingredientnutrition.ingredients_ingredient_id}}
             );
@@ -57,8 +57,8 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
                     const res = await connect.save(ingredientnutrition);
                     logging.info(NAMESPACE, "Update ingredientnutrition successfully.");
                     try {
-                        result = await this.retrieveById(res.ingredient_nutrition_id);
-                        return result;
+                        result = await this.retrieveById(res.ingredient_nutritionprimary_id);
+                        return result!;
                     } catch(err) {
                         logging.error(NAMESPACE, 'Error call retrieveById from insert ingredientnutrition');
                         throw err;
@@ -69,11 +69,11 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
                 }
             } else if (existingIngredientnutrition) {
                 try {
-                    await connect.update({ ingredient_nutrition_id: existingIngredientnutrition.ingredient_nutrition_id }, ingredientnutrition);
+                    await connect.update({ ingredient_nutritionprimary_id: existingIngredientnutrition.ingredient_nutritionprimary_id }, ingredientnutrition);
                     logging.info(NAMESPACE, "Update ingredientnutrition successfully.");
                     try {
-                        result = await this.retrieveById(existingIngredientnutrition.ingredient_nutrition_id);
-                        return result;
+                        result = await this.retrieveById(existingIngredientnutrition.ingredient_nutritionprimary_id);
+                        return result!;
                     } catch(err) {
                         logging.error(NAMESPACE, 'Error call retrieveById from insert ingredientnutrition');
                         throw err;
@@ -159,12 +159,12 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
     */
     
 
-    async retrieveById(ingredientnutritionid: string): Promise<Ingredientnutrition> {
+    async retrieveById(ingredientnutritionid: string): Promise<Ingredientnutritionprimary> {
         try {
             
-            const result = await AppDataSource.getRepository(Ingredientnutrition).findOne({
-                where: { ingredient_nutrition_id : ingredientnutritionid },
-                select: ["ingredient_nutrition_id","nutritionprimary_nutrition_id","ingredients_ingredient_id","nutrient_value"]
+            const result = await AppDataSource.getRepository(Ingredientnutritionprimary).findOne({
+                where: { ingredient_nutritionprimary_id : ingredientnutritionid },
+                select: ["ingredient_nutritionprimary_id","nutritionprimary_nutrition_id","ingredients_ingredient_id","nutrient_value"]
             });
             if (!result) {
                 logging.error(NAMESPACE, "Not found ingredientnutrition with id: " + ingredientnutritionid);
@@ -180,21 +180,21 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
 
     async retrieveByIngredientId(ingredientid: string): Promise<any[]> {
         try {
-            const result = await AppDataSource.getRepository(Ingredientnutrition)
-            .createQueryBuilder("ingredientnutrition")
-            .innerJoinAndSelect(Nutritionprimary, "nutritionprimary", "nutritionprimary.nutrition_id = ingredientnutrition.nutritionprimary_nutrition_id")
+            const result = await AppDataSource.getRepository(Ingredientnutritionprimary)
+            .createQueryBuilder("ingredientnutritionprimary")
+            .innerJoinAndSelect(Nutritionprimary, "nutritionprimary", "nutritionprimary.nutrition_id = ingredientnutritionprimary.nutritionprimary_nutrition_id")
             .select([
-                "ingredientnutrition.ingredient_nutrition_id AS ingredient_nutrition_id",
-                "ingredientnutrition.nutritionprimary_nutrition_id AS nutrition_id",
-                "ingredientnutrition.ingredients_ingredient_id AS ingredient_id",
+                "ingredientnutritionprimary.ingredient_nutritionprimary_id AS ingredient_nutrition_id",
+                "ingredientnutritionprimary.nutritionprimary_nutrition_id AS nutrition_id",
+                "ingredientnutritionprimary.ingredients_ingredient_id AS ingredient_id",
                 "nutritionprimary.nutrient_name AS nutrient_name",
                 "nutritionprimary.order_value AS order_value",
                 "nutritionprimary.nutrient_unit AS nutrient_unit",
-                "ingredientnutrition.nutrient_value AS nutrient_value"
+                "ingredientnutritionprimary.nutrient_value AS nutrient_value"
             ])
-            .where("ingredientnutrition.ingredients_ingredient_id = :ingredientid", { ingredientid: ingredientid })
+            .where("ingredientnutritionprimary.ingredients_ingredient_id = :ingredientid", { ingredientid: ingredientid })
             .getRawMany();
-            logging.info(NAMESPACE, "Get ingredientnutrition by ingredient id successfully.");
+            logging.info(NAMESPACE, "Get ingredientnutritionprimary by ingredient id successfully.");
             return result;
         }catch(err){
             logging.error(NAMESPACE, (err as Error).message, err);
@@ -204,7 +204,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
 
     async deleteByIngredientId(ingredientid: string): Promise<number> {
         try {
-            const connect = AppDataSource.getRepository(Ingredientnutrition)
+            const connect = AppDataSource.getRepository(Ingredientnutritionprimary)
             const result = await connect.delete({ ingredients_ingredient_id : ingredientid});
             if (result.affected === 0){
                 logging.error(NAMESPACE, "Not found ingredientnutrition with ingredient id: " + ingredientid);
@@ -220,7 +220,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
 
     async deleteByNutritionId(nutritionid: string): Promise<number> {
         try {
-            const connect = AppDataSource.getRepository(Ingredientnutrition);
+            const connect = AppDataSource.getRepository(Ingredientnutritionprimary);
             const result = await connect.delete({ nutritionprimary_nutrition_id: nutritionid });
             if (result.affected === 0) {
                 logging.error(NAMESPACE, `No ingredientnutrition found with nutritionid: ${nutritionid}. Nothing to delete.`);
@@ -236,7 +236,7 @@ class IngredientnutritionRepository implements IIngredientnutritionRepository {
 
     async deleteAll(): Promise<number>{
         try {
-            const result = await AppDataSource.getRepository(Ingredientnutrition).delete({});
+            const result = await AppDataSource.getRepository(Ingredientnutritionprimary).delete({});
             logging.info(NAMESPACE, "Delete all ingredientnutrition successfully.");
             return result.affected!;
         } catch (err) {

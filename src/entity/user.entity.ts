@@ -1,9 +1,7 @@
 import "reflect-metadata";
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany,  } from 'typeorm';
 import { UserRole } from './userrole.entity';
-import { Favorite } from "./favorite.entity";
 import { Pet } from "./pet.entity";
-import { Usernotification } from "./usernotification.entity";
 
 @Entity({ name: "user" })
 export class User {
@@ -37,14 +35,6 @@ export class User {
   @OneToMany(() => UserRole, userRole => userRole.user_user_id)
   userRoles?: UserRole[];
 
-  @OneToMany(() => Favorite, favorite => favorite.user_user_id)
-  favorites?: Favorite[];
-
   @OneToMany(() => Pet, pet => pet.user_user_id)
   pets?: Pet[];
-
-  @OneToMany(() => Usernotification, usernotification => usernotification.user_user_id)
-  usernotifications?: Usernotification[];
-
-  
 }

@@ -3,10 +3,10 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { Nutritionprimary } from "./nutritionprimary.entity";
 import { Ingredients } from './ingredients.entity';
 
-@Entity({ name: "ingredientnutrition" })
-export class Ingredientnutrition {
+@Entity({ name: "ingredientnutritionprimary" })
+export class Ingredientnutritionprimary {
   @PrimaryGeneratedColumn("uuid")
-  ingredient_nutrition_id!: string
+  ingredient_nutritionprimary_id!: string
 
   @Column()
   nutritionprimary_nutrition_id!: string
@@ -35,7 +35,5 @@ export class Ingredientnutrition {
 
   @ManyToOne(() => Ingredients, ingredients => ingredients.ingredient_id,{onDelete: 'CASCADE'})
   @JoinColumn({name: "ingredients_ingredient_id"})
-  ingredients!: Ingredients;
-
-  
+  ingredients!: Ingredients;  
 }

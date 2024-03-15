@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, } from 'typeorm';
-import { Ingredientnutrition } from './ingredientnutrition.entity';
+import { Ingredientnutritionprimary } from "./ingredientnutritionprimary.entity";
 
 @Entity({ name: "nutritionprimary" })
 export class Nutritionprimary {
@@ -28,8 +28,6 @@ export class Nutritionprimary {
   @Column({type: "varchar", length: 255, nullable: true})
   update_by?: string
 
-  @OneToMany(() => Ingredientnutrition, ingredientnutrition => ingredientnutrition.nutritionprimary_nutrition_id)
-  ingredientnutrition!: Ingredientnutrition[];
-
-  
+  @OneToMany(() => Ingredientnutritionprimary, ingredientnutritionprimary => ingredientnutritionprimary.nutritionprimary_nutrition_id)
+  ingredientnutritionprimary!: Ingredientnutritionprimary[];
 }

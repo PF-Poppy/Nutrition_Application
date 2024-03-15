@@ -1,6 +1,5 @@
 import "reflect-metadata";
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn, } from 'typeorm';
-import { Favorite } from "./favorite.entity";
 import { AnimalType } from "./animaltype.entity";
 import { Recipeingredients } from "./recipeingredients.entity";
 import { Recipenutrition } from "./recipesnutrition.entity";
@@ -31,9 +30,6 @@ export class Petrecipes {
   @Column({type: "varchar", length: 255, nullable: true})
   update_by?: string
   
-  @OneToMany(() => Favorite, favorite => favorite.petrecipes_recipes_id)
-  favorites?: Favorite[];
-
   @OneToMany(() => Recipeingredients, recipeingredients => recipeingredients.petrecipes_recipes_id)
   recipeingredients?: Recipeingredients[];
 

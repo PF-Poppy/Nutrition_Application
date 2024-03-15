@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, } from 'typeorm';
 import { Diseasenutrition } from "./diseasenutrition.entity";
 import { Recipenutrition } from "./recipesnutrition.entity";
+import { Ingredientnutritionsecondary } from "./ingredientnutritionsecondary.entity";
 
 @Entity({ name: "nutritionsecondary" })
 export class Nutritionsecondary {
@@ -16,6 +17,9 @@ export class Nutritionsecondary {
 
   @Column({type: "varchar", length: 255, nullable: true})
   nutrient_unit!: string
+
+  @Column({type: "varchar", length: 255, nullable: true})
+  formula!: string
 
   @CreateDateColumn()
   create_date?: Date;
@@ -35,5 +39,6 @@ export class Nutritionsecondary {
   @OneToMany(() => Recipenutrition, recipenutrition => recipenutrition.nutritionsecondary_nutrition_id)
   recipenutrition!: Recipenutrition[];
 
-  
+  @OneToMany(() => Ingredientnutritionsecondary, ingredientnutritionsecondary => ingredientnutritionsecondary.nutritionsecondary_nutrition_id)
+  ingredientnutritionsecondary!: Ingredientnutritionsecondary[];
 }
