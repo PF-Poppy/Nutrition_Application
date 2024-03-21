@@ -1,4 +1,4 @@
-import { Recipenutrition } from "../entity/recipesnutrition.entity";
+import { Recipenutrition } from "../entity/recipenutrition.entity";
 import { Nutritionsecondary } from "../entity/nutritionsecondary.entity";
 import { AppDataSource } from "../db/data-source";
 import logging from "../config/logging";

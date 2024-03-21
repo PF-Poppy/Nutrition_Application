@@ -4,7 +4,7 @@ import { AnimalType } from "../entity/animaltype.entity";
 import { Diseasedetail } from "../entity/diseasedetail.entity";
 import { Diseasenutrition } from "../entity/diseasenutrition.entity";
 import { Nutritionsecondary } from "../entity/nutritionsecondary.entity";
-import { Defaultnutrition } from "../entity/defaultnutrition.entity";
+import { Defaultnutrition } from "../entity/defaultnutrition.entity"; //TODO delete this enttity
 import petRepository from "../repositories/pet.repository";
 import nutritionsecondaryRepository from "../repositories/nutritionsecondary.repository";
 import animalRepository from "../repositories/animaltype.repository";

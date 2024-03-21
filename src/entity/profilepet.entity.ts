@@ -20,7 +20,7 @@ export class Profilepet {
   petBirthDate!: Date
 
   @Column({type: "varchar", length: 255})
-  activitie!: string
+  activitiy!: string
 
   @Column({type: "varchar", length: 255})
   factor_type!: string

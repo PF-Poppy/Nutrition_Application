@@ -2,6 +2,8 @@
 *.logs
 package-lock.json*
 
+db.config.js
+
 .idea/
 .vscode/
 node_modules/

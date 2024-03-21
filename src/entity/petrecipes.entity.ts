@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn, } from 'typeorm';
 import { AnimalType } from "./animaltype.entity";
 import { Recipeingredients } from "./recipeingredients.entity";
-import { Recipenutrition } from "./recipesnutrition.entity";
+import { Recipenutrition } from "./recipenutrition.entity";
 
 @Entity({ name: "petrecipes" })
 export class Petrecipes {

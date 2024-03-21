@@ -51,7 +51,7 @@ const validateToken = (req: Request, res: Response, next: NextFunction) => {
 
 
 const isUserManagementAdmin = async (req: Request, res: Response, next: NextFunction) => {
-  logging.info(NAMESPACE, 'Check User Management Admin Role');
+  logging.info(NAMESPACE, 'Check User Manageme nt Admin Role');
   const { userid } = (req as JwtPayload).jwtPayload;
   const isUserManagementAdmin = await checkuserAdminrole.checkUserManagementAdmin(userid);
   if (isUserManagementAdmin) {

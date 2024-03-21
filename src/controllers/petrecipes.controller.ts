@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { JwtPayload } from "jsonwebtoken";
 import { Petrecipes } from "../entity/petrecipes.entity";
 import { Recipeingredients } from "../entity/recipeingredients.entity";
-import { Recipenutrition } from "../entity/recipesnutrition.entity";
+import { Recipenutrition } from "../entity/recipenutrition.entity";
 import { Nutritionsecondary } from "../entity/nutritionsecondary.entity";
 import petrecipesRepository from "../repositories/petrecipes.repository";
 import recipeingredientsRepository from "../repositories/recipeingredients.repository";

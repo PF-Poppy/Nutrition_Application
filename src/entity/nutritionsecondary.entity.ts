@@ -1,8 +1,10 @@
 import "reflect-metadata";
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, } from 'typeorm';
 import { Diseasenutrition } from "./diseasenutrition.entity";
-import { Recipenutrition } from "./recipesnutrition.entity";
+import { Recipenutrition } from "./recipenutrition.entity";
 import { Ingredientnutritionsecondary } from "./ingredientnutritionsecondary.entity";
+import { Nutrientsrequirement } from "./nutrientsrequirement.entity";
+import { Basenutrition } from "./basenutrition.entity";
 
 @Entity({ name: "nutritionsecondary" })
 export class Nutritionsecondary {
@@ -41,4 +43,10 @@ export class Nutritionsecondary {
 
   @OneToMany(() => Ingredientnutritionsecondary, ingredientnutritionsecondary => ingredientnutritionsecondary.nutritionsecondary_nutrition_id)
   ingredientnutritionsecondary!: Ingredientnutritionsecondary[];
+
+  @OneToMany(() => Nutrientsrequirement, nutrientsrequirement => nutrientsrequirement.physiology.physiology_id)
+  nutrientsrequirement?: Nutrientsrequirement[];
+
+  @OneToMany(() => Basenutrition, basenutrition => basenutrition.nutritionsecondary)
+  basenutrition?: Basenutrition[];
 }

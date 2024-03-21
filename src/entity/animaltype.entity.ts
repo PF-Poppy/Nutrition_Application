@@ -3,6 +3,8 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { Pet } from "./pet.entity";
 import { Petrecipes } from "./petrecipes.entity";
 import { Diseasedetail } from "./diseasedetail.entity";
+import { Physiology } from "./physiology.entity";
+import { Baseanimaltype } from "./baseanimaltype.entity";
 import { Defaultnutrition } from "./defaultnutrition.entity";
 
 @Entity({ name: "animaltype" })
@@ -34,6 +36,12 @@ export class AnimalType {
   @OneToMany(() => Petrecipes, petrecipes => petrecipes.animaltype_type_id)
   petrecipes?: Petrecipes[];
 
-  @OneToMany(() => Defaultnutrition, defaultnutrition => defaultnutrition.animaltype_type_id)
+  @OneToMany(() => Physiology, physiology => physiology.animaltype)
+  physiology?: Physiology[];
+  
+  @OneToMany(() => Baseanimaltype, baseanimaltype => baseanimaltype.animaltype)
+  baseanimaltype?: Baseanimaltype[];
+
+  @OneToMany(() => Defaultnutrition, defaultnutrition => defaultnutrition.animaltype)
   defaultnutrition?: Defaultnutrition[];
 }

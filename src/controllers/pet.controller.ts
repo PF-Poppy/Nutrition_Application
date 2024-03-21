@@ -43,7 +43,7 @@ export default class PetController {
                     petBirthDate: profile.petBirthDate,
                     petPhysiologyStatus: profile.physiology_status,
                     petChronicDiseaseForUser: chronicDisease,
-                    petActivityType: profile.activitie,
+                    petActivityType: profile.activitiy,
                     updateRecent: differenceInDays(currentDay, petData.updatedate!)
                 } 
             }));
@@ -93,7 +93,7 @@ export default class PetController {
                 profile.weight = petWeight;
                 profile.neutering_status = petNeuteringStatus;
                 profile.petBirthDate = petBirthDate;
-                profile.activitie = petActivityType;
+                profile.activitiy = petActivityType;
                 profile.factor_type = factorType;
                 profile.factor_number = petFactorNumber;
                 profile.physiology_status = petPhysiologyStatus;
@@ -195,7 +195,7 @@ export default class PetController {
                 profile.weight = petWeight;
                 profile.neutering_status = petNeuteringStatus;
                 profile.petBirthDate = petBirthDate;
-                profile.activitie = petActivityType;
+                profile.activitiy = petActivityType;
                 profile.factor_type = factorType;
                 profile.factor_number = petFactorNumber;
                 profile.physiology_status = petPhysiologyStatus;

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import PetController from '../controllers/pet.controller';
 import authJwt from '../middleware/authJwt';
 
-class AnimalRoutes {
+class PetRoutes {
     router = Router();
     controller = new PetController();
 
@@ -18,4 +18,4 @@ class AnimalRoutes {
     }
 }
 
-export default new AnimalRoutes().router;
+export default new PetRoutes().router;

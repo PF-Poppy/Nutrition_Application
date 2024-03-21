@@ -3,7 +3,6 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { Ingredientnutritionprimary } from "./ingredientnutritionprimary.entity";
 import { Ingredientnutritionsecondary } from "./ingredientnutritionsecondary.entity";
 import { Recipeingredients } from "./recipeingredients.entity";
-//import { Ingredienttypes } from './ingredienttypes.entity';
 
 @Entity({ name: "ingredients" })
 export class Ingredients {
@@ -12,10 +11,6 @@ export class Ingredients {
 
   @Column({type: "varchar", length: 255})
   ingredient_name!: string
-
-  //มีตารางแต่ตอนนี้ยังไม่ใช้
-  //@Column()
-  //ingredienttypes_ingredienttypes_id!: string
 
   @CreateDateColumn()
   create_date?: Date;
@@ -37,8 +32,4 @@ export class Ingredients {
 
   @OneToMany(() => Recipeingredients, recipeingredients => recipeingredients.ingredients_ingredient_id)
   recipeingredients?: Recipeingredients[];
-
-  //@ManyToOne(() => Ingredienttypes, ingredienttypes => ingredienttypes.ingredienttypes_id)
-  //@JoinColumn({ name: "ingredienttypes_ingredienttypes_id" })
-  //ingredienttypes!: Ingredienttypes;
 }

@@ -108,7 +108,7 @@ class ProfilepetRepository implements IProfilepetRepository {
         try {
             const result = await AppDataSource.getRepository(Profilepet).findOne({
                 where: { pet_pet_id: petid },
-                select: ["profile_id", "pet_pet_id", "weight", "neutering_status", "petBirthDate", "activitie", "factor_type", "factor_number", "physiology_status"],
+                select: ["profile_id", "pet_pet_id", "weight", "neutering_status", "petBirthDate", "activitiy", "factor_type", "factor_number", "physiology_status"],
             });
             if (!result) {
                 logging.error(NAMESPACE, "Not found profilepet with petid: " + petid);
@@ -126,7 +126,7 @@ class ProfilepetRepository implements IProfilepetRepository {
         try {
             const result = await AppDataSource.getRepository(Profilepet).findOne({
                 where: { profile_id: profileid },
-                select: ["profile_id", "pet_pet_id", "weight", "neutering_status", "petBirthDate", "activitie", "factor_type", "factor_number", "physiology_status"],
+                select: ["profile_id", "pet_pet_id", "weight", "neutering_status", "petBirthDate", "activitiy", "factor_type", "factor_number", "physiology_status"],
             });
             if (!result) {
                 logging.error(NAMESPACE, "Not found profilepet with id: " + profileid);
