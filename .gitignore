@@ -2,7 +2,8 @@
 *.logs
 package-lock.json*
 
-db.config.js
+config/db.config.js
+config/auth.config.ts
 
 .idea/
 .vscode/
