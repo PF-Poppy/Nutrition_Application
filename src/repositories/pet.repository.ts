@@ -65,49 +65,6 @@ class PetRepository implements IPetRepository {
         }
     }
 
-    /*
-    async update(pet: Pet): Promise<any> {
-        let result: any | undefined;
-        try {
-            await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
-                try {
-                    const connect = transactionalEntityManager.getRepository(Pet);
-                    await connect.query("BEGIN");
-                    const existingPet = await connect
-                    .createQueryBuilder()
-                    .select()
-                    .setLock("pessimistic_write")
-                    .where("pet_id = :pet_id", { pet_id: pet.pet_id })
-                    .getOne();
-
-                    if (!existingPet) {
-                        logging.error(NAMESPACE, "Not found pet with id: " + pet.pet_id);
-                        throw new Error("Not found pet with id: " + pet.pet_id);
-                    }
-
-                    await connect.update({ pet_id: pet.pet_id }, pet);
-                    logging.info(NAMESPACE, "Update pet successfully.");
-                    await connect.query("COMMIT")
-                    try {
-                        result = await this.retrieveById(pet.pet_id);
-                        return result;
-                    }catch (err) { 
-                        logging.error(NAMESPACE, 'Error call retrieveById from update pet');
-                        throw err;
-                    }
-                }catch (err) {
-                    logging.error(NAMESPACE, 'Error call retrieveById from update animal type');
-                    throw err;
-                }
-            });
-            return result!;
-        }catch (err) {
-            logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
-            throw err;
-        }
-    }
-    */
-
     async retrieveAll(): Promise<Pet[]> {
         try {
             const result = await AppDataSource.getRepository(Pet).find({

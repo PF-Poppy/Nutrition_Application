@@ -77,56 +77,6 @@ class DefaultnutritionRepository implements IdefaultnutritionRepository {
         }
     }
 
-    /*
-    async update(diseasenutrition:Diseasenutrition): Promise<Diseasenutrition> {
-        let result: Diseasenutrition | undefined;
-        try {
-            await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
-                try {
-                    const connect = transactionalEntityManager.getRepository(Diseasenutrition);
-                    await connect.query("BEGIN");
-                    const existingDiseasenutrition = await connect
-                    .createQueryBuilder()
-                    .select()
-                    .setLock("pessimistic_write")
-                    .where("diseasedetail_disease_id = :diseasedetail_disease_id AND nutritionsecondary_nutrition_id = :nutritionsecondary_nutrition_id", {
-                        diseasedetail_disease_id: diseasenutrition.diseasedetail_disease_id,
-                        nutritionsecondary_nutrition_id: diseasenutrition.nutritionsecondary_nutrition_id,
-                    })
-                    .getOne();
-                    
-                    if (!existingDiseasenutrition) {
-                        try {
-                            diseasenutrition.create_by = `${diseasenutrition.update_by}`;
-                            const res = await connect.save(diseasenutrition);
-                            logging.info(NAMESPACE, "Update diseasenutrition successfully.");
-                            await connect.query("COMMIT")
-                            result = await this.retrieveById(res.diseasenutrition_id);
-                            return result;
-                        }catch(err){
-                            logging.error(NAMESPACE, 'Error saving new diseasenutrition');
-                            throw err;
-                        }
-                    }else {
-                        await connect.update({ diseasenutrition_id: existingDiseasenutrition.diseasenutrition_id }, diseasenutrition);
-                        logging.info(NAMESPACE, "Update diseasenutrition successfully.");
-                        await connect.query("COMMIT")
-                        result = await this.retrieveById(existingDiseasenutrition.diseasenutrition_id);
-                        return result;
-                    }
-                }catch(err){
-                    logging.error(NAMESPACE, 'Error call retrieveById from insert diseasenutrition');
-                    throw err;
-                }
-            });
-            return result!;
-        }catch (err) {
-            logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
-            throw err;
-        } 
-    }
-    */
-
     async retrieveById(defaultnutritionid: string): Promise<Defaultnutrition> {
         try {
             const result = await AppDataSource.getRepository(Defaultnutrition).findOne({

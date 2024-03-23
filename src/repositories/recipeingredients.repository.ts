@@ -84,66 +84,6 @@ class RecipeIngredientsRepository implements IRecipeIngredientsRepository {
         }
     }
 
-    /*
-    async update(recipeIngredients: Recipeingredients): Promise<Recipeingredients> {
-        let result: Recipeingredients | undefined;
-        try {
-            await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
-                try {
-                    const connect = transactionalEntityManager.getRepository(Recipeingredients);
-                    await connect.query("BEGIN");
-                    const existingData = await connect
-                    .createQueryBuilder()
-                    .select()
-                    .setlock("pessimistic_write")
-                    .where("ingredients_ingredient_id = :ingredients_ingredient_id AND petrecipes_recipes_id = :petrecipes_recipes_id", {
-                        ingredients_ingredient_id: recipeIngredients.ingredients_ingredient_id,
-                        petrecipes_recipes_id: recipeIngredients.petrecipes_recipes_id 
-                    })
-                    .getOne();
-
-                    if (!existingData) {
-                        recipeIngredients.create_by = `${recipeIngredients.update_by}`;
-                        try {
-                            const res = await this.save(recipeIngredients);
-                            logging.info(NAMESPACE, "Insert new recipe ingredients successfully.");
-                            await connect.query("COMMIT");
-                            try {
-                                result = await this.retrieveById(res.recipe_ingredient_id);
-                                return result;
-                            }catch (err) {
-                                logging.error(NAMESPACE, 'Error call retrieveById from insert recipe ingredients');
-                                throw err;
-                            }
-                        }catch (err) {
-                            logging.error(NAMESPACE, 'Error save new recipe ingredients');
-                            throw err;
-                        }
-                    }else {
-                        await connect.update({ recipe_ingredient_id: existingData.recipe_ingredient_id }, recipeIngredients);
-                        logging.info(NAMESPACE, "Update recipe ingredients successfully.");
-                        await connect.query("COMMIT");
-                        try {
-                            result = await this.retrieveById(existingData.recipe_ingredient_id);
-                            return result;
-                        }catch (err) {
-                            logging.error(NAMESPACE, 'Error call retrieveById from update recipe ingredients');
-                            throw err;
-                        }
-                    }
-                }catch (err) {
-                    logging.error(NAMESPACE, (err as Error).message, err);
-                    throw err;
-                }
-            });
-            return result!;
-        }catch (err) {
-            logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
-            throw err;
-        }
-    }
-    */
-
     async retrieveById(recipeIngredientId: string): Promise<Recipeingredients> {
         try {
             const result = await AppDataSource.getRepository(Recipeingredients).findOne({

@@ -75,56 +75,6 @@ class DiseaseRepository implements IdiseaseRepository {
         }
     }
 
-    /*
-    async update(disease: Disease): Promise<Disease> {
-        let result: Disease | undefined;
-        try {
-            await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
-                try {
-                    const connect = transactionalEntityManager.getRepository(Disease);
-                    await connect.query("BEGIN");
-                    const existingDisease = await connect
-                    .createQueryBuilder()
-                    .select()
-                    .setLock("pessimistic_write")
-                    .where("pet_pet_id = :pet_pet_id AND diseasedetail_disease_id = :diseasedetail_disease_id", {
-                        pet_pet_id: disease.pet_pet_id,
-                        diseasedetail_disease_id: disease.diseasedetail_disease_id,
-                    })
-                    .getOne();
-    
-                    if (!existingDisease) {
-                        try {
-                            const res = await connect.save(disease);
-                            logging.info(NAMESPACE, "Update disease successfully.");
-                            await connect.query("COMMIT")
-    
-                            result = await this.retrieveById(res.id);
-                            return result;
-                        } catch (err) {
-                            logging.error(NAMESPACE, 'Error saving new disease');
-                            throw err;
-                        }
-                    } else {
-                        await connect.update({ id: existingDisease.id }, disease);
-                        logging.info(NAMESPACE, "Update disease successfully.");
-                        await connect.query("COMMIT")
-                        result = await this.retrieveById(existingDisease.id);
-                        return result;
-                    }
-                } catch (err) {
-                    logging.error(NAMESPACE, 'Error inside transaction: ' + (err as Error).message, err);
-                    throw err;
-                }
-            });
-            return result!;
-        } catch (err) {
-            logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
-            throw err;
-        }
-    }
-    */
-
     async retrieveById(diseaseid: string): Promise<Disease>{
         try {
             const result = await AppDataSource.getRepository(Disease).findOne({

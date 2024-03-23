@@ -96,55 +96,6 @@ class NutritionsecondaryRepository implements INutritionsecondaryRepository {
             throw err;
         }
     }
-    
-    /*
-    async update(nutrition: Nutritionsecondary): Promise<Nutritionsecondary> {
-        let result: Nutritionsecondary | undefined;
-        try {
-            await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
-                try {
-                    const connect = transactionalEntityManager.getRepository(Nutritionsecondary);
-                    await connect.query("BEGIN");
-                    const existingNutrition = await connect
-                    .createQueryBuilder()
-                    .select()
-                    .setLock("pessimistic_write")
-                    .where("nutrition_id = :nutrition_id", { nutrition_id: nutrition.nutrition_id })
-                    .getOne();
-                    console.log(existingNutrition?.nutrition_id);
-                    if (!existingNutrition) {
-                        logging.error(NAMESPACE, "Not found nutrition with id: " + nutrition.nutrition_id);
-                        throw new Error("Not found nutrition with id: " + nutrition.nutrition_id);
-                    }
-
-                    const duplicateNutrition = await connect.findOne({ where: { nutrient_name: nutrition.nutrient_name } });
-                    if (duplicateNutrition && duplicateNutrition.nutrition_id !== nutrition.nutrition_id) {
-                        logging.error(NAMESPACE, "Duplicate nutrition name.");
-                        throw new Error("Duplicate nutrition name.");
-                    }
-
-                    await connect.update({ nutrition_id: nutrition.nutrition_id }, nutrition);
-                    logging.info(NAMESPACE, "Update nutrition successfully.");
-                    await connect.query("COMMIT")
-                    try {
-                        result = await this.retrieveById(nutrition.nutrition_id);
-                        return result;
-                    }catch (err) {
-                        logging.error(NAMESPACE, 'Error call retrieveById from update nutrition');
-                        throw err;
-                    }
-                }catch (err) {
-                    logging.error(NAMESPACE, (err as Error).message, err);
-                    throw err;
-                }
-            });
-            return result!;
-        }catch (err) {
-            logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
-            throw err;
-        }
-    }
-    */
 
     async retrieveAll(): Promise<Nutritionsecondary[]> {
         try {

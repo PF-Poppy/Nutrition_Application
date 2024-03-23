@@ -75,55 +75,6 @@ class ROleRepository implements IROleRepository {
             throw err;
         }
     }
-    
-    /*
-    async update(role:Role): Promise<Role> {
-        let result: Role | undefined;
-        try {
-            await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
-                try {
-                    const connect = transactionalEntityManager.getRepository(Role);
-                    await connect.query("BEGIN");
-                    const existingRole = await connect
-                    .createQueryBuilder()
-                    .select()
-                    .setLock("pessimistic_write")
-                    .where("role_id = :role_id", { role_id: role.role_id })
-                    .getOne();
-
-                    if (!existingRole) {
-                        logging.error(NAMESPACE, "Not found role with id: " + role.role_id);
-                        throw new Error("Not found role with id: " + role.role_id);
-                    }
-
-                    const duplicateRole = await connect.findOne({ where: { role_name: role.role_name } });
-                    if (duplicateRole && duplicateRole.role_id !== role.role_id) {
-                        logging.error(NAMESPACE, "Duplicate role name.");
-                        throw new Error("Duplicate role name.");
-                    }
-
-                    await connect.update({ role_id: role.role_id }, role);
-                    logging.info(NAMESPACE, "Update role successfully.");
-                    await connect.query("COMMIT")
-                    try {
-                        result = await this.retrieveById(role.role_id);
-                        return result;
-                    }catch (err) {
-                        logging.error(NAMESPACE, 'Error call retrieveById from update role');
-                        throw err;
-                    }
-                }catch (err) {
-                    logging.error(NAMESPACE, (err as Error).message, err);
-                    throw err;
-                }
-            }); 
-            return result!;
-        }catch (err) {
-            logging.error(NAMESPACE, 'Error executing transaction: ' + (err as Error).message, err);
-            throw err;
-        }
-    }
-    */
 
     async retrieveAll():Promise<Role[]>{
         try {
