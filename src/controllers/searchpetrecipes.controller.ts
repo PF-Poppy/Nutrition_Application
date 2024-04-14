@@ -4,11 +4,13 @@ import petrecipesRepository from "../repositories/petrecipes.repository";
 import animaltypeRepository from "../repositories/animaltype.repository";
 import diseasedetailRepository from "../repositories/diseasedetail.repository";
 import recipeingredientsRepository from "../repositories/recipeingredients.repository";
+import baseanimaltypeRepositoty from "../repositories/baseanimaltype.repositoty";
+import physiologyRepository from "../repositories/physiology.repository";
 import recipenutritionRepository from "../repositories/recipesnutrition.repository";
-//import diseaseRepository from "../repositories/disease.repository";
+import basenutritionRepository from "../repositories/basenutrition.repository";
+import nutrientsrequirementRepository from "../repositories/nutrientsrequirement.repository";
 import diseasenutritionRepository from "../repositories/diseasenutrition.repository";
 import ingredientnutritionRepository from "../repositories/ingredientnutrition.repository";
-//import petRepository from "../repositories/pet.repository";
 import defaultnutritionRepository from "../repositories/defaultnutrition.repository";
 import axios from "axios";
 import logging from "../config/logging";
@@ -134,7 +136,7 @@ export default class SearchPetRecipesController {
         });
     }
 
-    async getPetsRecipes(req: Request, res: Response) {
+    async getPetsRecipesForAdmin(req: Request, res: Response) {
         console.log(req.body);
         logging.info(NAMESPACE, "Get all pets recipes");
         if (!req.body) {
@@ -143,77 +145,105 @@ export default class SearchPetRecipesController {
             });
             return;
         }
-        /*
-        const { petId, petName, recipeType, selectedIngredientList } = req.body; ;
-        if (!petId || !petName || !recipeType || !selectedIngredientList) {
-            res.status(400).json({
-                message: "Please fill in all the fields!",
-            });
-            return;
-        }
 
-        try {
-            const pet = await petRepository.retrieveById(petId);
-        }catch(err){
-            res.status(404).json({
-                message: `Not found pet with id=${petId}.`
-            });
-            return;
-        }
-        */
-        const { petFactorNumber, selectedType , petWeight, petTypeName, petChronicDiseaseList, selectedIngredientList } = req.body; ;
-        if (!petFactorNumber || !petWeight || !selectedType || !petTypeName || !petChronicDiseaseList || !selectedIngredientList) {
+        const { petFactorNumber, petTypeId, selectedType , petWeight, petTypeName, petChronicDisease, selectedIngredientList, nutritionalRequirementBase, petPhysiological } = req.body; ;
+        if (!petFactorNumber || !petTypeId || !petWeight || !selectedType || !petTypeName || !petChronicDisease || !selectedIngredientList || !nutritionalRequirementBase || !petPhysiological) {
             res.status(400).json({
                 message: "Please fill in all the fields!",
             });
             return;
         }
         try {
-            //const pettype = await petRepository.retrieveById(petId);
-            //const disease = await diseaseRepository.retrieveByPetId(petId);
-            const DER = (70*(petWeight**0.75))*petFactorNumber;
-            const pettype = await animaltypeRepository.retrieveByName(petTypeName);
-            const defaultnutrition = await defaultnutritionRepository.retrieveByAnimalId(pettype.type_id);
-            const sortdefaultnutrition = defaultnutrition.sort((a, b) => a.order_value - b.order_value);
-
             const nutritionSummary: NutritionSummary = {};
-            sortdefaultnutrition.forEach(nutritionInfo => {
-                const nutritionName = nutritionInfo.nutrient_name;
-                const nutritionValueMin = nutritionInfo.value_min;
-                const nutritionValueMax = nutritionInfo.value_max;
-                const nutritionUnit = nutritionInfo.nutrient_unit;
+            const DER = (70*(petWeight**0.75))*petFactorNumber;
 
-                if (!nutritionSummary[nutritionName]) {
-                    nutritionSummary[nutritionName] = {
-                        minValue_intersect: nutritionValueMin,
-                        maxValue_intersect: nutritionValueMax,
-                        unit: nutritionUnit,
-                    };
-                } else {
-                    nutritionSummary[nutritionName].minValue_intersect = Math.max(nutritionSummary[nutritionName].minValue_intersect, nutritionValueMin);
-                    nutritionSummary[nutritionName].maxValue_intersect = Math.min(nutritionSummary[nutritionName].maxValue_intersect, nutritionValueMax);
-                    const { minValue_intersect, maxValue_intersect } = nutritionSummary[nutritionName];
-                    if (nutritionSummary[nutritionName].minValue_intersect > nutritionSummary[nutritionName].maxValue_intersect) {
-                        nutritionSummary[nutritionName].minValue_intersect = maxValue_intersect;
-                        nutritionSummary[nutritionName].maxValue_intersect = minValue_intersect;
+            await Promise.all(nutritionalRequirementBase.map(async (baseId:string) => {
+                const requirmentBase = await baseanimaltypeRepositoty.retrieveById(baseId);
+                const requiredNutritionBase = await basenutritionRepository.retrieveByBaseId(baseId);
+                const sortedRequirmentNutritionBase = requiredNutritionBase.sort((a, b) => a.order_value - b.order_value);
+
+                sortedRequirmentNutritionBase.forEach(nutritionInfo => {
+                    const nutritionName = nutritionInfo.nutrient_name;
+                    const nutritionValueMin = nutritionInfo.value_min;
+                    const nutritionValueMax = nutritionInfo.value_max;
+                    const nutritionUnit = nutritionInfo.nutrient_unit;
+
+                    if (!nutritionSummary[nutritionName]) {
+                        nutritionSummary[nutritionName] = {
+                            minValue_intersect: nutritionValueMin,
+                            maxValue_intersect: nutritionValueMax,
+                            unit: nutritionUnit,
+                        };
+                    } else {
+                        nutritionSummary[nutritionName].minValue_intersect = Math.min(nutritionSummary[nutritionName].minValue_intersect, nutritionValueMin);
+                        nutritionSummary[nutritionName].maxValue_intersect = Math.min(nutritionSummary[nutritionName].maxValue_intersect, nutritionValueMax);
+                        const { minValue_intersect, maxValue_intersect } = nutritionSummary[nutritionName];
+                        if (nutritionSummary[nutritionName].minValue_intersect > nutritionSummary[nutritionName].maxValue_intersect) {
+                            nutritionSummary[nutritionName].minValue_intersect = maxValue_intersect;
+                            nutritionSummary[nutritionName].maxValue_intersect = minValue_intersect;
+                        }
                     }
-                }
-                return {
-                    nutrientName: nutritionInfo.nutrient_name,
-                    unit: nutritionInfo.nutrient_unit,
-                    min: nutritionInfo.value_min,
-                    max: nutritionInfo.value_max,
-                }
-            });
-            const chronicDisease = await Promise.all(petChronicDiseaseList.map(async (diseaseInfo:string) => {
-                const disease = await diseasedetailRepository.retrieveByName(diseaseInfo);
-                if (disease.animaltype_type_id !== pettype.type_id) {
-                    throw new Error("No have disease for this pet type");
-                }
-                const diseasenutrition = await diseasenutritionRepository.retrieveByDiseaseId(disease.disease_id);
-                const sorteddiseasenutrition = diseasenutrition.sort((a, b) => a.order_value - b.order_value);
+                    return {
+                        petPhysiologicalId: baseId,
+                        petPhysiologicalName: requirmentBase.base_name,
+                        requirmentBaseNutrition: sortedRequirmentNutritionBase.map(physiologicalNutritionInfo => ({
+                            physiologicalNutritionId: physiologicalNutritionInfo.nutrition_id,
+                            physiologicalNutritionName: physiologicalNutritionInfo.nutrient_name,
+                            physiologicalNutritionnmin: physiologicalNutritionInfo.value_min,
+                            physiologicalNutritionnmax: physiologicalNutritionInfo.value_max,
+                            unit: physiologicalNutritionInfo.nutrient_unit,
+                        })),
+                    };
+                });
+            }));
+            console.log(nutritionSummary);
 
-                sorteddiseasenutrition.forEach(diseaseNutritionInfo => {
+            await Promise.all(petPhysiological.map(async (physiologicalId:string) => {
+                const physiological = await physiologyRepository.retrieveById(physiologicalId);
+                const physiologicalNutrition = await nutrientsrequirementRepository.retrieveByPhysiologyId(physiologicalId);
+                const sortedPhysiologicalNutrition = physiologicalNutrition.sort((a, b) => a.order_value - b.order_value);
+
+                sortedPhysiologicalNutrition.forEach(nutritionInfo => {
+                    const nutritionName = nutritionInfo.nutrient_name;
+                    const nutritionValueMin = nutritionInfo.value_min;
+                    const nutritionValueMax = nutritionInfo.value_max;
+                    const nutritionUnit = nutritionInfo.nutrient_unit;
+
+                    if (!nutritionSummary[nutritionName]) {
+                        nutritionSummary[nutritionName] = {
+                            minValue_intersect: nutritionValueMin,
+                            maxValue_intersect: nutritionValueMax,
+                            unit: nutritionUnit,
+                        };
+                    } else {
+                        nutritionSummary[nutritionName].minValue_intersect = Math.min(nutritionSummary[nutritionName].minValue_intersect, nutritionValueMin);
+                        nutritionSummary[nutritionName].maxValue_intersect = Math.min(nutritionSummary[nutritionName].maxValue_intersect, nutritionValueMax);
+                        const { minValue_intersect, maxValue_intersect } = nutritionSummary[nutritionName];
+                        if (nutritionSummary[nutritionName].minValue_intersect > nutritionSummary[nutritionName].maxValue_intersect) {
+                            nutritionSummary[nutritionName].minValue_intersect = maxValue_intersect;
+                            nutritionSummary[nutritionName].maxValue_intersect = minValue_intersect;
+                        }
+                    }
+                    return {
+                        petPhysiologicalId: physiologicalId,
+                        petPhysiologicalName: physiological.physiology_name,
+                        physiologicalNutrition: sortedPhysiologicalNutrition.map(physiologicalNutritionInfo => ({
+                            physiologicalNutritionId: physiologicalNutritionInfo.nutrition_id,
+                            physiologicalNutritionName: physiologicalNutritionInfo.nutrient_name,
+                            physiologicalNutritionnmin: physiologicalNutritionInfo.value_min,
+                            physiologicalNutritionnmax: physiologicalNutritionInfo.value_max,
+                            unit: physiologicalNutritionInfo.nutrient_unit,
+                        })),
+                    };
+                })
+            }));
+
+            await Promise.all(petChronicDisease.map(async (diseaseId:string) => {
+                const disease = await diseasedetailRepository.retrieveById(diseaseId);
+                const diseaseNutrition = await diseasenutritionRepository.retrieveByDiseaseId(diseaseId);
+                const sortedDiseaseNutrition = diseaseNutrition.sort((a, b) => a.order_value - b.order_value);
+
+                sortedDiseaseNutrition.forEach(diseaseNutritionInfo => {
                     const nutritionName = diseaseNutritionInfo.nutrient_name;
                     const nutritionValueMin = diseaseNutritionInfo.value_min;
                     const nutritionValueMax = diseaseNutritionInfo.value_max;
@@ -226,7 +256,7 @@ export default class SearchPetRecipesController {
                             unit: nutritionUnit,
                         };
                     } else {
-                        nutritionSummary[nutritionName].minValue_intersect = Math.max(nutritionSummary[nutritionName].minValue_intersect, nutritionValueMin);
+                        nutritionSummary[nutritionName].minValue_intersect = Math.min(nutritionSummary[nutritionName].minValue_intersect, nutritionValueMin);
                         nutritionSummary[nutritionName].maxValue_intersect = Math.min(nutritionSummary[nutritionName].maxValue_intersect, nutritionValueMax);
                         const { minValue_intersect, maxValue_intersect } = nutritionSummary[nutritionName];
                         if (nutritionSummary[nutritionName].minValue_intersect > nutritionSummary[nutritionName].maxValue_intersect) {
@@ -237,9 +267,9 @@ export default class SearchPetRecipesController {
                 });
                 
                 return {
-                    petChronicDiseaseId: disease.disease_id,
-                    petChronicDiseaseName: diseaseInfo,
-                    diseaseNutrition: sorteddiseasenutrition.map(diseaseNutritionInfo => ({
+                    petChronicDiseaseId: diseaseId,
+                    petChronicDiseaseName: disease.disease_name,
+                    diseaseNutrition: sortedDiseaseNutrition.map(diseaseNutritionInfo => ({
                         diseaseNutritionId: diseaseNutritionInfo.nutrition_id,
                         diseaseNutrientName: diseaseNutritionInfo.nutrient_name,
                         diseaseNutritionmin: diseaseNutritionInfo.value_min,
@@ -249,7 +279,7 @@ export default class SearchPetRecipesController {
                 };
             }));
 
-            const petrecipes = await petrecipesRepository.retrieveByPetTypeId(pettype.type_id);
+            const petrecipes = await petrecipesRepository.retrieveByPetTypeId(petTypeId);
             const petrecipesList = await Promise.all(petrecipes.map(async (petrecipesInfo) => {
                 const recipeingredients = await recipeingredientsRepository.retrieveByRecipeId(petrecipesInfo.recipes_id);
                 const recipenutrition = await recipenutritionRepository.retrieveByRecipeId(petrecipesInfo.recipes_id);
@@ -301,8 +331,8 @@ export default class SearchPetRecipesController {
                 return {
                     recipeId: petrecipesInfo.recipes_id,
                     recipeName: petrecipesInfo.recipes_name,
-                    petTypeId: pettype.type_id,
-                    petTypeName: pettype.type_name,
+                    petTypeId: petTypeId,
+                    petTypeName: petTypeName,
                     ingredientInRecipeList :sortedrecipeIngrediente,
                     recipeNutritionList,
                     nutritionList,
@@ -311,7 +341,7 @@ export default class SearchPetRecipesController {
             //TODO แก้คำ ตอนนี้ algorithmA === เอาสูตรอาหารเท่าที่มีวัตถุดิบตรงตามที่เลือกไว้
             let recipesList: any = [];
             const countSelectedIngredient = selectedIngredientList.length;
-            const sortedSelectedIngredient = selectedIngredientList.sort(((a:any, b:any) => a.ingredientId.localeCompare(b.ingredientId)));
+            const sortedSelectedIngredient = selectedIngredientList.sort(((a:string, b:string) => a.localeCompare(b)));
             if (selectedType == 1) {
                 const recipes = petrecipesList
                 .filter(petrecipesInfo => petrecipesInfo.ingredientInRecipeList.length === countSelectedIngredient)
@@ -320,8 +350,8 @@ export default class SearchPetRecipesController {
                 });
                 recipesList = recipes.filter(recipe => {
                     return recipe.ingredientInRecipeList.every(recipeIngredien => {
-                        return sortedSelectedIngredient.some((selectedIngredient:any) => {
-                            return recipeIngredien.ingredient.ingredientId === selectedIngredient.ingredientId;
+                        return sortedSelectedIngredient.some((selectedIngredientId:string) => {
+                            return recipeIngredien.ingredient.ingredientId === selectedIngredientId;
                         });
                     });
                 });
@@ -332,15 +362,15 @@ export default class SearchPetRecipesController {
                     return filteredRecipe;
                 });
                 recipesList = recipes.filter(recipe =>
-                    selectedIngredientList.every((selectedIngredient:any) =>
+                    sortedSelectedIngredient.every((selectedIngredientId:string) =>
                         recipe.ingredientInRecipeList.some(recipeIngredient =>
-                            recipeIngredient.ingredient.ingredientId === selectedIngredient.ingredientId
+                            recipeIngredient.ingredient.ingredientId === selectedIngredientId
                         )
                     ) &&
-                    selectedIngredientList.every((selectedIngredient:any) =>
+                    sortedSelectedIngredient.every((selectedIngredientId:string) =>
                         recipe.ingredientInRecipeList.some(recipeIngredient =>
-                            selectedIngredientList.some((selectedIngredient:any) =>
-                                recipeIngredient.ingredient.ingredientId === selectedIngredient.ingredientId
+                            sortedSelectedIngredient.some((selectedIngredientId:string) =>
+                                recipeIngredient.ingredient.ingredientId === selectedIngredientId
                             )
                         )
                     )

@@ -365,7 +365,7 @@ export default class AnimalController {
         }
 
         const { deletedPetChronicDiseaseList, petTypeInfo} = req.body;
-        await Promise.all(deletedPetChronicDiseaseList.map(async (nutrientInfoData: any) => {
+        await Promise.all(deletedPetChronicDiseaseList.map(async (nutrientInfoData: string) => {
             await diseasedetailRepository.deleteById(nutrientInfoData);
         }));
         
