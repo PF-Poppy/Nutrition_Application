@@ -23,8 +23,8 @@ class NutritionsecondaryRepository implements INutritionsecondaryRepository {
                 { where: { nutrient_name: nutrition.nutrient_name} }
             );
             if (duplicate) {
-                logging.error(NAMESPACE, "Duplicate nutrition name.");
-                throw 'Duplicate nutrition name.';
+                logging.error(NAMESPACE, "Duplicate nutrition name with:" + nutrition.nutrient_name);
+                throw "Duplicate nutrition name with:" + nutrition.nutrient_name;
             }
 
             const result = await connect.save(nutrition);

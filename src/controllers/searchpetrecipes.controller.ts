@@ -12,6 +12,9 @@ import nutrientsrequirementRepository from "../repositories/nutrientsrequirement
 import diseasenutritionRepository from "../repositories/diseasenutrition.repository";
 import ingredientnutritionRepository from "../repositories/ingredientnutrition.repository";
 import defaultnutritionRepository from "../repositories/defaultnutrition.repository";
+import nutritionsecondaryRepository from "../repositories/nutritionsecondary.repository";
+import { checkConditionForSelectingPhysiology } from "../utils/findphysiology";
+import { checkConditionForSelectingRequirmentBase } from "../utils/findrequirmentbase";
 import axios from "axios";
 import logging from "../config/logging";
 
@@ -157,9 +160,34 @@ export default class SearchPetRecipesController {
             const nutritionSummary: NutritionSummary = {};
             const DER = (70*(petWeight**0.75))*petFactorNumber;
 
-            await Promise.all(nutritionalRequirementBase.map(async (baseId:string) => {
-                const requirmentBase = await baseanimaltypeRepositoty.retrieveById(baseId);
-                const requiredNutritionBase = await basenutritionRepository.retrieveByBaseId(baseId);
+            const nutrientList = await nutritionsecondaryRepository.retrieveAll();
+            const sortedNutrientList = nutrientList.sort((a:any, b:any) => a.order_value - b.order_value);
+            sortedNutrientList.forEach(nutritionInfo => {
+                const nutritionName = nutritionInfo.nutrient_name;
+                const nutritionValueMin = 0;
+                const nutritionValueMax = 999999;
+                const nutritionUnit = nutritionInfo.nutrient_unit;
+
+                if (!nutritionSummary[nutritionName]) {
+                    nutritionSummary[nutritionName] = {
+                        minValue_intersect: nutritionValueMin,
+                        maxValue_intersect: nutritionValueMax,
+                        unit: nutritionUnit,
+                    };
+                } else {
+                    nutritionSummary[nutritionName].minValue_intersect = Math.min(nutritionSummary[nutritionName].minValue_intersect, nutritionValueMin);
+                    nutritionSummary[nutritionName].maxValue_intersect = Math.min(nutritionSummary[nutritionName].maxValue_intersect, nutritionValueMax);
+                    const { minValue_intersect, maxValue_intersect } = nutritionSummary[nutritionName];
+                    if (nutritionSummary[nutritionName].minValue_intersect > nutritionSummary[nutritionName].maxValue_intersect) {
+                        nutritionSummary[nutritionName].minValue_intersect = maxValue_intersect;
+                        nutritionSummary[nutritionName].maxValue_intersect = minValue_intersect;
+                    }
+                }
+            });
+
+            await Promise.all(nutritionalRequirementBase.map(async (baseName:string) => {
+                const requirmentBase = await baseanimaltypeRepositoty.retrieveByName(baseName);
+                const requiredNutritionBase = await basenutritionRepository.retrieveByBaseId(requirmentBase.base_id);
                 const sortedRequirmentNutritionBase = requiredNutritionBase.sort((a, b) => a.order_value - b.order_value);
 
                 sortedRequirmentNutritionBase.forEach(nutritionInfo => {
@@ -184,8 +212,8 @@ export default class SearchPetRecipesController {
                         }
                     }
                     return {
-                        petPhysiologicalId: baseId,
-                        petPhysiologicalName: requirmentBase.base_name,
+                        petPhysiologicalId: requirmentBase.base_id,
+                        petPhysiologicalName: baseName,
                         requirmentBaseNutrition: sortedRequirmentNutritionBase.map(physiologicalNutritionInfo => ({
                             physiologicalNutritionId: physiologicalNutritionInfo.nutrition_id,
                             physiologicalNutritionName: physiologicalNutritionInfo.nutrient_name,
@@ -196,11 +224,10 @@ export default class SearchPetRecipesController {
                     };
                 });
             }));
-            console.log(nutritionSummary);
 
-            await Promise.all(petPhysiological.map(async (physiologicalId:string) => {
-                const physiological = await physiologyRepository.retrieveById(physiologicalId);
-                const physiologicalNutrition = await nutrientsrequirementRepository.retrieveByPhysiologyId(physiologicalId);
+            await Promise.all(petPhysiological.map(async (physiologicalName:string) => {
+                const physiological = await physiologyRepository.retrieveByName(physiologicalName);
+                const physiologicalNutrition = await nutrientsrequirementRepository.retrieveByPhysiologyId(physiological.physiology_id);
                 const sortedPhysiologicalNutrition = physiologicalNutrition.sort((a, b) => a.order_value - b.order_value);
 
                 sortedPhysiologicalNutrition.forEach(nutritionInfo => {
@@ -225,8 +252,8 @@ export default class SearchPetRecipesController {
                         }
                     }
                     return {
-                        petPhysiologicalId: physiologicalId,
-                        petPhysiologicalName: physiological.physiology_name,
+                        petPhysiologicalId: physiological.physiology_id,
+                        petPhysiologicalName: physiologicalName,
                         physiologicalNutrition: sortedPhysiologicalNutrition.map(physiologicalNutritionInfo => ({
                             physiologicalNutritionId: physiologicalNutritionInfo.nutrition_id,
                             physiologicalNutritionName: physiologicalNutritionInfo.nutrient_name,
@@ -238,9 +265,9 @@ export default class SearchPetRecipesController {
                 })
             }));
 
-            await Promise.all(petChronicDisease.map(async (diseaseId:string) => {
-                const disease = await diseasedetailRepository.retrieveById(diseaseId);
-                const diseaseNutrition = await diseasenutritionRepository.retrieveByDiseaseId(diseaseId);
+            await Promise.all(petChronicDisease.map(async (diseaseName:string) => {
+                const disease = await diseasedetailRepository.retrieveByName(diseaseName);
+                const diseaseNutrition = await diseasenutritionRepository.retrieveByDiseaseId(disease.disease_id);
                 const sortedDiseaseNutrition = diseaseNutrition.sort((a, b) => a.order_value - b.order_value);
 
                 sortedDiseaseNutrition.forEach(diseaseNutritionInfo => {
@@ -267,8 +294,8 @@ export default class SearchPetRecipesController {
                 });
                 
                 return {
-                    petChronicDiseaseId: diseaseId,
-                    petChronicDiseaseName: disease.disease_name,
+                    petChronicDiseaseId: disease.disease_id,
+                    petChronicDiseaseName: diseaseName,
                     diseaseNutrition: sortedDiseaseNutrition.map(diseaseNutritionInfo => ({
                         diseaseNutritionId: diseaseNutritionInfo.nutrition_id,
                         diseaseNutrientName: diseaseNutritionInfo.nutrient_name,
@@ -338,7 +365,288 @@ export default class SearchPetRecipesController {
                     nutritionList,
                 }
             }));
-            //TODO แก้คำ ตอนนี้ algorithmA === เอาสูตรอาหารเท่าที่มีวัตถุดิบตรงตามที่เลือกไว้
+            let recipesList: any = [];
+            const countSelectedIngredient = selectedIngredientList.length;
+            const sortedSelectedIngredient = selectedIngredientList.sort(((a:string, b:string) => a.localeCompare(b)));
+            if (selectedType == 1) {
+                const recipes = petrecipesList
+                .filter(petrecipesInfo => petrecipesInfo.ingredientInRecipeList.length === countSelectedIngredient)
+                .map(filteredRecipe => {
+                    return filteredRecipe;
+                });
+                recipesList = recipes.filter(recipe => {
+                    return recipe.ingredientInRecipeList.every(recipeIngredien => {
+                        return sortedSelectedIngredient.some((selectedIngredientId:string) => {
+                            return recipeIngredien.ingredient.ingredientId === selectedIngredientId;
+                        });
+                    });
+                });
+            }else if (selectedType == 2) {
+                const recipes = petrecipesList
+                .filter(petrecipesInfo => petrecipesInfo.ingredientInRecipeList.length >= countSelectedIngredient)
+                .map(filteredRecipe => {
+                    return filteredRecipe;
+                });
+                
+                recipesList = recipes.filter(recipe =>
+                    sortedSelectedIngredient.every((selectedIngredientId:string) =>
+                        recipe.ingredientInRecipeList.some(recipeIngredient =>
+                            recipeIngredient.ingredient.ingredientId === selectedIngredientId
+                        )
+                    ) &&
+                    sortedSelectedIngredient.every((selectedIngredientId:string) =>
+                        recipe.ingredientInRecipeList.some(recipeIngredient =>
+                            sortedSelectedIngredient.some((selectedIngredientId:string) =>
+                                recipeIngredient.ingredient.ingredientId === selectedIngredientId
+                            )
+                        )
+                    )
+                );
+            }
+
+            const filteredRecipes  = recipesList.filter((recipe:any) => {
+                console.log(recipe.recipeName);
+                const recipeNutritionList = recipe.recipeNutritionList.every((recipeNutrition:any) => {
+                    const { nutrientName, amount } = recipeNutrition;
+                    const summary = nutritionSummary[nutrientName];
+                    if (!summary) {
+                        return false;
+                    }
+                    if (nutrientName === "Moisture" || nutrientName === "Price") {
+                        return true;
+                    }
+                    const { minValue_intersect, maxValue_intersect } = summary; 
+                    if (!(minValue_intersect <= amount && amount <= maxValue_intersect)){
+                        console.log(nutrientName);
+                        console.log(minValue_intersect,amount, maxValue_intersect); 
+                    }
+                    return minValue_intersect <= amount && amount <= maxValue_intersect;    
+                });
+                return recipeNutritionList;
+            });
+
+            const filteredRecipesList = filteredRecipes.map((filteredRecipe:any) => {
+                return {
+                    recipeData:{
+                        recipeId: filteredRecipe.recipeId,
+                        recipeName: filteredRecipe.recipeName,
+                        petTypeId: filteredRecipe.petTypeId,
+                        petTypeName: filteredRecipe.petTypeName,
+                        ingredientInRecipeList :filteredRecipe.ingredientInRecipeList,
+                        freshNutrientList: filteredRecipe.nutritionList,
+                    },
+                    amount: DER,
+                }
+            });
+            logging.info(NAMESPACE, "Get all pets recipes success");
+            res.status(200).json({
+                defaultNutrientLimitList:Object.entries(nutritionSummary).map(([nutrientName, values]) => ({
+                    nutrientName,
+                    unit: values.unit, 
+                    min: values.minValue_intersect,
+                    max: values.maxValue_intersect
+                })),
+                searchPetRecipesList: filteredRecipesList,
+            });
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            if ((err as Error).message === "No have disease for this pet type") {
+                res.status(404).json({
+                    message: (err as Error).message,
+                });
+            }else {
+                res.status(500).json({
+                    message: "Some error occurred while get pet recipes."
+                });
+            }
+        }
+    }
+
+    async getPetsRecipesForUser(req: Request, res: Response) {
+        console.log(req.body);
+        logging.info(NAMESPACE, "Get all pets recipes");
+        if (!req.body) {
+            res.status(400).json({
+                message: "Content cannot be empty",
+            });
+            return;
+        }
+
+        const { petFactorNumber, petTypeId, selectedType , petWeight, petTypeName, selectedIngredientList,petNeuteringStatus, petActivityType, petAgeType } = req.body; ;
+        if (!petFactorNumber || !petTypeId || !petWeight || !selectedType || !petTypeName || !selectedIngredientList || !petNeuteringStatus || !petActivityType || !petAgeType ) {
+            res.status(400).json({
+                message: "Please fill in all the fields!",
+            });
+            return;
+        }
+        try {
+            const nutritionSummary: NutritionSummary = {};
+            const DER = (70*(petWeight**0.75))*petFactorNumber;
+
+            const nutrientList = await nutritionsecondaryRepository.retrieveAll();
+            const sortedNutrientList = nutrientList.sort((a:any, b:any) => a.order_value - b.order_value);
+            sortedNutrientList.forEach(nutritionInfo => {
+                const nutritionName = nutritionInfo.nutrient_name;
+                const nutritionValueMin = 0;
+                const nutritionValueMax = 999999;
+                const nutritionUnit = nutritionInfo.nutrient_unit;
+
+                if (!nutritionSummary[nutritionName]) {
+                    nutritionSummary[nutritionName] = {
+                        minValue_intersect: nutritionValueMin,
+                        maxValue_intersect: nutritionValueMax,
+                        unit: nutritionUnit,
+                    };
+                } else {
+                    nutritionSummary[nutritionName].minValue_intersect = Math.min(nutritionSummary[nutritionName].minValue_intersect, nutritionValueMin);
+                    nutritionSummary[nutritionName].maxValue_intersect = Math.min(nutritionSummary[nutritionName].maxValue_intersect, nutritionValueMax);
+                    const { minValue_intersect, maxValue_intersect } = nutritionSummary[nutritionName];
+                    if (nutritionSummary[nutritionName].minValue_intersect > nutritionSummary[nutritionName].maxValue_intersect) {
+                        nutritionSummary[nutritionName].minValue_intersect = maxValue_intersect;
+                        nutritionSummary[nutritionName].maxValue_intersect = minValue_intersect;
+                    }
+                }
+            });
+            
+            const petPhysiological = checkConditionForSelectingPhysiology(petAgeType, petActivityType, petNeuteringStatus);
+            const nutritionalRequirementBase = checkConditionForSelectingRequirmentBase(petAgeType, petActivityType, petNeuteringStatus);
+            
+            const requirmentBase = await baseanimaltypeRepositoty.retrieveByName(nutritionalRequirementBase);
+            const requiredNutritionBase = await basenutritionRepository.retrieveByBaseId(requirmentBase.base_id);
+            const sortedRequirmentNutritionBase = requiredNutritionBase.sort((a, b) => a.order_value - b.order_value);
+
+            sortedRequirmentNutritionBase.forEach(nutritionInfo => {
+                const nutritionName = nutritionInfo.nutrient_name;
+                const nutritionValueMin = nutritionInfo.value_min;
+                const nutritionValueMax = nutritionInfo.value_max;
+                const nutritionUnit = nutritionInfo.nutrient_unit;
+
+                if (!nutritionSummary[nutritionName]) {
+                    nutritionSummary[nutritionName] = {
+                        minValue_intersect: nutritionValueMin,
+                        maxValue_intersect: nutritionValueMax,
+                        unit: nutritionUnit,
+                    };
+                } else {
+                    nutritionSummary[nutritionName].minValue_intersect = Math.min(nutritionSummary[nutritionName].minValue_intersect, nutritionValueMin);
+                    nutritionSummary[nutritionName].maxValue_intersect = Math.min(nutritionSummary[nutritionName].maxValue_intersect, nutritionValueMax);
+                    const { minValue_intersect, maxValue_intersect } = nutritionSummary[nutritionName];
+                    if (nutritionSummary[nutritionName].minValue_intersect > nutritionSummary[nutritionName].maxValue_intersect) {
+                        nutritionSummary[nutritionName].minValue_intersect = maxValue_intersect;
+                        nutritionSummary[nutritionName].maxValue_intersect = minValue_intersect;
+                    }
+                }
+                return {
+                    petPhysiologicalId: requirmentBase.base_id,
+                    petPhysiologicalName: nutritionalRequirementBase,
+                    requirmentBaseNutrition: sortedRequirmentNutritionBase.map(physiologicalNutritionInfo => ({
+                        physiologicalNutritionId: physiologicalNutritionInfo.nutrition_id,
+                        physiologicalNutritionName: physiologicalNutritionInfo.nutrient_name,
+                        physiologicalNutritionnmin: physiologicalNutritionInfo.value_min,
+                        physiologicalNutritionnmax: physiologicalNutritionInfo.value_max,
+                        unit: physiologicalNutritionInfo.nutrient_unit,
+                    })),
+                };
+            });
+
+            const physiological = await physiologyRepository.retrieveByName(petPhysiological);
+            const physiologicalNutrition = await nutrientsrequirementRepository.retrieveByPhysiologyId(physiological.physiology_id);
+            const sortedPhysiologicalNutrition = physiologicalNutrition.sort((a, b) => a.order_value - b.order_value);
+
+            sortedPhysiologicalNutrition.forEach(nutritionInfo => {
+                const nutritionName = nutritionInfo.nutrient_name;
+                const nutritionValueMin = nutritionInfo.value_min;
+                const nutritionValueMax = nutritionInfo.value_max;
+                const nutritionUnit = nutritionInfo.nutrient_unit;
+
+                if (!nutritionSummary[nutritionName]) {
+                    nutritionSummary[nutritionName] = {
+                        minValue_intersect: nutritionValueMin,
+                        maxValue_intersect: nutritionValueMax,
+                        unit: nutritionUnit,
+                    };
+                } else {
+                    nutritionSummary[nutritionName].minValue_intersect = Math.min(nutritionSummary[nutritionName].minValue_intersect, nutritionValueMin);
+                    nutritionSummary[nutritionName].maxValue_intersect = Math.min(nutritionSummary[nutritionName].maxValue_intersect, nutritionValueMax);
+                    const { minValue_intersect, maxValue_intersect } = nutritionSummary[nutritionName];
+                    if (nutritionSummary[nutritionName].minValue_intersect > nutritionSummary[nutritionName].maxValue_intersect) {
+                        nutritionSummary[nutritionName].minValue_intersect = maxValue_intersect;
+                        nutritionSummary[nutritionName].maxValue_intersect = minValue_intersect;
+                    }
+                }
+                return {
+                    petPhysiologicalId: physiological.physiology_id ,
+                    petPhysiologicalName: petPhysiological,
+                    physiologicalNutrition: sortedPhysiologicalNutrition.map(physiologicalNutritionInfo => ({
+                        physiologicalNutritionId: physiologicalNutritionInfo.nutrition_id,
+                        physiologicalNutritionName: physiologicalNutritionInfo.nutrient_name,
+                        physiologicalNutritionnmin: physiologicalNutritionInfo.value_min,
+                        physiologicalNutritionnmax: physiologicalNutritionInfo.value_max,
+                        unit: physiologicalNutritionInfo.nutrient_unit,
+                    })),
+                };
+            });
+
+
+            const petrecipes = await petrecipesRepository.retrieveByPetTypeId(petTypeId);
+            const petrecipesList = await Promise.all(petrecipes.map(async (petrecipesInfo) => {
+                const recipeingredients = await recipeingredientsRepository.retrieveByRecipeId(petrecipesInfo.recipes_id);
+                const recipenutrition = await recipenutritionRepository.retrieveByRecipeId(petrecipesInfo.recipes_id);
+                const sortedrecipeNutrition = recipenutrition.sort((a, b) => a.order_value - b.order_value);
+
+                const recipeIngredientList = await Promise.all(recipeingredients.map(async recipeIngredientInfo => {
+                    const ingredientNutrition = await ingredientnutritionRepository.retrieveByIngredientId(recipeIngredientInfo.ingredient_id);
+                    const sortedingredientNutrition = ingredientNutrition.sort((a, b) => a.order_value - b.order_value);
+                    const ingredientNutritionList = sortedingredientNutrition.map(ingredientNutritionInfo => ({
+                        nutrientName: ingredientNutritionInfo.nutrient_name,
+                        unit: ingredientNutritionInfo.nutrient_unit,
+                        amount: ingredientNutritionInfo.nutrient_value,
+                    }));
+                    return {
+                        ingredient:{
+                            ingredientId: recipeIngredientInfo.ingredient_id,
+                            ingredientName: recipeIngredientInfo.ingredient_name,
+                            nutrient: ingredientNutritionList,
+                        },
+                        amount: recipeIngredientInfo.quantity,
+                    }
+                }));
+                const waterNutrition = recipenutrition.find(recipeNutritionInfo => recipeNutritionInfo.nutrient_name === "Moisture");
+                const recipeNutritionList = sortedrecipeNutrition.map(recipeNutritionInfo => {
+                    if (recipeNutritionInfo.nutrient_name === "Moisture") {
+                        return {
+                            nutrientName: recipeNutritionInfo.nutrient_name,
+                            unit: recipeNutritionInfo.nutrient_unit,
+                            amount: 0,
+                        };
+                    }else {
+                        const newAmont = (100 * recipeNutritionInfo.nutrient_value) / (100 - waterNutrition.nutrient_value);
+                        return {
+                            nutrientName: recipeNutritionInfo.nutrient_name,
+                            unit: recipeNutritionInfo.nutrient_unit,
+                            amount: newAmont,
+                        };
+                    }
+                });
+                const nutritionList = sortedrecipeNutrition.map(recipeNutritionInfo => {
+                    return {
+                        nutrientName: recipeNutritionInfo.nutrient_name,
+                        unit: recipeNutritionInfo.nutrient_unit,
+                        amount: recipeNutritionInfo.nutrient_value,
+                    };
+
+                });
+                const sortedrecipeIngrediente = recipeIngredientList.sort((a, b) => a.ingredient.ingredientId.localeCompare(b.ingredient.ingredientId));
+                return {
+                    recipeId: petrecipesInfo.recipes_id,
+                    recipeName: petrecipesInfo.recipes_name,
+                    petTypeId: petTypeId,
+                    petTypeName: petTypeName,
+                    ingredientInRecipeList :sortedrecipeIngrediente,
+                    recipeNutritionList,
+                    nutritionList,
+                }
+            }));
             let recipesList: any = [];
             const countSelectedIngredient = selectedIngredientList.length;
             const sortedSelectedIngredient = selectedIngredientList.sort(((a:string, b:string) => a.localeCompare(b)));
@@ -409,14 +717,6 @@ export default class SearchPetRecipesController {
             });
             logging.info(NAMESPACE, "Get all pets recipes success");
             res.status(200).json({
-                /*
-                defaultNutrientLimitList:sortdefaultnutrition.map((nutrientInfo:any) => ({
-                    nutrientName: nutrientInfo.nutrient_name,
-                    unit: nutrientInfo.nutrient_unit,
-                    min: nutrientInfo.value_min,
-                    max: nutrientInfo.value_max,
-                }))
-                */
                 defaultNutrientLimitList:Object.entries(nutritionSummary).map(([nutrientName, values]) => ({
                     nutrientName,
                     unit: values.unit, // Assuming different units for different nutrients

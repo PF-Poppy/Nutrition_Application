@@ -28,16 +28,16 @@ export default class AnimalController {
         try {
             const animaltype = await animalRepository.retrieveAll();
 
-            const result = await Promise.all(animaltype.map(async (animaltypeData: AnimalType) => {
+            const result = await Promise.all(animaltype?.map(async (animaltypeData: AnimalType) => {
                 const baseanimaltype = await baseanimaltypeRepositoty.retrieveByAnimalTypeId(animaltypeData.type_id);
                 const physiology = await physiologyRepository.retrieveByAnimalTypeId(animaltypeData.type_id);
                 const diseasedetail = await diseasedetailRepository.retrieveByAnimalTypeId(animaltypeData.type_id);
                 
-                const nutrientsrequirement = await Promise.all(baseanimaltype.map(async (baseanimaltypeData: Baseanimaltype) => {
+                const nutrientsrequirement = await Promise.all(baseanimaltype?.map(async (baseanimaltypeData: Baseanimaltype) => {
                     const basenutrition = await basenutritionRepository.retrieveByBaseId(baseanimaltypeData.base_id);
                     const sortbasenutrition = basenutrition.sort((a, b) => a.order_value - b.order_value);
 
-                    const nutrientlimitinfo = await Promise.all(sortbasenutrition.map(async (basenutritionData: any) => {
+                    const nutrientlimitinfo = await Promise.all(sortbasenutrition?.map(async (basenutritionData: any) => {
                         return {
                             nutrientName: basenutritionData.nutrient_name,
                             unit: basenutritionData.nutrient_unit,
@@ -54,11 +54,11 @@ export default class AnimalController {
                     }
                 }));
 
-                const physiological = await Promise.all(physiology.map(async (physiologyData: Physiology) => {
+                const physiological = await Promise.all(physiology?.map(async (physiologyData: Physiology) => {
                     const nutrientsrequirement = await nutrientsrequirementRepository.retrieveByPhysiologyId(physiologyData.physiology_id);
                     const sortnutrientsrequirement = nutrientsrequirement.sort((a, b) => a.order_value - b.order_value);
 
-                    const nutrientlimitinfo = await Promise.all(sortnutrientsrequirement.map(async (nutrientsrequirementData: any) => {
+                    const nutrientlimitinfo = await Promise.all(sortnutrientsrequirement?.map(async (nutrientsrequirementData: any) => {
                         return {
                             nutrientName: nutrientsrequirementData.nutrient_name,
                             unit: nutrientsrequirementData.nutrient_unit,
@@ -75,11 +75,11 @@ export default class AnimalController {
                     }
                 }));
 
-                const chronicDisease = await Promise.all(diseasedetail.map(async (diseasedetailData: Diseasedetail) => {
+                const chronicDisease = await Promise.all(diseasedetail?.map(async (diseasedetailData: Diseasedetail) => {
                     const diseasenutrition = await diseasenutritionRepository.retrieveByDiseaseId(diseasedetailData.disease_id);
                     const sortdiseasenutrition = diseasenutrition.sort((a, b) => a.order_value - b.order_value);
 
-                    const nutrientlimitinfo = await Promise.all(sortdiseasenutrition.map(async (diseasenutritionData: any) => {
+                    const nutrientlimitinfo = await Promise.all(sortdiseasenutrition?.map(async (diseasenutritionData: any) => {
                         return {
                             nutrientName: diseasenutritionData.nutrient_name,
                             unit: diseasenutritionData.nutrient_unit,
@@ -91,6 +91,7 @@ export default class AnimalController {
                     return {
                         petChronicDiseaseId: diseasedetailData.disease_id,
                         petChronicDiseaseName: diseasedetailData.disease_name,
+                        description: diseasedetailData.description,
                         NutrientLimitInfo: nutrientlimitinfo
                     };
                 }));
@@ -118,10 +119,10 @@ export default class AnimalController {
         try {
             const animaltype = await animalRepository.retrieveAll();
             
-            const result = await Promise.all(animaltype.map(async (animaltypeData: AnimalType) => {
+            const result = await Promise.all(animaltype?.map(async (animaltypeData: AnimalType) => {
                 const diseasedetail = await diseasedetailRepository.retrieveByAnimalTypeId(animaltypeData.type_id);
                 
-                const chronicDisease = await Promise.all(diseasedetail.map(async (diseasedetailData: Diseasedetail) => {
+                const chronicDisease = await Promise.all(diseasedetail?.map(async (diseasedetailData: Diseasedetail) => {
                     return {
                         petChronicDiseaseId: diseasedetailData.disease_id,
                         petChronicDiseaseName: diseasedetailData.disease_name
@@ -167,7 +168,7 @@ export default class AnimalController {
             animaltype.update_by = `${userid}_${username}`;
             const addanimaltype = await animalRepository.save(animaltype);
             
-            animaltype.baseanimaltype = await Promise.all(nutritionalRequirementBase.map(async (nutrientbase: any) => {
+            animaltype.baseanimaltype = await Promise.all(nutritionalRequirementBase?.map(async (nutrientbase: any) => {
                 if (!nutrientbase.petPhysiologicalName || !nutrientbase.NutrientLimitInfo) {
                     await animalRepository.deleteById(addanimaltype.type_id);
                     throw new Error("Please fill in all the fields!");
@@ -223,7 +224,7 @@ export default class AnimalController {
                 return;
             }));
 
-            animaltype.physiology = await Promise.all(petPhysiological.map(async (physiologicalData: any) => {
+            animaltype.physiology = await Promise.all(petPhysiological?.map(async (physiologicalData: any) => {
                 if (!physiologicalData.petPhysiologicalName || !physiologicalData.NutrientLimitInfo) {
                     await animalRepository.deleteById(addanimaltype.type_id);
                     throw new Error("Please fill in all the fields!");
@@ -279,7 +280,7 @@ export default class AnimalController {
                 return;
             }));
             
-            animaltype.diseasedetail = await Promise.all(petChronicDisease.map(async (diseaseData: any) => {
+            animaltype.diseasedetail = await Promise.all(petChronicDisease?.map(async (diseaseData: any) => {
                 if (!diseaseData.petChronicDiseaseName || !diseaseData.NutrientLimitInfo) {
                     await animalRepository.deleteById(addanimaltype.type_id);
                     throw new Error("Please fill in all the fields!");
@@ -288,6 +289,7 @@ export default class AnimalController {
                     const chronicDisease = new Diseasedetail();
                     chronicDisease.disease_name = diseaseData.petChronicDiseaseName;
                     chronicDisease.animaltype_type_id = addanimaltype.type_id;
+                    chronicDisease.description = diseaseData.description;
                     chronicDisease.create_by = `${userid}_${username}`;
                     chronicDisease.update_by = `${userid}_${username}`;
                     chronicDisease.update_date = new Date();
@@ -364,11 +366,19 @@ export default class AnimalController {
             return;
         }
 
-        const { deletedPetChronicDiseaseList, petTypeInfo} = req.body;
-        await Promise.all(deletedPetChronicDiseaseList.map(async (nutrientInfoData: string) => {
-            await diseasedetailRepository.deleteById(nutrientInfoData);
+        const { deletedNutritionalRequirementBase,deletedPetPhysiological,deletedPetChronicDisease, petTypeInfo} = req.body;
+        console.log(req.body)
+
+        await Promise.all(deletedNutritionalRequirementBase?.map(async (baseId: string) => {
+            await baseanimaltypeRepositoty.deleteById(baseId);
         }));
-        
+        await Promise.all(deletedPetPhysiological?.map(async (physiologicalId: string) => {
+            await physiologyRepository.deleteById(physiologicalId);
+        }));
+        await Promise.all(deletedPetChronicDisease?.map(async (diseaseId: string) => {
+            await diseasedetailRepository.deleteById(diseaseId);
+        }));
+
         if (petTypeInfo.petTypeId === "" || petTypeInfo.petTypeId === null || petTypeInfo.petTypeId === undefined) {
             res.status(400).json({
               message: "Pet type id can not be empty!"
@@ -398,9 +408,9 @@ export default class AnimalController {
             animaltype.type_name = petTypeInfo.petTypeName;
             animaltype.update_date = new Date();
             animaltype.update_by = `${userid}_${username}`;
-            const updateanimaltype = await animalRepository.update(animaltype);
+            await animalRepository.update(animaltype);
 
-            animaltype.baseanimaltype = await Promise.all(petTypeInfo.nutritionalRequirementBase.map(async (nutrientbase: any) => {
+            animaltype.baseanimaltype = await Promise.all((petTypeInfo.nutritionalRequirementBase)?.map(async (nutrientbase: any) => {
                 if (nutrientbase.petPhysiologicalId === "") {
                     if (!nutrientbase.petPhysiologicalName || !nutrientbase.NutrientLimitInfo) {
                         throw new Error("Please fill in all the fields!");
@@ -410,7 +420,7 @@ export default class AnimalController {
                         throw new Error("Please fill in all the fields!");
                     }
                 }
-                await Promise.all(nutrientbase.NutrientLimitInfo.map(async (nutrientInfoData: any) => {
+                await Promise.all((nutrientbase.NutrientLimitInfo)?.map(async (nutrientInfoData: any) => {
                     if (!nutrientInfoData.nutrientName || nutrientInfoData.min == undefined || nutrientInfoData.max == undefined) {
                         throw new Error("Please fill in all the fields!");
                     }
@@ -422,7 +432,7 @@ export default class AnimalController {
                 }));
             }));
 
-            animaltype.physiology = await Promise.all(petTypeInfo.petPhysiological.map(async (physiologicalData: any) => {
+            animaltype.physiology = await Promise.all((petTypeInfo.petPhysiological)?.map(async (physiologicalData: any) => {
                 if (physiologicalData.petPhysiologicalId === "") {
                     if (!physiologicalData.petPhysiologicalName || !physiologicalData.NutrientLimitInfo) {
                         throw new Error("Please fill in all the fields!");
@@ -432,7 +442,7 @@ export default class AnimalController {
                         throw new Error("Please fill in all the fields!");
                     }
                 }
-                await Promise.all(physiologicalData.NutrientLimitInfo.map(async (nutrientInfoData: any) => {
+                await Promise.all((physiologicalData.NutrientLimitInfo)?.map(async (nutrientInfoData: any) => {
                     if (!nutrientInfoData.nutrientName || nutrientInfoData.min == undefined || nutrientInfoData.max == undefined) {
                         throw new Error("Please fill in all the fields!");
                     }
@@ -444,7 +454,7 @@ export default class AnimalController {
                 }));
             }));
 
-            animaltype.diseasedetail = await Promise.all(petTypeInfo.petChronicDisease.map(async (diseaseData: any) => {
+            animaltype.diseasedetail = await Promise.all((petTypeInfo.petChronicDisease)?.map(async (diseaseData: any) => {
                 if (diseaseData.petChronicDiseaseId === "") {
                     if (!diseaseData.petChronicDiseaseName || !diseaseData.NutrientLimitInfo) {
                         throw new Error("Please fill in all the fields!");
@@ -454,7 +464,7 @@ export default class AnimalController {
                         throw new Error("Please fill in all the fields!");
                     }
                 }
-                await Promise.all(diseaseData.NutrientLimitInfo.map(async (nutrientInfoData: any) => {
+                await Promise.all((diseaseData.NutrientLimitInfo)?.map(async (nutrientInfoData: any) => {
                     if (!nutrientInfoData.nutrientName || nutrientInfoData.min == undefined || nutrientInfoData.max == undefined) {
                         throw new Error("Please fill in all the fields!");
                     }
@@ -466,10 +476,11 @@ export default class AnimalController {
                 }));
             }));
 
-            animaltype.baseanimaltype = await Promise.all(petTypeInfo.nutritionalRequirementBase.map(async (nutrientbase: any) => {
+            animaltype.baseanimaltype = await Promise.all((petTypeInfo.nutritionalRequirementBase)?.map(async (nutrientbase: any) => {
                 const baseanimaltype = new Baseanimaltype();
                 baseanimaltype.base_name = nutrientbase.petPhysiologicalName;
                 baseanimaltype.animaltype_type_id = petTypeInfo.petTypeId;
+                baseanimaltype.description = nutrientbase.description;
                 baseanimaltype.update_by = `${userid}_${username}`;
                 baseanimaltype.update_date = new Date();
                 try {
@@ -514,10 +525,11 @@ export default class AnimalController {
                 return;
             }));
 
-            animaltype.physiology = await Promise.all(petTypeInfo.petPhysiological.map(async (physiologicalData: any) => {
+            animaltype.physiology = await Promise.all((petTypeInfo.petPhysiological)?.map(async (physiologicalData: any) => {
                 const physiology = new Physiology();
                 physiology.physiology_name = physiologicalData.petPhysiologicalName;
                 physiology.animaltype_type_id = petTypeInfo.petTypeId;
+                physiology.description = physiologicalData.description;
                 physiology.update_by = `${userid}_${username}`;
                 physiology.update_date = new Date();
                 try {
@@ -562,10 +574,11 @@ export default class AnimalController {
                 return;
             }));
 
-            animaltype.diseasedetail = await Promise.all(petTypeInfo.petChronicDisease.map(async (diseaseData: any) => {
+            animaltype.diseasedetail = await Promise.all((petTypeInfo.petChronicDisease)?.map(async (diseaseData: any) => {
                 const chronicDisease = new Diseasedetail();
                 chronicDisease.disease_name = diseaseData.petChronicDiseaseName;
                 chronicDisease.animaltype_type_id = petTypeInfo.petTypeId;
+                chronicDisease.description = diseaseData.description;
                 chronicDisease.update_by = `${userid}_${username}`;
                 chronicDisease.update_date = new Date();
                 try {

@@ -8,6 +8,7 @@ interface IBaseanimaltypeRepository {
     save(baseanimaltype:Baseanimaltype): Promise<Baseanimaltype>;
     update(baseanimaltype:Baseanimaltype): Promise<Baseanimaltype>;
     retrieveById(baseid: string): Promise<Baseanimaltype | undefined>;
+    retrieveByName(basename: string): Promise<Baseanimaltype | undefined>;
     retrieveByAnimalTypeId(typeid: string): Promise<Baseanimaltype[]>;
     deleteById(baseid: string): Promise<number>;
     deleteAll(): Promise<number>;
@@ -21,8 +22,8 @@ class BaseanimaltypeRepository implements IBaseanimaltypeRepository {
                 { where: { base_name: baseanimaltype.base_name, animaltype_type_id: baseanimaltype.animaltype_type_id } }
             );
             if (duplicateType) {
-                logging.error(NAMESPACE, "Duplicate base animal type name.");
-                throw 'Duplicate base animal type name.';
+                logging.error(NAMESPACE, "Duplicate base animal type name with:" + baseanimaltype.base_name);
+                throw "Duplicate base animal type name with:" + baseanimaltype.base_name;
             }
 
             const result = await connect.save(baseanimaltype);
@@ -68,6 +69,24 @@ class BaseanimaltypeRepository implements IBaseanimaltypeRepository {
             }
 
         } catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async retrieveByName(basename: string): Promise<Baseanimaltype> {
+        try {
+            const result = await AppDataSource.getRepository(Baseanimaltype).findOne(
+                { where: { base_name: basename },
+                select: ["base_id", "base_name", "description", "animaltype_type_id"], 
+            });
+            if (!result) {
+                logging.error(NAMESPACE, "Not found base animal type with name: " + basename);
+                throw new Error("Not found base animal type with name: " + basename);
+            }
+            logging.info(NAMESPACE, "Retrieve base animal type successfully.");
+            return result;
+        }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);
             throw err;
         }

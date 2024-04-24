@@ -11,6 +11,7 @@ class SearchPetRecipesRoutes {
 
     initializeRoutes() {
         this.router.get('/test',this.controller.testgetPetsRecipes);
+        this.router.post('/user-getPetRecipes',this.controller.getPetsRecipesForUser);
         this.router.post('/admin-getPetRecipes',this.controller.getPetsRecipesForAdmin);
         this.router.post('/getPetRecipes/algorithm',this.controller.getPetRecipesAlgorithm);
     }

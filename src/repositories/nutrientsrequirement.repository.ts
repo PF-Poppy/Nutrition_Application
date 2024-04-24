@@ -46,7 +46,7 @@ class NutrientsrequirementRepository implements INutrientsrequirementRepository 
         try {
             const connect = AppDataSource.getRepository(Nutrientsrequirement);
             const existingNutrientsrequirement = await connect.findOne({
-                where: { nutrientsrequirement_id: nutrientsrequirement.nutrientsrequirement_id}
+                where: { physiology_physiology_id: nutrientsrequirement.physiology_physiology_id, nutritionsecondary_nutrition_id: nutrientsrequirement.nutritionsecondary_nutrition_id}
             });
 
             if (!existingNutrientsrequirement) {

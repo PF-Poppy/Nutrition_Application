@@ -24,8 +24,8 @@ class DiseasedetailRepository implements IdiseasedetailRepository {
                 { where: { disease_name: diseasedetail.disease_name, animaltype_type_id: diseasedetail.animaltype_type_id } }
             );
             if (duplicate) {
-                logging.error(NAMESPACE, "Duplicate diseasedetail.");
-                throw 'Duplicate diseasedetail.';
+                logging.error(NAMESPACE, "Duplicate diseasedetail with: " + diseasedetail.disease_name + " and animal type id: " + diseasedetail.animaltype_type_id);
+                throw 'Duplicate diseasedetail with: ' + diseasedetail.disease_name + ' and animal type id: ' + diseasedetail.animaltype_type_id;
             } 
             
             const result = await connect.save(diseasedetail);
@@ -81,7 +81,7 @@ class DiseasedetailRepository implements IdiseasedetailRepository {
         try {
             const result = await AppDataSource.getRepository(Diseasedetail).findOne({
                 where: { disease_id: diseaseid }, 
-                select: ["disease_id","disease_name","animaltype_type_id"]
+                select: ["disease_id","disease_name","animaltype_type_id","description"]
             });
             if (!result) {
                 logging.error(NAMESPACE, "Not found diseasedetail with id: " + diseaseid);
@@ -99,7 +99,7 @@ class DiseasedetailRepository implements IdiseasedetailRepository {
         try {
             const result = await AppDataSource.getRepository(Diseasedetail).find({
                 where: { animaltype_type_id : typeid }, 
-                select: ["disease_id","disease_name","animaltype_type_id"]
+                select: ["disease_id","disease_name","animaltype_type_id","description"]
             });
             logging.info(NAMESPACE, "Retrieve diseasedetail by animal type id successfully.");
             return result;
@@ -113,7 +113,7 @@ class DiseasedetailRepository implements IdiseasedetailRepository {
         try {
             const result = await AppDataSource.getRepository(Diseasedetail).findOne({
                 where: { disease_id: diseaseid, animaltype_type_id : typeid }, 
-                select: ["disease_id","disease_name","animaltype_type_id"]
+                select: ["disease_id","disease_name","animaltype_type_id","description"]
             });
             if (!result) {
                 logging.error(NAMESPACE, "Not found diseasedetail with id: " + diseaseid);
@@ -131,7 +131,7 @@ class DiseasedetailRepository implements IdiseasedetailRepository {
         try{ 
             const result = await AppDataSource.getRepository(Diseasedetail).findOne({
                 where: { disease_name: diseasename }, 
-                select: ["disease_id","disease_name","animaltype_type_id"]
+                select: ["disease_id","disease_name","animaltype_type_id","description"]
             });
             if (!result) {
                 logging.error(NAMESPACE, "Not found diseasedetail with name: " + diseasename);

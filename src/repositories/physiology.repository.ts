@@ -9,6 +9,7 @@ interface IphysiologyRepository {
     save(physiology:Physiology): Promise<Physiology>;
     update(physiology:Physiology): Promise<Physiology>;
     retrieveById(physiologyid: string): Promise<Physiology | undefined>;
+    retrieveByName(physiologyname: string): Promise<Physiology | undefined>;
     retrieveByAnimalTypeId(typeid: string): Promise<Physiology[]>;
     deleteById(physiologyid: string): Promise<number>;
     deleteAll(): Promise<number>;
@@ -22,8 +23,8 @@ class PhysiologyRepository implements IphysiologyRepository {
                 where: { physiology_name: physiology.physiology_name, animaltype_type_id: physiology.animaltype_type_id }
             });
             if (duplicate) {
-                logging.error(NAMESPACE, "Duplicate physiology.");
-                throw 'Duplicate physiology.';
+                logging.error(NAMESPACE, "Duplicate physiology with: " + physiology.physiology_name + " and animal type id: " + physiology.animaltype_type_id);
+                throw 'Duplicate physiology with: ' + physiology.physiology_name + ' and animal type id: ' + physiology.animaltype_type_id;
             }
 
             const result = await connect.save(physiology);
@@ -56,8 +57,8 @@ class PhysiologyRepository implements IphysiologyRepository {
 
             const duplicatePhysiology = await connect.findOne({ where: { physiology_name: physiology.physiology_name, animaltype_type_id: physiology.animaltype_type_id } });
             if (duplicatePhysiology && duplicatePhysiology.physiology_id !== physiology.physiology_id) {
-                logging.error(NAMESPACE, "Duplicate physiology.");
-                throw 'Duplicate physiology.';
+                logging.error(NAMESPACE, "Duplicate physiology with: " + physiology.physiology_name + " and animal type id: " + physiology.animaltype_type_id);
+                throw 'Duplicate physiology with: ' + physiology.physiology_name + ' and animal type id: ' + physiology.animaltype_type_id;
             }
             
             await connect.update({ physiology_id: physiology.physiology_id }, physiology);
@@ -87,6 +88,24 @@ class PhysiologyRepository implements IphysiologyRepository {
                 throw new Error("Not found physiology with id: " + physiologyid);
             }
             logging.info(NAMESPACE, "Retrieve physiology by id successfully.");
+            return result;
+        }catch (err) {
+            logging.error(NAMESPACE, (err as Error).message, err);
+            throw err;
+        }
+    }
+
+    async retrieveByName(physiologyname: string): Promise<Physiology> {
+        try{
+            const result = await AppDataSource.getRepository(Physiology).findOne({
+                where: { physiology_name: physiologyname },
+                select: ["physiology_id", "physiology_name", "animaltype_type_id", "description"]
+            });
+            if (!result) {
+                logging.error(NAMESPACE, "Not found physiology with name: " + physiologyname);
+                throw new Error("Not found physiology with name: " + physiologyname);
+            }
+            logging.info(NAMESPACE, "Retrieve physiology by name successfully.");
             return result;
         }catch (err) {
             logging.error(NAMESPACE, (err as Error).message, err);

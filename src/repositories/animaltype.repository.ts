@@ -22,8 +22,8 @@ class AnimalRepository implements IAnimalRepository {
                 { where: { type_name: animal.type_name } }
             );
             if (duplicateType) {
-                logging.error(NAMESPACE, "Duplicate animal type name.");
-                throw 'Duplicate animal type name.';
+                logging.error(NAMESPACE, "Duplicate animal type name with:" + animal.type_name);
+                throw 'Duplicate animal type name with:' + animal.type_name;
             } 
             
             const result = await connect.save(animal);
@@ -54,8 +54,8 @@ class AnimalRepository implements IAnimalRepository {
 
             const duplicateType = await connect.findOne({ where: { type_name: animal.type_name } });
             if (duplicateType && duplicateType.type_id !== animal.type_id) {
-                logging.error(NAMESPACE, "Duplicate animal type name.");
-                throw new Error("Duplicate animal type name.");
+                logging.error(NAMESPACE, "Duplicate animal type name with:" + animal.type_name);
+                throw new Error("Duplicate animal type name with:" + animal.type_name); 
             }
 
             await connect.update({ type_id: animal.type_id }, animal);
