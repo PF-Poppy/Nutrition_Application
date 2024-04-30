@@ -1,0 +1,45 @@
+version: "4.29"
+services:
+  petfoodreccomendation.mysql.database:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: UZ6Qwo&|^h0*M9/
+      MYSQL_DATABASE: petfoodreccomendation
+      MYSQL_USER: myadmin
+      MYSQL_PASSWORD: UZ6Qwo&|^h0*M9/
+    container_name: mysql-petfoodreccomendation_container
+    networks:
+      - backend
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --default-authentication-plugin=caching_sha2_password
+    ports:
+      - "3307:3306"
+    expose:
+      - 3306
+  api-server: 
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: server-petfoodreccomendation_container
+    networks:
+      - backend
+    ports:
+      - "3000:3000"
+    expose:
+      - "3000"
+    depends_on:
+      - petfoodreccomendation.mysql.database
+    environment:
+      DB_HOST: petfoodreccomendation.mysql.database
+      DB_USER: myadmin
+      DB_PASSWORD: "UZ6Qwo&|^h0*M9/"
+      DB_NAME: petfoodreccomendation
+    volumes:
+      - .:/app/server
+      - /app/server/node_modules
+
+networks:
+  backend:
+    driver: bridge
