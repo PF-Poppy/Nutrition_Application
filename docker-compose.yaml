@@ -1,7 +1,7 @@
 version: "4.29"
 services:
   petfoodreccomendation.mysql.database:
-    image: mysql:latest
+    image: puifaiiwimonmanee/nutrition_application:database
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: UZ6Qwo&|^h0*M9/
@@ -19,6 +19,7 @@ services:
     expose:
       - 3306
   api-server: 
+    image: puifaiiwimonmanee/nutrition_application:backend
     build: 
       context: .
       dockerfile: Dockerfile
