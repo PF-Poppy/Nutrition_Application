@@ -39,7 +39,7 @@ export  class App{
         //TODO แก้
         const corsOptions: CorsOptions = {
            origin: ["http://localhost:3000","http://10.3.133.119:3000"],
-           methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+           methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
            optionsSuccessStatus: 200
         };
 
