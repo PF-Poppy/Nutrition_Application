@@ -36,16 +36,18 @@ export  class App{
     }
 
     middlewares(){
-        //TODO แก้
-        const corsOptions: CorsOptions = {
-           origin: ["http://localhost:3000","http://10.3.133.119:3000"],
-           methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
-           optionsSuccessStatus: 200
-        };
+        // TODO แก้
+        // const corsOptions: CorsOptions = {
+        //    origin:  "*",
+        //    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+        //    allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+        //    optionsSuccessStatus: 200
+        // };
 
         this.app.use(morgan('dev'));
         this.app.use(express.json());
-        this.app.use(cors(corsOptions));
+        // this.app.use(cors(corsOptions));
+        this.app.use(cors());
         this.app.use(bodyParser.json());
         this.app.use(bodyParser.urlencoded({ extended: false }));
     }
